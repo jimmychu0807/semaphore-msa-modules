@@ -4,10 +4,17 @@ pragma solidity ^0.8.23;
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 
-contract ValidatorTemplate is ERC7579ValidatorBase {
+import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
+import { ECDSA } from "solady/utils/ECDSA.sol";
+
+contract MultiOwnerValidator is ERC7579ValidatorBase {
+    using SignatureCheckerLib for address;
+
     /*//////////////////////////////////////////////////////////////////////////
                             CONSTANTS & STORAGE
     //////////////////////////////////////////////////////////////////////////*/
+    mapping(uint256 ownerId => mapping(address account => address)) public owners;
+    mapping(address account => uint256) public ownerCount;
 
     /*//////////////////////////////////////////////////////////////////////////
                                      CONFIG
@@ -18,14 +25,23 @@ contract ValidatorTemplate is ERC7579ValidatorBase {
      *
      * @param data The data to initialize the module with
      */
-    function onInstall(bytes calldata data) external override { }
+    function onInstall(bytes calldata data) external override {
+        owners[0][msg.sender] = address(uint160(bytes20(data)));
+        ownerCount[msg.sender] = 1;
+    }
 
     /**
      * De-initialize the module with the given data
      *
      * @param data The data to de-initialize the module with
      */
-    function onUninstall(bytes calldata data) external override { }
+    function onUninstall(bytes calldata data) external override {
+        uint256 _ownerCount = ownerCount[msg.sender];
+        for (uint256 i = 0; i < _ownerCount; i++) {
+            delete owners[i][msg.sender];
+        }
+        delete ownerCount[msg.sender];
+    }
 
     /**
      * Check if the module is initialized
@@ -33,7 +49,9 @@ contract ValidatorTemplate is ERC7579ValidatorBase {
      *
      * @return true if the module is initialized, false otherwise
      */
-    function isInitialized(address smartAccount) external view returns (bool) { }
+    function isInitialized(address smartAccount) external view returns (bool) {
+        return ownerCount[smartAccount] > 0;
+    }
 
     /*//////////////////////////////////////////////////////////////////////////
                                      MODULE LOGIC
@@ -60,7 +78,10 @@ contract ValidatorTemplate is ERC7579ValidatorBase {
         override
         returns (ValidationData)
     {
-        return ValidationData.wrap(0);
+        (uint256 _ownerId, bytes memory _signature) = abi.decode(userOp.signature, (uint256, bytes));
+        bool validSig = owners[_ownerId][msg.sender].isValidSignatureNow(ECDSA.toEthSignedMessageHash(userOpHash), _signature);
+
+        return _packValidationData(!validSig, type(uint48).max, 0);
     }
 
     /**
@@ -85,7 +106,13 @@ contract ValidatorTemplate is ERC7579ValidatorBase {
         override
         returns (bytes4 sigValidationResult)
     {
-        return EIP1271_FAILED;
+        (uint256 _ownerId, bytes memory _signature) = abi.decode(signature, (uint256, bytes));
+        address owner = owners[_ownerId][msg.sender];
+        address recover = ECDSA.recover(hash, _signature);
+        bool valid = SignatureCheckerLib.isValidSignatureNow(owner, hash, _signature);
+        return SignatureCheckerLib.isValidSignatureNow(owner, hash, _signature)
+            ? EIP1271_SUCCESS
+            : EIP1271_FAILED;
     }
 
     function validateSignatureWithData(
@@ -99,9 +126,18 @@ contract ValidatorTemplate is ERC7579ValidatorBase {
         override
         returns (bool validSig)
     {
-        return false;
+        return true;
     }
 
+    function addOwner(uint256 ownerId, address owner) external {
+        require(owners[ownerId][msg.sender] == address(0), "Owner already exists");
+        owners[ownerId][msg.sender] = owner;
+        ownerCount[msg.sender]++;
+    }
+
+    function removeOwner(uint256 ownerId) external {
+        delete owners[ownerId][msg.sender];
+    }
 
     /*//////////////////////////////////////////////////////////////////////////
                                      INTERNAL
@@ -117,7 +153,7 @@ contract ValidatorTemplate is ERC7579ValidatorBase {
      * @return name The name of the module
      */
     function name() external pure returns (string memory) {
-        return "ValidatorTemplate";
+        return "MultiOwnerValidator";
     }
 
     /**

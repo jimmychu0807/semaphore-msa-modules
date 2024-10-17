@@ -6,6 +6,8 @@ broadcast
 # Docs
 docs/
 
+gas_calculations/*
+
 # Dotenv file
 .env
 node_modules
