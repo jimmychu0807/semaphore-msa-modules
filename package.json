@@ -1,5 +1,5 @@
 {
-  "name": "@rhinestone/module-template",
+  "name": "modulekit-tut",
   "version": "0.4.1",
   "description": "A Foundry template for building modules using the ModuleKit",
   "license": "GPL-3.0",
@@ -22,14 +22,22 @@
     "prettier:check": "prettier --check \"**/*.{json,md,svg,yml}\"",
     "prettier:write": "prettier --write \"**/*.{json,md,svg,yml}\"",
     "test": "forge test",
+    "test:hardhat": "hardhat test",
     "test:lite": "FOUNDRY_PROFILE=lite forge test",
     "test:optimized": "pnpm run build:optimized && FOUNDRY_PROFILE=test-optimized forge test"
   },
   "dependencies": {
     "@rhinestone/modulekit": "^0.4.14",
     "@semaphore-protocol/contracts": "github:jimmychu0807/semaphore.git#jc/caret-version&path:/packages/contracts/contracts",
-    "@semaphore-protocol/core": "github:jimmychu0807/semaphore.git#jc/caret-version&path:/packages/core",
-    "ethers": "5.4.0"
+    "@semaphore-protocol/core": "github:jimmychu0807/semaphore.git#jc/caret-version&path:/packages/core"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-foundry": "^1.1.2",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@typechain/hardhat": "^9.0.0",
+    "ethers": "^6.10.0",
+    "hardhat": "^2.22.15",
+    "typechain": "^8.3.0"
   },
   "files": [
     "src",

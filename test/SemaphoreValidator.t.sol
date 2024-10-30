@@ -15,6 +15,7 @@ import { MODULE_TYPE_VALIDATOR } from "modulekit/external/ERC7579.sol";
 
 import { Semaphore } from "@semaphore-protocol/Semaphore.sol";
 import { ISemaphore } from "@semaphore-protocol/interfaces/ISemaphore.sol";
+import { ISemaphoreGroups } from "@semaphore-protocol/interfaces/ISemaphoreGroups.sol";
 import { SemaphoreVerifier } from "@semaphore-protocol/base/SemaphoreVerifier.sol";
 import { ISemaphoreVerifier } from "@semaphore-protocol/interfaces/ISemaphoreVerifier.sol";
 
@@ -65,13 +66,20 @@ contract SemaphoreValidatorTest is RhinestoneModuleKit, Test {
     uint256 gId = semaphore.createGroup(admin.addr);
     console.log("gId: %d", gId);
 
-    vm.prank(admin.addr);
+    // Test Add members
     uint256[] memory members = new uint256[](3);
     members[0] = uint256(uint160(admin.addr));
     members[1] = uint256(2);
     members[2] = uint256(3);
 
+    vm.prank(admin.addr);
     semaphore.addMembers(gId, members);
+
+    // Test that non-admin cannot add members
+    vm.expectRevert(ISemaphoreGroups.Semaphore__CallerIsNotTheGroupAdmin.selector);
+    semaphore.addMember(gId, uint256(4));
+
+    // Test validations
   }
 
   function test_InstallSemaphoreValidator() public {
