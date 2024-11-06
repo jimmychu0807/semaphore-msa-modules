@@ -79,7 +79,9 @@ contract MultiOwnerValidator is ERC7579ValidatorBase {
         returns (ValidationData)
     {
         (uint256 _ownerId, bytes memory _signature) = abi.decode(userOp.signature, (uint256, bytes));
-        bool validSig = owners[_ownerId][msg.sender].isValidSignatureNow(ECDSA.toEthSignedMessageHash(userOpHash), _signature);
+        bool validSig = owners[_ownerId][msg.sender].isValidSignatureNow(
+            ECDSA.toEthSignedMessageHash(userOpHash), _signature
+        );
 
         return _packValidationData(!validSig, type(uint48).max, 0);
     }
