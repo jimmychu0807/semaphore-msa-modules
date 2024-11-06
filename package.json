@@ -1,5 +1,5 @@
 {
-  "name": "@rhinestone/module-template",
+  "name": "modulekit-tut",
   "version": "0.4.1",
   "description": "A Foundry template for building modules using the ModuleKit",
   "license": "GPL-3.0",
@@ -25,11 +25,10 @@
     "test:lite": "FOUNDRY_PROFILE=lite forge test",
     "test:optimized": "pnpm run build:optimized && FOUNDRY_PROFILE=test-optimized forge test"
   },
-  "dependencies": {
-    "@rhinestone/modulekit": "^0.4.14",
-    "@semaphore-protocol/contracts": "github:jimmychu0807/semaphore.git#jc/caret-version&path:/packages/contracts/contracts",
-    "@semaphore-protocol/core": "github:jimmychu0807/semaphore.git#jc/caret-version&path:/packages/core",
-    "ethers": "5.4.0"
+  "devDependencies": {
+    "@rhinestone/modulekit": "^0.4.16",
+    "@semaphore-protocol/contracts": "github:semaphore-protocol/semaphore#main&path:/packages/contracts/contracts",
+    "@semaphore-protocol/core": "github:semaphore-protocol/semaphore#main&path:/packages/core"
   },
   "files": [
     "src",
