@@ -13,11 +13,11 @@ import {
 } from "modulekit/ModuleKit.sol";
 import { MODULE_TYPE_VALIDATOR } from "modulekit/external/ERC7579.sol";
 
-import { Semaphore } from "@semaphore-protocol/Semaphore.sol";
-import { ISemaphore } from "@semaphore-protocol/interfaces/ISemaphore.sol";
-import { ISemaphoreGroups } from "@semaphore-protocol/interfaces/ISemaphoreGroups.sol";
-import { SemaphoreVerifier } from "@semaphore-protocol/base/SemaphoreVerifier.sol";
-import { ISemaphoreVerifier } from "@semaphore-protocol/interfaces/ISemaphoreVerifier.sol";
+import { Semaphore } from "@semaphore-protocol/contracts/Semaphore.sol";
+import { ISemaphore } from "@semaphore-protocol/contracts/interfaces/ISemaphore.sol";
+import { ISemaphoreGroups } from "@semaphore-protocol/contracts/interfaces/ISemaphoreGroups.sol";
+import { SemaphoreVerifier } from "@semaphore-protocol/contracts/base/SemaphoreVerifier.sol";
+import { ISemaphoreVerifier } from "@semaphore-protocol/contracts/interfaces/ISemaphoreVerifier.sol";
 
 import { SemaphoreValidator } from "src/SemaphoreValidator.sol";
 

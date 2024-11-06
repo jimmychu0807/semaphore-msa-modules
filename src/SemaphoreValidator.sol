@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+pragma solidity >=0.8.23 <=0.8.29;
 
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 
-import {ISemaphore} from "@semaphore-protocol/interfaces/ISemaphore.sol";
-import {ISemaphoreGroups} from "@semaphore-protocol/interfaces/ISemaphoreGroups.sol";
+import {ISemaphore} from "@semaphore-protocol/contracts/interfaces/ISemaphore.sol";
+import {ISemaphoreGroups} from "@semaphore-protocol/contracts/interfaces/ISemaphoreGroups.sol";
 
 import { console } from "forge-std/console.sol";
 

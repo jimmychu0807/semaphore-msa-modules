@@ -88,10 +88,18 @@ contract ValidatorTemplate is ERC7579ValidatorBase {
         return EIP1271_FAILED;
     }
 
+    /**
+     * Validates a signature with data
+     * @param hash The hash of the message
+     * @param signature The signature of the message
+     * @param data The data to validate the signature with
+     * @return validSig true if the signature is valid, false otherwise
+     *
+     */
     function validateSignatureWithData(
-        bytes32,
-        bytes calldata,
-        bytes calldata
+        bytes32 hash,
+        bytes calldata signature,
+        bytes calldata data
     )
         external
         view
@@ -101,7 +109,6 @@ contract ValidatorTemplate is ERC7579ValidatorBase {
     {
         return false;
     }
-
 
     /*//////////////////////////////////////////////////////////////////////////
                                      INTERNAL
