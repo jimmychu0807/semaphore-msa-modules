@@ -44,10 +44,6 @@ contract SemaphoreValidatorTest is RhinestoneModuleKit, Test {
         semaphoreValidator = new SemaphoreValidator(semaphore);
         vm.label(address(semaphoreValidator), "SemaphoreValidator");
 
-        console.log("semaphoreVerifier addr: %s", address(semaphoreVerifier));
-        console.log("semaphore addr: %s", address(semaphore));
-        console.log("semaphoreValidator addr: %s", address(semaphoreValidator));
-
         // Create some users
         user1 = makeAccount("user1");
         user2 = makeAccount("user2");
@@ -63,6 +59,8 @@ contract SemaphoreValidatorTest is RhinestoneModuleKit, Test {
 
     function test_SemaphoreDeployProperly() public {
         ISemaphore semaphore = semaphoreValidator.semaphore();
+        ISemaphoreGroups groups = semaphoreValidator.groups();
+
         uint256 gId = semaphore.createGroup(admin.addr);
         console.log("gId: %d", gId);
 
@@ -75,11 +73,25 @@ contract SemaphoreValidatorTest is RhinestoneModuleKit, Test {
         vm.prank(admin.addr);
         semaphore.addMembers(gId, members);
 
-        // Test that non-admin cannot add members
+        // Test: non-admin cannot add members. Should revert here
         vm.expectRevert(ISemaphoreGroups.Semaphore__CallerIsNotTheGroupAdmin.selector);
         semaphore.addMember(gId, uint256(4));
 
-        // Test validations
+        // Hard-code the proof here
+        uint256 merkleTreeRoot = groups.getMerkleTreeRoot(gId);
+
+        ISemaphore.SemaphoreProof memory badProof = ISemaphore.SemaphoreProof({
+            merkleTreeDepth: 5,
+            merkleTreeRoot: merkleTreeRoot,
+            nullifier: 0,
+            message: 0,
+            scope: 0,
+            points: [uint256(0),0,0,0,0,0,0,0]
+        });
+
+        // Test: validateProof() rejects invalid proof
+        vm.expectRevert(ISemaphore.Semaphore__InvalidProof.selector);
+        semaphore.validateProof(gId, badProof);
     }
 
     function test_InstallSemaphoreValidator() public {
