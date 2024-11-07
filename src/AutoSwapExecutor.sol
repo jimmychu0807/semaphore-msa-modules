@@ -15,6 +15,7 @@ contract AutoSwapExecutor is ERC7579ExecutorBase {
     //////////////////////////////////////////////////////////////////////////*/
 
     error InvalidExecution();
+
     event ExecutionTriggered(address indexed smartAccount, uint256 indexed jobId);
 
     struct ExecutionConfig {
@@ -52,12 +53,14 @@ contract AutoSwapExecutor is ERC7579ExecutorBase {
      *
      * @param data The data to de-initialize the module with
      */
+
     function onUninstall(bytes calldata data) external override {
         uint64 count = _accountJobCount[msg.sender];
-        for (uint64 i = 1; i<=count; i++) {
+        for (uint64 i = 1; i <= count; i++) {
             delete _executionLog[msg.sender][i];
         }
         _accountJobCount[msg.sender] = 0;
+        data;
     }
 
     /**
@@ -75,7 +78,9 @@ contract AutoSwapExecutor is ERC7579ExecutorBase {
         uint32 numberOfExecutions,
         uint48 startDate,
         bytes memory executionData
-    ) external {
+    )
+        external
+    {
         _createExecution(executeInterval, numberOfExecutions, startDate, executionData);
     }
 
@@ -132,7 +137,9 @@ contract AutoSwapExecutor is ERC7579ExecutorBase {
         uint32 numberOfExecutions,
         uint48 startDate,
         bytes memory executionData
-    ) internal {
+    )
+        internal
+    {
         uint64 jobId = _accountJobCount[msg.sender]++;
 
         _executionLog[msg.sender][jobId] = ExecutionConfig({
@@ -161,7 +168,10 @@ contract AutoSwapExecutor is ERC7579ExecutorBase {
             revert InvalidExecution();
         }
 
-        if (executionConfig.lastExecutionTime + executionConfig.executeInterval < block.timestamp && executionConfig.lastExecutionTime > executionConfig.startDate) {
+        if (
+            executionConfig.lastExecutionTime + executionConfig.executeInterval < block.timestamp
+                && executionConfig.lastExecutionTime > executionConfig.startDate
+        ) {
             revert InvalidExecution();
         }
     }

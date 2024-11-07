@@ -14,7 +14,7 @@ contract MultiOwnerValidator is ERC7579ValidatorBase {
                             CONSTANTS & STORAGE
     //////////////////////////////////////////////////////////////////////////*/
     mapping(uint256 ownerId => mapping(address account => address)) public owners;
-    mapping(address account => uint256) public ownerCount;
+    mapping(address account => uint256 count) public ownerCount;
 
     /*//////////////////////////////////////////////////////////////////////////
                                      CONFIG
@@ -36,6 +36,7 @@ contract MultiOwnerValidator is ERC7579ValidatorBase {
      * @param data The data to de-initialize the module with
      */
     function onUninstall(bytes calldata data) external override {
+        data;
         uint256 _ownerCount = ownerCount[msg.sender];
         for (uint256 i = 0; i < _ownerCount; i++) {
             delete owners[i][msg.sender];
@@ -79,7 +80,9 @@ contract MultiOwnerValidator is ERC7579ValidatorBase {
         returns (ValidationData)
     {
         (uint256 _ownerId, bytes memory _signature) = abi.decode(userOp.signature, (uint256, bytes));
-        bool validSig = owners[_ownerId][msg.sender].isValidSignatureNow(ECDSA.toEthSignedMessageHash(userOpHash), _signature);
+        bool validSig = owners[_ownerId][msg.sender].isValidSignatureNow(
+            ECDSA.toEthSignedMessageHash(userOpHash), _signature
+        );
 
         return _packValidationData(!validSig, type(uint48).max, 0);
     }
@@ -110,6 +113,11 @@ contract MultiOwnerValidator is ERC7579ValidatorBase {
         address owner = owners[_ownerId][msg.sender];
         address recover = ECDSA.recover(hash, _signature);
         bool valid = SignatureCheckerLib.isValidSignatureNow(owner, hash, _signature);
+
+        sender;
+        recover;
+        valid;
+
         return SignatureCheckerLib.isValidSignatureNow(owner, hash, _signature)
             ? EIP1271_SUCCESS
             : EIP1271_FAILED;
@@ -130,6 +138,7 @@ contract MultiOwnerValidator is ERC7579ValidatorBase {
     }
 
     function addOwner(uint256 ownerId, address owner) external {
+        // solhint-disable-next-line gas-custom-errors
         require(owners[ownerId][msg.sender] == address(0), "Owner already exists");
         owners[ownerId][msg.sender] = owner;
         ownerCount[msg.sender]++;
