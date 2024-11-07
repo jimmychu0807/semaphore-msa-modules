@@ -60,6 +60,7 @@ contract AutoSwapExecutor is ERC7579ExecutorBase {
             delete _executionLog[msg.sender][i];
         }
         _accountJobCount[msg.sender] = 0;
+        data;
     }
 
     /**

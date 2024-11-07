@@ -57,6 +57,10 @@ contract HookTemplate is ERC7579HookBase {
         override
         returns (bytes memory hookData)
     {
+        account;
+        msgSender;
+        msgValue;
+        msgData;
         hookData = abi.encode(true);
     }
 
@@ -67,8 +71,10 @@ contract HookTemplate is ERC7579HookBase {
      * @param hookData The data from the pre-check
      */
     function _postCheck(address account, bytes calldata hookData) internal override {
+        account;
         (bool success) = abi.decode(hookData, (bool));
         if (!success) {
+            // solhint-disable-next-line gas-custom-errors
             revert("HookTemplate: execution failed");
         }
     }
