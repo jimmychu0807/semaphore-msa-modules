@@ -3,15 +3,16 @@ pragma solidity >=0.8.23 <=0.8.29;
 
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
+import { ECDSA } from "solady/utils/ECDSA.sol";
 
 import { ISemaphore } from "@semaphore-protocol/contracts/interfaces/ISemaphore.sol";
 import { ISemaphoreGroups } from "@semaphore-protocol/contracts/interfaces/ISemaphoreGroups.sol";
 
 contract SemaphoreValidator is ERC7579ValidatorBase {
     // custom errors
-    error UserNotAdmin(uint256 gId, address user);
-    error SemaphoreValidatorAlreadyInstalled(address acct);
-    error ModuleNotInstalled(address acct);
+    error NotAdmin();
+    error ModuleAlreadyInstalled();
+    error ModuleNotInstalled();
 
     /**
      * Constants & Storage
@@ -22,23 +23,47 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
     mapping(address => bool) public inUse;
     mapping(address => uint256) public gIds;
 
+    // SemaphoreValidator contract has to be the admin of the Semaphore contract
+
     constructor(ISemaphore _semaphore) {
         semaphore = _semaphore;
         groups = ISemaphoreGroups(address(_semaphore));
+    }
+
+    modifier moduleInstalled() {
+        if (!inUse[msg.sender]) {
+            revert ModuleNotInstalled();
+        }
+        _;
+    }
+
+    modifier moduleNotInstalled() {
+        if (inUse[msg.sender]) {
+            revert ModuleAlreadyInstalled();
+        }
+        _;
+    }
+
+    modifier isAdmin(bytes calldata data) {
+        address user = abi.decode(data, (address));
+        uint256 gId = gIds[msg.sender];
+        address admin = groups.getGroupAdmin(gId);
+        if (user != admin) {
+            revert NotAdmin();
+        }
+        _;
     }
 
     /**
      * Config
      *
      */
-    function onInstall(bytes calldata data) external override {
-        // Check the smart acct has not been initialized yet
-        if (inUse[msg.sender]) {
-            revert SemaphoreValidatorAlreadyInstalled(msg.sender);
-        }
-
+    function onInstall(bytes calldata data) external override
+        moduleNotInstalled
+    {
         // create a new group
-        // msg.sender is the smart wallet that call this contract
+        // msg.sender is the smart account that call this contract
+        // the address in data is the EOA owner of the smart account
         // you often have to parse the passed in parameters to get the original caller
         // The address of the original caller (the one who sends http request to the bundler) must
         // be passed in from data
@@ -46,24 +71,28 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
         uint256 gId = semaphore.createGroup(admin);
         inUse[msg.sender] = true;
         gIds[msg.sender] = gId;
+
+        // Add the EOA admin as a member
+        uint256 commitment = _getUserCommitment(admin);
+        semaphore.addMember(gId, commitment);
     }
 
-    function onUninstall(bytes calldata data) external override {
-        (uint256 gId, address user) = abi.decode(data, (uint256, address));
-
-        address admin = groups.getGroupAdmin(gId);
-        if (user != admin) {
-            revert UserNotAdmin(gId, user);
-        }
-
-        // deactivate the group
-        inUse[msg.sender] = false;
-
-        // We don't change the gId of the smart acct
+    function onUninstall(bytes calldata data) external override
+        moduleInstalled
+        isAdmin(data)
+    {
+        // remove from our data structure
+        delete inUse[msg.sender];
+        delete gIds[msg.sender];
     }
 
     function isInitialized(address smartAccount) external view returns (bool) {
         return inUse[smartAccount];
+    }
+
+    function _getUserCommitment(address addr) internal returns (uint256) {
+        // TODO: implement this
+        return uint256(0);
     }
 
     /**
@@ -110,17 +139,22 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
         return true;
     }
 
-    function addMembers(address user, uint256 gId, uint256[] calldata memberCommitments) external {
-        if (!inUse[msg.sender]) {
-            revert ModuleNotInstalled(msg.sender);
-        }
+    function addMember(uint256 memberCommitment) external
+        moduleInstalled
+    {
+        // The gId of the smart account
+        uint256 gId = gIds[msg.sender];
 
-        address admin = groups.getGroupAdmin(gId);
-        if (user != admin) {
-            revert UserNotAdmin(gId, user);
-        }
+        // TODO: perform checking & error handling once this work
+        semaphore.addMember(gId, memberCommitment);
+    }
 
-        semaphore.addMembers(gId, memberCommitments);
+    function removeMember(uint256 identityCommitment, uint256[] calldata merkleProofSiblings) external
+        moduleInstalled
+    {
+        // The gId of the smart account
+        uint256 gId = gIds[msg.sender];
+        semaphore.removeMember(gId, identityCommitment, merkleProofSiblings);
     }
 
     /*//////////////////////////////////////////////////////////////////////////
