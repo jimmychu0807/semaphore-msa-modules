@@ -29,8 +29,11 @@ contract SemaphoreValidatorTest is RhinestoneModuleKit, Test {
     SemaphoreValidator internal semaphoreValidator;
 
     Account user1;
+    uint256 commitment_user1 = 1;
     Account user2;
+    uint256 commitment_user2 = 2;
     Account admin;
+    uint256 commitment_admin = 3;
 
     function setUp() public {
         init();
@@ -142,20 +145,11 @@ contract SemaphoreValidatorTest is RhinestoneModuleKit, Test {
         smartAcct.installModule({
             moduleTypeId: MODULE_TYPE_VALIDATOR,
             module: address(semaphoreValidator),
-            data: abi.encode(admin.addr)
+            data: abi.encode(admin.addr, commitment_admin)
         });
 
-        // uint256 groupCounter = semaphoreValidator.semaphore.groupCounter();
-        // assertEq(groupCounter, 1);
-    }
-
-    function test_RevertWhen_InstallSemaphoreValidatorMultipleTimes() public {
-        // vm.expectRevert(SemaphoreValidator.SemaphoreValidatorAlreadyInstalled.selector);
-
-        // smartAcct.installModule({
-        //   moduleTypeId: MODULE_TYPE_VALIDATOR,
-        //   module: address(semaphoreValidator),
-        //   data: abi.encode(admin.addr)
-        // });
+        ISemaphore semaphore = semaphoreValidator.semaphore();
+        uint256 groupCounter = semaphore.groupCounter();
+        assertEq(groupCounter, 1);
     }
 }
