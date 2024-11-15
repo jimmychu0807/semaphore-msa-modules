@@ -1,12 +1,34 @@
 {
-  "name": "modulekit-tut",
-  "version": "0.4.1",
-  "description": "A Foundry template for building modules using the ModuleKit",
+  "name": "semaphore-msa-validator",
+  "version": "0.0.1",
+  "description": "Semaphore Modular Smart Account Validator",
   "license": "GPL-3.0",
   "author": {
-    "name": "Rhinestone",
-    "url": "https://rhinestone.wtf"
+    "name": "Jimmy Chu",
+    "url": "https://jimmychu0807.hk"
   },
+  "homepage": "https://github.com/jimmychu0807/semaphore-msa-validator",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jimmychu0807/semaphore-msa-validator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jimmychu0807/semaphore-msa-validator/issues"
+  },
+  "devDependencies": {
+    "@rhinestone/modulekit": "^0.4.17",
+    "@semaphore-protocol/contracts": "github:semaphore-protocol/semaphore#main&path:/packages/contracts/contracts",
+    "@semaphore-protocol/core": "github:semaphore-protocol/semaphore#main&path:/packages/core",
+    "solhint": "^5.0.3"
+  },
+  "files": [
+    "src",
+    "test",
+    "script",
+    "package.json",
+    "foundry.toml",
+    "remappings.txt"
+  ],
   "scripts": {
     "build": "forge build",
     "build:optimized": "FOUNDRY_PROFILE=optimized forge build",
@@ -26,35 +48,13 @@
     "test:lite": "FOUNDRY_PROFILE=lite forge test",
     "test:optimized": "pnpm run build:optimized && FOUNDRY_PROFILE=test-optimized forge test"
   },
-  "devDependencies": {
-    "@rhinestone/modulekit": "^0.4.16",
-    "@semaphore-protocol/contracts": "github:semaphore-protocol/semaphore#main&path:/packages/contracts/contracts",
-    "@semaphore-protocol/core": "github:semaphore-protocol/semaphore#main&path:/packages/core",
-    "solhint": "^5.0.3"
-  },
-  "files": [
-    "src",
-    "test",
-    "script",
-    "package.json",
-    "foundry.toml",
-    "remappings.txt"
-  ],
-  "homepage": "https://docs.rhinestone.wtf/module-template",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/rhinestonewtf/module-template.git"
-  },
-  "bugs": {
-    "url": "https://github.com/rhinestonewtf/module-template/issues"
-  },
   "keywords": [
     "account abstraction",
     "smart account modules",
-    "module template"
+    "semaphore"
   ],
   "publishConfig": {
     "access": "public"
   },
-  "packageManager": "pnpm@9.12.1+sha512.e5a7e52a4183a02d5931057f7a0dbff9d5e9ce3161e33fa68ae392125b79282a8a8a470a51dfc8a0ed86221442eb2fb57019b0990ed24fab519bf0e1bc5ccfc4"
+  "packageManager": "pnpm@9.13.2+sha512.88c9c3864450350e65a33587ab801acf946d7c814ed1134da4a924f6df5a2120fd36b46aab68f7cd1d413149112d53c7db3a4136624cfd00ff1846a0c6cef48a"
 }

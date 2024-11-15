@@ -7,6 +7,7 @@ import { ECDSA } from "solady/utils/ECDSA.sol";
 
 import { ISemaphore } from "@semaphore-protocol/contracts/interfaces/ISemaphore.sol";
 import { ISemaphoreGroups } from "@semaphore-protocol/contracts/interfaces/ISemaphoreGroups.sol";
+import { console } from "forge-std/console.sol";
 
 contract SemaphoreValidator is ERC7579ValidatorBase {
     // custom errors
@@ -16,12 +17,15 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
 
     /**
      * Constants & Storage
-     *
      */
     ISemaphore public semaphore;
     ISemaphoreGroups public groups;
     mapping(address => bool) public inUse;
     mapping(address => uint256) public gIds;
+
+    // In the Semaphore contract, the admin for any group is the SemaphoreValidator contract.
+    // We store the actual smart account admin here. There can only be one admin for now.
+    mapping(address => address) public admins;
 
     // SemaphoreValidator contract has to be the admin of the Semaphore contract
 
@@ -67,13 +71,13 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
         // you often have to parse the passed in parameters to get the original caller
         // The address of the original caller (the one who sends http request to the bundler) must
         // be passed in from data
-        address admin = abi.decode(data, (address));
-        uint256 gId = semaphore.createGroup(admin);
+        (address admin, uint256 commitment) = abi.decode(data, (address, uint256));
+        uint256 gId = semaphore.createGroup();
         inUse[msg.sender] = true;
         gIds[msg.sender] = gId;
+        admins[msg.sender] = admin;
 
-        // Add the EOA admin as a member
-        uint256 commitment = _getUserCommitment(admin);
+        // Add the admin commitment in as the first group member.
         semaphore.addMember(gId, commitment);
     }
 
@@ -84,15 +88,11 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
         // remove from our data structure
         delete inUse[msg.sender];
         delete gIds[msg.sender];
+        delete admins[msg.sender];
     }
 
     function isInitialized(address smartAccount) external view returns (bool) {
         return inUse[smartAccount];
-    }
-
-    function _getUserCommitment(address addr) internal returns (uint256) {
-        // TODO: implement this
-        return uint256(0);
     }
 
     /**
@@ -108,7 +108,10 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
         override
         returns (ValidationData)
     {
-        return _packValidationData(true, type(uint48).max, 0);
+        bool sigFailed = false;
+        (uint256 sender, bytes memory _signature) = abi.decode(userOp.signature, (uint256, bytes));
+
+        return _packValidationData(!sigFailed, type(uint48).max, 0);
     }
 
     function isValidSignatureWithSender(
