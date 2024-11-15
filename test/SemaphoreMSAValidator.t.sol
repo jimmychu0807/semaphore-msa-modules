@@ -13,24 +13,27 @@ import {
 } from "modulekit/ModuleKit.sol";
 import { MODULE_TYPE_VALIDATOR } from "modulekit/external/ERC7579.sol";
 
-import { Semaphore } from "@semaphore-protocol/contracts/Semaphore.sol";
-import { ISemaphore } from "@semaphore-protocol/contracts/interfaces/ISemaphore.sol";
-import { ISemaphoreGroups } from "@semaphore-protocol/contracts/interfaces/ISemaphoreGroups.sol";
-import { SemaphoreVerifier } from "@semaphore-protocol/contracts/base/SemaphoreVerifier.sol";
-import { ISemaphoreVerifier } from "@semaphore-protocol/contracts/interfaces/ISemaphoreVerifier.sol";
+import { Semaphore } from "semaphore/Semaphore.sol";
+import { ISemaphore } from "semaphore/interfaces/ISemaphore.sol";
+import { ISemaphoreGroups } from "semaphore/interfaces/ISemaphoreGroups.sol";
+import { ISemaphoreVerifier } from "semaphore/interfaces/ISemaphoreVerifier.sol";
+import { SemaphoreVerifier } from "semaphore/base/SemaphoreVerifier.sol";
 
-import { SemaphoreValidator } from "src/SemaphoreValidator.sol";
+import { SemaphoreMSAValidator } from "src/SemaphoreMSAValidator.sol";
 
 contract SemaphoreValidatorTest is RhinestoneModuleKit, Test {
     using ModuleKitHelpers for *;
     using ModuleKitUserOp for *;
 
     AccountInstance internal smartAcct;
-    SemaphoreValidator internal semaphoreValidator;
+    SemaphoreMSAValidator internal semaphoreValidator;
 
     Account user1;
+    uint256 commitment_user1 = 1;
     Account user2;
+    uint256 commitment_user2 = 2;
     Account admin;
+    uint256 commitment_admin = 3;
 
     function setUp() public {
         init();
@@ -41,8 +44,8 @@ contract SemaphoreValidatorTest is RhinestoneModuleKit, Test {
         Semaphore semaphore = new Semaphore(ISemaphoreVerifier(address(semaphoreVerifier)));
         vm.label(address(semaphore), "Semaphore");
         // Create the validator
-        semaphoreValidator = new SemaphoreValidator(semaphore);
-        vm.label(address(semaphoreValidator), "SemaphoreValidator");
+        semaphoreValidator = new SemaphoreMSAValidator(semaphore);
+        vm.label(address(semaphoreValidator), "SemaphoreMSAValidator");
 
         // Create some users
         user1 = makeAccount("user1");
@@ -142,20 +145,11 @@ contract SemaphoreValidatorTest is RhinestoneModuleKit, Test {
         smartAcct.installModule({
             moduleTypeId: MODULE_TYPE_VALIDATOR,
             module: address(semaphoreValidator),
-            data: abi.encode(admin.addr)
+            data: abi.encode(admin.addr, commitment_admin)
         });
 
-        // uint256 groupCounter = semaphoreValidator.semaphore.groupCounter();
-        // assertEq(groupCounter, 1);
-    }
-
-    function test_RevertWhen_InstallSemaphoreValidatorMultipleTimes() public {
-        // vm.expectRevert(SemaphoreValidator.SemaphoreValidatorAlreadyInstalled.selector);
-
-        // smartAcct.installModule({
-        //   moduleTypeId: MODULE_TYPE_VALIDATOR,
-        //   module: address(semaphoreValidator),
-        //   data: abi.encode(admin.addr)
-        // });
+        ISemaphore semaphore = semaphoreValidator.semaphore();
+        uint256 groupCounter = semaphore.groupCounter();
+        assertEq(groupCounter, 1);
     }
 }
