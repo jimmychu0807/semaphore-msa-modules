@@ -13,20 +13,20 @@ import {
 } from "modulekit/ModuleKit.sol";
 import { MODULE_TYPE_VALIDATOR } from "modulekit/external/ERC7579.sol";
 
-import { Semaphore } from "@semaphore-protocol/contracts/Semaphore.sol";
-import { ISemaphore } from "@semaphore-protocol/contracts/interfaces/ISemaphore.sol";
-import { ISemaphoreGroups } from "@semaphore-protocol/contracts/interfaces/ISemaphoreGroups.sol";
-import { SemaphoreVerifier } from "@semaphore-protocol/contracts/base/SemaphoreVerifier.sol";
-import { ISemaphoreVerifier } from "@semaphore-protocol/contracts/interfaces/ISemaphoreVerifier.sol";
+import { Semaphore } from "semaphore/Semaphore.sol";
+import { ISemaphore } from "semaphore/interfaces/ISemaphore.sol";
+import { ISemaphoreGroups } from "semaphore/interfaces/ISemaphoreGroups.sol";
+import { ISemaphoreVerifier } from "semaphore/interfaces/ISemaphoreVerifier.sol";
+import { SemaphoreVerifier } from "semaphore/base/SemaphoreVerifier.sol";
 
-import { SemaphoreValidator } from "src/SemaphoreValidator.sol";
+import { SemaphoreMSAValidator } from "src/SemaphoreMSAValidator.sol";
 
 contract SemaphoreValidatorTest is RhinestoneModuleKit, Test {
     using ModuleKitHelpers for *;
     using ModuleKitUserOp for *;
 
     AccountInstance internal smartAcct;
-    SemaphoreValidator internal semaphoreValidator;
+    SemaphoreMSAValidator internal semaphoreValidator;
 
     Account user1;
     uint256 commitment_user1 = 1;
@@ -44,8 +44,8 @@ contract SemaphoreValidatorTest is RhinestoneModuleKit, Test {
         Semaphore semaphore = new Semaphore(ISemaphoreVerifier(address(semaphoreVerifier)));
         vm.label(address(semaphore), "Semaphore");
         // Create the validator
-        semaphoreValidator = new SemaphoreValidator(semaphore);
-        vm.label(address(semaphoreValidator), "SemaphoreValidator");
+        semaphoreValidator = new SemaphoreMSAValidator(semaphore);
+        vm.label(address(semaphoreValidator), "SemaphoreMSAValidator");
 
         // Create some users
         user1 = makeAccount("user1");

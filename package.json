@@ -17,8 +17,12 @@
   },
   "devDependencies": {
     "@rhinestone/modulekit": "^0.4.17",
+    "@rhinestone/checknsignatures": "github:rhinestonewtf/checknsignatures",
+    "@rhinestone/flatbytes": "github:rhinestonewtf/flatbytes",
+    "@rhinestone/sentinellist": "github:rhinestonewtf/sentinellist",
     "@semaphore-protocol/contracts": "github:semaphore-protocol/semaphore#main&path:/packages/contracts/contracts",
     "@semaphore-protocol/core": "github:semaphore-protocol/semaphore#main&path:/packages/core",
+    "solady": "^0.0.267",
     "solhint": "^5.0.3"
   },
   "files": [

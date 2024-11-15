@@ -3,25 +3,41 @@ pragma solidity >=0.8.23 <=0.8.29;
 
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
+import { SentinelList4337Lib, SENTINEL } from "sentinellist/SentinelList4337.sol";
+import { CheckSignatures } from "checknsignatures/CheckNSignatures.sol";
+
+import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
+import { LibSort } from "solady/utils/LibSort.sol";
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
-import { ISemaphore } from "@semaphore-protocol/contracts/interfaces/ISemaphore.sol";
-import { ISemaphoreGroups } from "@semaphore-protocol/contracts/interfaces/ISemaphoreGroups.sol";
+import { ISemaphore } from "semaphore/interfaces/ISemaphore.sol";
+import { ISemaphoreGroups } from "semaphore/interfaces/ISemaphoreGroups.sol";
+
 import { console } from "forge-std/console.sol";
 
-contract SemaphoreValidator is ERC7579ValidatorBase {
+contract SemaphoreMSAValidator is ERC7579ValidatorBase {
+    using LibSort for *;
+    using SentinelList4337Lib for SentinelList4337Lib.SentinelList;
+
+    // Constants
+    uint8 constant MAX_OWNERS = 32;
+
     // custom errors
     error NotAdmin();
     error ModuleAlreadyInstalled();
     error ModuleNotInstalled();
 
     /**
-     * Constants & Storage
+     * Storage
      */
     ISemaphore public semaphore;
     ISemaphoreGroups public groups;
     mapping(address => bool) public inUse;
     mapping(address => uint256) public gIds;
+
+    SentinelList4337Lib.SentinelList owners;
+    mapping(address account => uint8) public threshold;
+    mapping(address account => uint8) public ownerCount;
 
     // In the Semaphore contract, the admin for any group is the SemaphoreValidator contract.
     // We store the actual smart account admin here. There can only be one admin for now.
@@ -63,7 +79,6 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
      *
      */
     function onInstall(bytes calldata data) external override
-        moduleNotInstalled
     {
         // create a new group
         // msg.sender is the smart account that call this contract

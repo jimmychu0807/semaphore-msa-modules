@@ -8,15 +8,27 @@ importers:
 
   .:
     devDependencies:
+      '@rhinestone/checknsignatures':
+        specifier: github:rhinestonewtf/checknsignatures
+        version: https://codeload.github.com/rhinestonewtf/checknsignatures/tar.gz/ef8e54b1df861681059b60be32ef9576030ea984
+      '@rhinestone/flatbytes':
+        specifier: github:rhinestonewtf/flatbytes
+        version: https://codeload.github.com/rhinestonewtf/flatbytes/tar.gz/8182dc7353bef886be234c54ae36b1e33d6bf8ee
       '@rhinestone/modulekit':
         specifier: ^0.4.17
         version: 0.4.17(ethers@5.7.2)(hardhat@2.22.15(typescript@4.9.5))(lodash@4.17.21)(typechain@5.2.0(typescript@4.9.5))(typescript@4.9.5)
+      '@rhinestone/sentinellist':
+        specifier: github:rhinestonewtf/sentinellist
+        version: https://codeload.github.com/rhinestonewtf/sentinellist/tar.gz/e722c5cc68c570d535bc3c9f85b3ce90cdc38807
       '@semaphore-protocol/contracts':
         specifier: github:semaphore-protocol/semaphore#main&path:/packages/contracts/contracts
         version: https://codeload.github.com/semaphore-protocol/semaphore/tar.gz/7e183f3d2c159ff6ad47517bd45482e7545f7646#path:/packages/contracts/contracts
       '@semaphore-protocol/core':
         specifier: github:semaphore-protocol/semaphore#main&path:/packages/core
         version: https://codeload.github.com/semaphore-protocol/semaphore/tar.gz/7e183f3d2c159ff6ad47517bd45482e7545f7646#path:/packages/core
+      solady:
+        specifier: ^0.0.267
+        version: 0.0.267
       solhint:
         specifier: ^5.0.3
         version: 5.0.3(typescript@4.9.5)
@@ -324,6 +336,10 @@ packages:
 
   '@rhinestone/erc4337-validation@0.0.4':
     resolution: {integrity: sha512-9GPvOvmM9j5ZZRCFeujPacUyByRnrGL22/5177hRzXh5mLq/A22EyvVIVNcsWMvNiLcHAV4dkkKpXaljxNOT9A==}
+
+  '@rhinestone/flatbytes@https://codeload.github.com/rhinestonewtf/flatbytes/tar.gz/8182dc7353bef886be234c54ae36b1e33d6bf8ee':
+    resolution: {tarball: https://codeload.github.com/rhinestonewtf/flatbytes/tar.gz/8182dc7353bef886be234c54ae36b1e33d6bf8ee}
+    version: 0.0.1
 
   '@rhinestone/module-bases@https://codeload.github.com/rhinestonewtf/module-bases/tar.gz/1ea072eb328dd4bb1a540a52432ef98562314121':
     resolution: {tarball: https://codeload.github.com/rhinestonewtf/module-bases/tar.gz/1ea072eb328dd4bb1a540a52432ef98562314121}
@@ -1890,6 +1906,9 @@ packages:
     resolution: {integrity: sha512-x4cOCR4YXSyBlLtfnUUwfbZrw8wFd/Y0lk83eexJzKwZB8ELdpH+10ts8YtDsm2/a3WK7c7p514bbE8NpqxW8w==}
     hasBin: true
 
+  solady@0.0.267:
+    resolution: {integrity: sha512-Jjl5odGoXARF2TOGJMLtKy5Z+qsu1Bfq+al0uNVnBQjHH8Rw/oOMb7Em1igxxx4UQcjcKEpQiAYtsawK+B3TKg==}
+
   solady@https://codeload.github.com/vectorized/solady/tar.gz/4c8be46dbc8d2d319cc6acf058a6aa79c0b78eb1:
     resolution: {tarball: https://codeload.github.com/vectorized/solady/tar.gz/4c8be46dbc8d2d319cc6acf058a6aa79c0b78eb1}
     version: 0.0.267
@@ -2712,6 +2731,10 @@ snapshots:
       - supports-color
       - typechain
       - utf-8-validate
+
+  '@rhinestone/flatbytes@https://codeload.github.com/rhinestonewtf/flatbytes/tar.gz/8182dc7353bef886be234c54ae36b1e33d6bf8ee':
+    dependencies:
+      forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/0e7097750918380d84dd3cfdef595bee74dabb70
 
   '@rhinestone/module-bases@https://codeload.github.com/rhinestonewtf/module-bases/tar.gz/1ea072eb328dd4bb1a540a52432ef98562314121(ethers@5.7.2)(hardhat@2.22.15(typescript@4.9.5))(lodash@4.17.21)(typechain@5.2.0(typescript@4.9.5))':
     dependencies:
@@ -4675,6 +4698,8 @@ snapshots:
       js-sha3: 0.8.0
       logplease: 1.2.15
       r1csfile: 0.0.48
+
+  solady@0.0.267: {}
 
   solady@https://codeload.github.com/vectorized/solady/tar.gz/4c8be46dbc8d2d319cc6acf058a6aa79c0b78eb1: {}
 
