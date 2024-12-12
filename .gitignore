@@ -6,12 +6,12 @@ cache/
 out/
 broadcast
 
-# Docs
-docs/
-
 gas_calculations/
 
 # Dotenv file
 .env
+
 node_modules
 
+# My files
+src/lib/semaphore
