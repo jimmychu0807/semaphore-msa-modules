@@ -3,8 +3,10 @@ pragma solidity >=0.8.23 <=0.8.29;
 
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
-import { SentinelList4337Lib, SENTINEL } from "sentinellist/SentinelList4337.sol";
-import { CheckSignatures } from "checknsignatures/CheckNSignatures.sol";
+
+// When you need this lib contract, copy it from @rhinestone and put it in lib/ folders
+// import { SentinelList4337Lib, SENTINEL } from "sentinellist/SentinelList4337.sol";
+// import { CheckSignatures } from "src/utils/CheckSignatures.sol";
 
 import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
@@ -17,33 +19,37 @@ import { console } from "forge-std/console.sol";
 
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     using LibSort for *;
-    using SentinelList4337Lib for SentinelList4337Lib.SentinelList;
+    // using SentinelList4337Lib for SentinelList4337Lib.SentinelList;
 
     // Constants
-    uint8 constant MAX_OWNERS = 32;
+    uint8 constant MAX_MEMBERS = 32;
 
-    // custom errors
-    error NotAdmin();
-    error ModuleAlreadyInstalled();
-    error ModuleNotInstalled();
+    // OwnableValidator errors
+    error CannotRemoveOwner();
+    error InvalidIdCommitment();
+    error InvalidThreshold();
+    error MaxMemberReached();
+    error NotSortedAndUnique();
+    error MemberNotExists(address, uint256);
+    error IsOwnerAlready(address, uint256);
+
+    // Events
+    event ModuleInitialized(address indexed account);
+    event ModuleUninitialized(address indexed account);
+
+    // OwnableValidator events
+    event AddedMember(address indexed, uint256 indexed);
+    event RemovedMember(address indexed, uint256 indexed);
+    event ThresholdSet(address indexed account, uint8 indexed);
 
     /**
      * Storage
      */
     ISemaphore public semaphore;
     ISemaphoreGroups public groups;
-    mapping(address => bool) public inUse;
-    mapping(address => uint256) public gIds;
-
-    SentinelList4337Lib.SentinelList owners;
-    mapping(address account => uint8) public threshold;
-    mapping(address account => uint8) public ownerCount;
-
-    // In the Semaphore contract, the admin for any group is the SemaphoreValidator contract.
-    // We store the actual smart account admin here. There can only be one admin for now.
-    mapping(address => address) public admins;
-
-    // SemaphoreValidator contract has to be the admin of the Semaphore contract
+    mapping(address => uint256) public groupMapping;
+    mapping(address account => uint8) public thresholds;
+    mapping(address account => uint8) public cmtCount;
 
     constructor(ISemaphore _semaphore) {
         semaphore = _semaphore;
@@ -51,63 +57,115 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     }
 
     modifier moduleInstalled() {
-        if (!inUse[msg.sender]) {
-            revert ModuleNotInstalled();
-        }
-        _;
-    }
-
-    modifier moduleNotInstalled() {
-        if (inUse[msg.sender]) {
-            revert ModuleAlreadyInstalled();
-        }
-        _;
-    }
-
-    modifier isAdmin(bytes calldata data) {
-        address user = abi.decode(data, (address));
-        uint256 gId = gIds[msg.sender];
-        address admin = groups.getGroupAdmin(gId);
-        if (user != admin) {
-            revert NotAdmin();
-        }
+        if (thresholds[msg.sender] == 0) revert NotInitialized(msg.sender);
         _;
     }
 
     /**
      * Config
-     *
      */
-    function onInstall(bytes calldata data) external override
-    {
+    function isInitialized(address account) external override view returns (bool) {
+        return thresholds[account] > 0;
+    }
+
+    function onInstall(bytes calldata data) external override {
         // create a new group
         // msg.sender is the smart account that call this contract
         // the address in data is the EOA owner of the smart account
         // you often have to parse the passed in parameters to get the original caller
         // The address of the original caller (the one who sends http request to the bundler) must
         // be passed in from data
-        (address admin, uint256 commitment) = abi.decode(data, (address, uint256));
-        uint256 gId = semaphore.createGroup();
-        inUse[msg.sender] = true;
-        gIds[msg.sender] = gId;
-        admins[msg.sender] = admin;
 
-        // Add the admin commitment in as the first group member.
-        semaphore.addMember(gId, commitment);
+        // Ensure the module isn't installed already for the smart account
+        address account = msg.sender;
+        if (thresholds[account] > 0) revert AlreadyInitialized(account);
+
+        // OwnableValidator
+        (uint8 threshold, uint256[] memory cmts) = abi.decode(data, (uint8, uint256[]));
+
+        // Check all address are valid
+        (bool found,) = cmts.searchSorted(uint256(0));
+        if (found) revert InvalidIdCommitment();
+
+        if (!cmts.isSortedAndUniquified()) revert NotSortedAndUnique();
+
+        // Check the relation between threshold and ownersLen are valid
+        if (cmts.length > MAX_MEMBERS) revert MaxMemberReached();
+
+        uint8 cmtLen = uint8(cmts.length);
+        if (cmtLen == 0 || cmtLen < threshold) revert InvalidThreshold();
+
+        // Completed all checks by this point. Write to the storage.
+        thresholds[account] = threshold;
+        cmtCount[account] = cmtLen;
+
+        uint256 groupId = semaphore.createGroup();
+        groupMapping[account] = groupId;
+
+        // Add members to the group
+        semaphore.addMembers(groupId, cmts);
+
+        emit ModuleInitialized(account);
     }
 
-    function onUninstall(bytes calldata data) external override
-        moduleInstalled
-        isAdmin(data)
+    function onUninstall(bytes calldata) external override
+        moduleInstalled()
     {
         // remove from our data structure
-        delete inUse[msg.sender];
-        delete gIds[msg.sender];
-        delete admins[msg.sender];
+        address account = msg.sender;
+        delete thresholds[account];
+        delete cmtCount[account];
+        delete groupMapping[account];
+
+        emit ModuleUninitialized(account);
     }
 
-    function isInitialized(address smartAccount) external view returns (bool) {
-        return inUse[smartAccount];
+    function setThreshold(uint8 newThreshold) external
+        moduleInstalled()
+    {
+        address account = msg.sender;
+        if (newThreshold == 0 || newThreshold > cmtCount[account]) revert InvalidThreshold();
+
+        thresholds[account] = newThreshold;
+        emit ThresholdSet(account, newThreshold);
+    }
+
+    function addMember(uint256 cmt) external
+        moduleInstalled()
+    {
+        address account = msg.sender;
+        // 0. check the module is initialized for the acct
+        // 1. check newOwner != 0
+        // 2. check ownerCount < MAX_MEMBERS
+        // 3. cehck owner not existed yet
+        if (cmt == uint256(0)) revert InvalidIdCommitment();
+        if (cmtCount[account] == MAX_MEMBERS) revert MaxMemberReached();
+
+        uint256 groupId = groupMapping[account];
+
+        if (groups.hasMember(groupId, cmt)) revert IsOwnerAlready(account, cmt);
+
+        semaphore.addMember(groupId, cmt);
+        cmtCount[account] += 1;
+
+        emit AddedMember(account, cmt);
+    }
+
+    function removeMember(uint256 rmOwner) external
+        moduleInstalled()
+    {
+        address account = msg.sender;
+
+        if (cmtCount[account] == thresholds[account]) revert CannotRemoveOwner();
+        uint256 groupId = groupMapping[account];
+        if (!groups.hasMember(groupId, rmOwner)) revert MemberNotExists(account, rmOwner);
+
+        cmtCount[account] -= 1;
+
+        // TODO: add the 3rd param: merkleProofSiblings
+        semaphore.removeMember(groupId, rmOwner, new uint256[](0));
+
+        emit RemovedMember(account, rmOwner);
     }
 
     /**
@@ -157,24 +215,6 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         return true;
     }
 
-    function addMember(uint256 memberCommitment) external
-        moduleInstalled
-    {
-        // The gId of the smart account
-        uint256 gId = gIds[msg.sender];
-
-        // TODO: perform checking & error handling once this work
-        semaphore.addMember(gId, memberCommitment);
-    }
-
-    function removeMember(uint256 identityCommitment, uint256[] calldata merkleProofSiblings) external
-        moduleInstalled
-    {
-        // The gId of the smart account
-        uint256 gId = gIds[msg.sender];
-        semaphore.removeMember(gId, identityCommitment, merkleProofSiblings);
-    }
-
     /*//////////////////////////////////////////////////////////////////////////
                                    METADATA
     //////////////////////////////////////////////////////////////////////////*/
@@ -185,7 +225,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
      * @return name The name of the module
      */
     function name() external pure returns (string memory) {
-        return "SemaphoreValidator";
+        return "SemaphoreMSAValidator";
     }
 
     /**
@@ -194,7 +234,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
      * @return version The version of the module
      */
     function version() external pure returns (string memory) {
-        return "0.0.1";
+        return "0.1.0";
     }
 
     /**
