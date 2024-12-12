@@ -4,16 +4,11 @@ pragma solidity >=0.8.23 <=0.8.29;
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 
-// When you need this lib contract, copy it from @rhinestone and put it in lib/ folders
-// import { SentinelList4337Lib, SENTINEL } from "sentinellist/SentinelList4337.sol";
-// import { CheckSignatures } from "src/utils/CheckSignatures.sol";
-
 import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
-import { ISemaphore } from "semaphore/interfaces/ISemaphore.sol";
-import { ISemaphoreGroups } from "semaphore/interfaces/ISemaphoreGroups.sol";
+import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
 
 import { console } from "forge-std/console.sol";
 
@@ -209,7 +204,6 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         external
         view
         virtual
-        override
         returns (bool validSig)
     {
         return true;
