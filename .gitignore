@@ -1,3 +1,6 @@
+# mac files
+.DS_Store
+
 # Compiler files
 cache/
 out/
@@ -6,8 +9,9 @@ broadcast
 # Docs
 docs/
 
-gas_calculations/*
+gas_calculations/
 
 # Dotenv file
 .env
 node_modules
+

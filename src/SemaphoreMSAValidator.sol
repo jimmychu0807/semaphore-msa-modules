@@ -6,7 +6,7 @@ import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 
 // When you need this lib contract, copy it from @rhinestone and put it in lib/ folders
 // import { SentinelList4337Lib, SENTINEL } from "sentinellist/SentinelList4337.sol";
-import { CheckSignatures } from "src/utils/CheckSignatures.sol";
+// import { CheckSignatures } from "src/utils/CheckSignatures.sol";
 
 import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
