@@ -3,14 +3,11 @@ pragma solidity >=0.8.23 <=0.8.29;
 
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
-
 import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
 import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
-
-import { console } from "forge-std/console.sol";
 
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     using LibSort for *;
@@ -59,7 +56,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     /**
      * Config
      */
-    function isInitialized(address account) external override view returns (bool) {
+    function isInitialized(address account) external view override returns (bool) {
         return thresholds[account] > 0;
     }
 
@@ -103,9 +100,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         emit ModuleInitialized(account);
     }
 
-    function onUninstall(bytes calldata) external override
-        moduleInstalled()
-    {
+    function onUninstall(bytes calldata) external override moduleInstalled {
         // remove from our data structure
         address account = msg.sender;
         delete thresholds[account];
@@ -115,9 +110,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         emit ModuleUninitialized(account);
     }
 
-    function setThreshold(uint8 newThreshold) external
-        moduleInstalled()
-    {
+    function setThreshold(uint8 newThreshold) external moduleInstalled {
         address account = msg.sender;
         if (newThreshold == 0 || newThreshold > cmtCount[account]) revert InvalidThreshold();
 
@@ -125,9 +118,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         emit ThresholdSet(account, newThreshold);
     }
 
-    function addMember(uint256 cmt) external
-        moduleInstalled()
-    {
+    function addMember(uint256 cmt) external moduleInstalled {
         address account = msg.sender;
         // 0. check the module is initialized for the acct
         // 1. check newOwner != 0
@@ -146,9 +137,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         emit AddedMember(account, cmt);
     }
 
-    function removeMember(uint256 rmOwner) external
-        moduleInstalled()
-    {
+    function removeMember(uint256 rmOwner) external moduleInstalled {
         address account = msg.sender;
 
         if (cmtCount[account] == thresholds[account]) revert CannotRemoveOwner();

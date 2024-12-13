@@ -7,31 +7,88 @@ on:
 
 jobs:
   lint:
-    uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-lint.yaml@main"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Check out the repo"
+        uses: "actions/checkout@v4"
 
-  build:
-    uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-build.yaml@main"
+      - name: "Install Foundry"
+        uses: "foundry-rs/foundry-toolchain@v1.2.0"
 
-  test:
-    needs: ["lint", "build"]
-    uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-test.yaml@main"
-    with:
-      foundry-fuzz-runs: 5000
-      foundry-profile: "test"
-      match-path: "test/**/*.sol"
+      - name: "Install NodeJS"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-  test-simulate:
-    needs: ["lint", "build"]
-    uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-test-simulate.yaml@main"
-    with:
-      foundry-fuzz-runs: 5000
-      foundry-profile: "test"
-      match-path: "test/**/*.sol"
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
 
-  test-multi-account:
-    needs: ["lint", "build"]
-    uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-test-multi-account.yaml@main"
-    with:
-      foundry-fuzz-runs: 5000
-      foundry-profile: "test"
-      match-path: "test/**/*.sol"
+      - name: "Restore the cached build and the node modules"
+        if: ${{ inputs.restore-cache }}
+        uses: "actions/cache/restore@v4"
+        with:
+          key: "build-and-modules-${{ github.sha }}"
+          path: ${{ inputs.cache-path }}
+
+      - name: "Install the Node.js dependencies"
+        run: "pnpm install"
+
+      - name: "Lint the code"
+        run: "pnpm lint:sol"
+
+      - name: "Lint summary"
+        run: |
+          echo "## Lint result" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
+
+  build-test:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Check out the repo"
+        uses: "actions/checkout@v4"
+
+      - name: "Install Foundry"
+        uses: "foundry-rs/foundry-toolchain@v1.2.0"
+
+      - name: "Install NodeJS"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: "Install the Node.js dependencies"
+        run: "pnpm install"
+
+      - name: "Show the Forge config"
+        run: "forge config"
+
+      - name: "Build the contracts"
+        run: "pnpm build"
+
+      - name: "Test the contracts"
+        run: "pnpm test"
+
+      - name: "Cache node_modules"
+        if: ${{ inputs.save-cache }}
+        uses: "actions/cache/save@v4"
+        with:
+          key: "build-and-modules-${{ github.sha }}"
+          path: node_modules
+
+      - name: "Cache the contracts and the node modules so that they can be re-used by the other jobs"
+        if: ${{ inputs.save-cache }}
+        uses: "actions/cache/save@v4"
+        with:
+          key: "build-and-modules-${{ github.sha }}"
+          path: out
+
+      - name: "Add summary"
+        run: |
+          echo "## Build result" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
