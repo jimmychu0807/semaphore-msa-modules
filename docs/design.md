@@ -30,7 +30,6 @@
   - merkleTreeDepth
 
 - Now when reciving a validateUserOp, containing (cmt, group, tx, nonce, proof)
-
   - validate the proof. If the proof is invalid, reject
   - store the hash of (tx + nonce) in the mapping: acct address -> txhash -> 1
   - function interface:
