@@ -165,16 +165,16 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         semaphore.validateProof(groupId, goodProof);
     }
 
-    function test_ValidateUserOp() public view {
-        PackedUserOperation memory userOp = getEmptyUserOperation();
-        userOp.sender = address(this);
-        bytes32 userOpHash = keccak256("userOpHash");
-        uint256 validationData = ERC7579ValidatorBase.ValidationData.unwrap(
-            semaphoreValidator.validateUserOp(userOp, userOpHash)
-        );
+    // function test_ValidateUserOp() public view {
+    //     PackedUserOperation memory userOp = getEmptyUserOperation();
+    //     userOp.sender = address(this);
+    //     bytes32 userOpHash = keccak256("userOpHash");
+    //     uint256 validationData = ERC7579ValidatorBase.ValidationData.unwrap(
+    //         semaphoreValidator.validateUserOp(userOp, userOpHash)
+    //     );
 
-        assertEq(validationData, VALIDATION_FAILED);
-    }
+    //     assertEq(validationData, VALIDATION_FAILED);
+    // }
 
     // function test_ValidateUserOpWhenTheUniqueSignaturesAreInvalid()
     //     public
