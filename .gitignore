@@ -14,4 +14,4 @@ gas_calculations/
 node_modules
 
 # My files
-src/lib/semaphore
+src/utils/semaphore-contracts

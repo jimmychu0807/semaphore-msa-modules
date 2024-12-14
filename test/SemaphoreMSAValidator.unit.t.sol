@@ -22,6 +22,10 @@ import {
 import { SemaphoreMSAValidator, ERC7579ValidatorBase } from "../src/SemaphoreMSAValidator.sol";
 
 import { IERC7579Module, IERC7579Validator } from "modulekit/Modules.sol";
+import {
+    VALIDATION_SUCCESS,
+    VALIDATION_FAILED
+} from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 import { getEmptyUserOperation } from "./utils/ModuleKit.sol";
 import { signHash } from "./utils/Signature.sol";
@@ -161,7 +165,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         semaphore.validateProof(groupId, goodProof);
     }
 
-    // function test_ValidateUserOpWhenThresholdIsNotSet() public view {
+    // function test_ValidateUserOp() public view {
     //     PackedUserOperation memory userOp = getEmptyUserOperation();
     //     userOp.sender = address(this);
     //     bytes32 userOpHash = keccak256("userOpHash");
@@ -169,7 +173,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
     //         semaphoreValidator.validateUserOp(userOp, userOpHash)
     //     );
 
-    //     assertEq(validationData, IERC7579Validator.VALIDATION_FAILED);
+    //     assertEq(validationData, VALIDATION_FAILED);
     // }
 
     // function test_ValidateUserOpWhenTheUniqueSignaturesAreInvalid()
