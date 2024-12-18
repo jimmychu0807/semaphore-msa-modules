@@ -12,11 +12,23 @@ import { LibSort } from "solady/utils/LibSort.sol";
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
 import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
+import { Identity } from "./utils/Identity.sol";
 
 // Ensure the following match with the 3 function calls.
-bytes4 constant INITIATE_TX_SEL = abi.encodeWithSignature("initiateTx(bytes,ISemaphore.SemaphoreProof,bool)");
-bytes4 constant SIGN_TX_SEL = abi.encodeWithSignature("signTx(bytes32,ISemaphore.SemaphoreProof,bool)");
-bytes4 constant EXECUTE_TX_SEL = abi.encodeWithSignature("executeTx(bytes32)");
+bytes4 constant INITIATE_TX_SEL = bytes4(abi.encodeCall(
+    SemaphoreMSAValidator.initiateTx,
+    ('', ISemaphore.SemaphoreProof(0,0,0,0,0,[uint256(0),0,0,0,0,0,0,0]), false)
+));
+
+bytes4 constant SIGN_TX_SEL = bytes4(abi.encodeCall(
+    SemaphoreMSAValidator.signTx,
+    ('', ISemaphore.SemaphoreProof(0,0,0,0,0,[uint256(0),0,0,0,0,0,0,0]), false)
+));
+
+bytes4 constant EXECUTE_TX_SEL = bytes4(abi.encodeCall(
+    SemaphoreMSAValidator.executeTx,
+    ('')
+));
 
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     using LibSort for *;
@@ -185,8 +197,8 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         emit RemovedMember(account, rmOwner);
     }
 
-    function getNextSeqNum(uint256 groupId) external returns (uint256) {
-        return acctSeqNum[groupId];
+    function getNextSeqNum(address account) external returns (uint256) {
+        return acctSeqNum[account];
     }
 
     function initiateTx(
@@ -220,15 +232,13 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         // By this point, the proof also passed semaphore check.
         // Start writing to the storage
         acctSeqNum[account] += 1;
-        cdc = CallDataCount {
-            callData: callData,
-            sigCount: 1
-        };
+        cdc.callData = callData;
+        cdc.sigCount = 1;
 
         emit InitiatedTx(account, txHash);
 
         // execute the transaction if condition allows
-        if (execute && cdc >= thresholds[account]) executeTx(txHash);
+        if (execute && cdc.sigCount >= thresholds[account]) executeTx(txHash);
     }
 
     function signTx(
@@ -296,9 +306,9 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         uint256 groupId = groupMapping[account];
 
         if (userOp.signature.length < 64) revert InvalidSignatureLen(account, userOp.signature.length);
-        (bytes32 pubKeyX, bytes32 pubKeyY, bytes signature) = abi.decode(
+        (uint256 pubKeyX, uint256 pubKeyY, bytes memory signature) = abi.decode(
             userOp.signature,
-            (bytes32, bytes32, bytes)
+            (uint256, uint256, bytes)
         );
 
         bytes memory pubKey = abi.encode(pubKeyX, pubKeyY);
@@ -309,7 +319,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         if (!matchSig) revert UnmatchedSignature(account, pubKey, userOp.callData, signature);
 
         // TODO: extract the selector from userOp.callData()
-        (bytes4 funcSel, bytes params) = abi.decode(userOp.callData, (bytes4, bytes));
+        (bytes4 funcSel) = abi.decode(userOp.callData, (bytes4));
 
         // Allow only these three types on function calls to pass, and reject all other on-chain
         //   calls. They must be executed via `executeTx()` function.
