@@ -2,6 +2,10 @@
 pragma solidity >=0.8.23 <=0.8.29;
 
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
+import {
+    VALIDATION_SUCCESS,
+    VALIDATION_FAILED
+} from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
@@ -9,11 +13,21 @@ import { ECDSA } from "solady/utils/ECDSA.sol";
 
 import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
 
+// Ensure the following match with the 3 function calls.
+bytes4 constant INITIATE_TX_SEL = abi.encodeWithSignature("initiateTx(bytes,ISemaphore.SemaphoreProof,bool)");
+bytes4 constant SIGN_TX_SEL = abi.encodeWithSignature("signTx(bytes32,ISemaphore.SemaphoreProof,bool)");
+bytes4 constant EXECUTE_TX_SEL = abi.encodeWithSignature("executeTx(bytes32)");
+
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     using LibSort for *;
 
     // Constants
     uint8 constant MAX_MEMBERS = 32;
+
+    struct CallDataCount {
+        bytes callData;
+        uint8 sigCount;
+    }
 
     // Errors
     error CannotRemoveOwner();
@@ -26,6 +40,9 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     error TxHasBeenInitiated(address account, bytes32 txHash);
     error TxNotExist(address account, bytes32 txHash);
     error ThresholdNotReach(address account, uint8 threshold, uint8 current);
+    error TxAndProofDontMatch(address account, bytes32 txHash);
+    error InvalidSignatureLen(address account, uint256 sigLen);
+    error UnmatchedSignature(address account, bytes pubKey, bytes callData, bytes signature);
 
     // Events
     event ModuleInitialized(address indexed account);
@@ -49,7 +66,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     mapping(address account => uint8 count) public memberCount;
 
     // smart account -> hash(call(params)) -> valid proof count
-    mapping(address account => mapping(bytes32 txHash => uint8 count)) public acctTxCount;
+    mapping(address account => mapping(bytes32 txHash => CallDataCount callDataCount)) public acctTxCount;
 
     // keep track of seqNum of txs that require threshold signature
     mapping(address account => uint256 seqNum) public acctSeqNum;
@@ -168,8 +185,12 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         emit RemovedMember(account, rmOwner);
     }
 
+    function getNextSeqNum(uint256 groupId) external returns (uint256) {
+        return acctSeqNum[groupId];
+    }
+
     function initiateTx(
-        bytes calldata txParams,
+        bytes calldata callData,
         ISemaphore.SemaphoreProof calldata proof,
         bool execute
     )
@@ -181,26 +202,33 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         address account = msg.sender;
         uint256 groupId = groupMapping[account];
 
-        // TODO: validate txParams are a valid tx call with propoer parameters. How?
-
         // By this point, txParams should be validated.
         // combine the txParams with the account nonce and compute its hash
         uint256 seq = acctSeqNum[account];
-        txHash = keccak256(abi.encode(txParams, seq));
+        txHash = keccak256(abi.encode(callData, seq));
 
-        if (acctTxCount[account][txHash] != 0) revert TxHasBeenInitiated(account, txHash);
+        // Check: validate the proof is related to the callData
+        if (groupId != proof.scope || uint256(txHash) != proof.message)
+            revert TxAndProofDontMatch(account, txHash);
 
+        CallDataCount storage cdc = acctTxCount[account][txHash];
+        if (cdc.sigCount != 0) revert TxHasBeenInitiated(account, txHash);
+
+        // the callData and proof should have some kind of inherent relationship
         semaphore.validateProof(groupId, proof);
 
         // By this point, the proof also passed semaphore check.
         // Start writing to the storage
         acctSeqNum[account] += 1;
-        acctTxCount[account][txHash] = 1;
+        cdc = CallDataCount {
+            callData: callData,
+            sigCount: 1
+        };
 
         emit InitiatedTx(account, txHash);
 
         // execute the transaction if condition allows
-        if (execute && acctTxCount[account][txHash] >= thresholds[account]) executeTx(txHash);
+        if (execute && cdc >= thresholds[account]) executeTx(txHash);
     }
 
     function signTx(
@@ -215,35 +243,37 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         address account = msg.sender;
         uint256 groupId = groupMapping[account];
 
+        if (proof.scope != groupId) revert TxAndProofDontMatch(account, txHash);
+
         // Check if the txHash exist
-        if (acctTxCount[account][txHash] == 0) revert TxNotExist(account, txHash);
+        CallDataCount storage cdc = acctTxCount[account][txHash];
+        if (cdc.sigCount == 0) revert TxNotExist(account, txHash);
 
         semaphore.validateProof(groupId, proof);
 
-        acctTxCount[account][txHash] += 1;
-
+        cdc.sigCount += 1;
         emit SignedTx(account, txHash);
 
         // execute the transaction if condition allows
-        if (execute && acctTxCount[account][txHash] >= thresholds[account]) executeTx(txHash);
+        if (execute && cdc.sigCount >= thresholds[account]) executeTx(txHash);
     }
 
     function executeTx(bytes32 txHash) public moduleInstalled {
-        // retrieve the group ID
-        address account = msg.sender;
-        uint256 groupId = groupMapping[account];
+        // // retrieve the group ID
+        // address account = msg.sender;
+        // uint256 groupId = groupMapping[account];
+        // uint8 threshold = thresholds[account];
+        // CallDataCount cdc = acctTxCount[account][txHash];
 
-        uint8 threshold = thresholds[account];
-        uint8 current = acctTxCount[account][txHash];
+        // if (cdc.sigCount == 0) revert InvalidTxHash(txHash);
+        // if (cdc.sigCount < threshold) revert ThresholdNotReach(account, threshold, cdc.sigCount);
 
-        if (current < threshold) revert ThresholdNotReach(account, threshold, current);
+        // // TODO: make the actual contract call here
 
-        // TODO: make the actual contract call here
+        // emit ExecutedTx(account, txHash);
 
-        emit ExecutedTx(account, txHash);
-
-        // Clean up the storage
-        delete acctTxCount[account][txHash];
+        // // Clean up the storage
+        // delete acctTxCount[account][txHash];
     }
 
     /**
@@ -262,10 +292,35 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         // you want to exclude initiateTx, signTx, executeTx from needing tx count.
         // you just need to ensure they are a valid proof from the semaphore group members
 
-        bool sigFailed = false;
-        (uint256 sender, bytes memory _signature) = abi.decode(userOp.signature, (uint256, bytes));
+        address account = msg.sender;
+        uint256 groupId = groupMapping[account];
 
-        return _packValidationData(!sigFailed, type(uint48).max, 0);
+        if (userOp.signature.length < 64) revert InvalidSignatureLen(account, userOp.signature.length);
+        (bytes32 pubKeyX, bytes32 pubKeyY, bytes signature) = abi.decode(
+            userOp.signature,
+            (bytes32, bytes32, bytes)
+        );
+
+        bytes memory pubKey = abi.encode(pubKeyX, pubKeyY);
+        uint256 cmt = Identity.generateCommitment(pubKey);
+        if (!groups.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
+
+        bool matchSig = Identity.verifySignature(pubKey, userOp.callData, signature);
+        if (!matchSig) revert UnmatchedSignature(account, pubKey, userOp.callData, signature);
+
+        // TODO: extract the selector from userOp.callData()
+        (bytes4 funcSel, bytes params) = abi.decode(userOp.callData, (bytes4, bytes));
+
+        // Allow only these three types on function calls to pass, and reject all other on-chain
+        //   calls. They must be executed via `executeTx()` function.
+        if ((funcSel == INITIATE_TX_SEL) ||
+            (funcSel == SIGN_TX_SEL) ||
+            (funcSel == EXECUTE_TX_SEL)
+        ) {
+            return VALIDATION_SUCCESS;
+        }
+
+        return VALIDATION_FAILED;
     }
 
     function isValidSignatureWithSender(
