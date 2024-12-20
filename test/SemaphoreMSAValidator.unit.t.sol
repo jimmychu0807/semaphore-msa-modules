@@ -27,9 +27,7 @@ import {
     VALIDATION_FAILED
 } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
-import { getEmptyUserOperation } from "./utils/ModuleKit.sol";
-import { signHash } from "./utils/Signature.sol";
-
+import { getEmptyUserOperation, getEmptySemaphoreProof, Identity, IdentityLib } from "./utils/TestUtils.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 
 bytes4 constant EIP1271_MAGIC_VALUE = 0x1626ba7e;
@@ -37,6 +35,7 @@ bytes4 constant EIP1271_MAGIC_VALUE = 0x1626ba7e;
 contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
     using ModuleKitHelpers for *;
     using LibSort for *;
+    using IdentityLib for Identity;
 
     AccountInstance internal smartAcct;
     SemaphoreMSAValidator internal semaphoreValidator;
@@ -165,79 +164,25 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         semaphore.validateProof(groupId, goodProof);
     }
 
-    // function test_ValidateUserOp() public view {
-    //     PackedUserOperation memory userOp = getEmptyUserOperation();
-    //     userOp.sender = address(this);
-    //     bytes32 userOpHash = keccak256("userOpHash");
-    //     uint256 validationData = ERC7579ValidatorBase.ValidationData.unwrap(
-    //         semaphoreValidator.validateUserOp(userOp, userOpHash)
-    //     );
+    function test_ValidateUserOpWithProperParams() public view {
+        PackedUserOperation memory userOp = getEmptyUserOperation();
+        userOp.sender = address(this);
+        userOp.callData = abi.encodeCall(
+            SemaphoreMSAValidator.initiateTx,
+            ('', getEmptySemaphoreProof(), false)
+        );
 
-    //     assertEq(validationData, VALIDATION_FAILED);
-    // }
+        bytes32 userOpHash = bytes32(keccak256("userOpHash"));
+        Identity id = IdentityLib.genIdentity(1);
 
-    // function test_ValidateUserOpWhenTheUniqueSignaturesAreInvalid()
-    //     public
-    //     whenThresholdIsSet
-    // {
-    //     PackedUserOperation memory userOp = getEmptyUserOperation();
-    //     userOp.sender = address(this);
+        (uint256 pubX, uint256 pubY) = id.publicKey();
+        // TODO: probably need to use assembly to make this byte series compact.
+        userOp.signature = abi.encode(pubX, pubY, id.signHash(userOpHash));
 
-    //     bytes32 userOpHash = keccak256("userOpHash");
-    //     bytes memory sign1 = signHash(uint256(1), userOpHash);
-    //     bytes memory sign2 = signHash($ownerSks[1], userOpHash);
-    //     userOp.signature = abi.encodePacked(sign1, sign2);
+        uint256 validationData = ERC7579ValidatorBase.ValidationData.unwrap(
+            semaphoreValidator.validateUserOp(userOp, userOpHash)
+        );
 
-    //     ERC7579ValidatorBase.ValidationData res = semaphoreValidator.validateUserOp(userOp,
-    // userOpHash);
-    //     assertEq(ERC7579ValidatorBase.ValidationData.unwrap(res),
-    // IERC7579Validator.VALIDATION_FAILED);
-    // }
-
-    // function test_ValidateUserOpWhenTheSignaturesAreValid()
-    //     public
-    //     whenThresholdIsSet
-    // {
-    //     PackedUserOperation memory userOp = getEmptyUserOperation();
-    //     userOp.sender = address(this);
-
-    //     bytes32 userOpHash = keccak256("userOpHash");
-    //     bytes memory sign1 = signHash($ownerSks[0], userOpHash);
-    //     bytes memory sign2 = signHash($ownerSks[1], userOpHash);
-    //     userOp.signature = abi.encodePacked(sign1, sign2);
-
-    //     ERC7579ValidatorBase.ValidationData res = semaphoreValidator.validateUserOp(userOp,
-    // userOpHash);
-    //     // assertEq(ERC7579ValidatorBase.ValidationData.unwrap(VALIDATION_SUCCESS);
-
-    // }
-
-    // function test_IsValidSignatureWithSenderWhenTheUniqueSignaturesAreGreaterThanThreshold()
-    //     public
-    //     whenThresholdIsSet
-    // {
-    //     address sender = address(1);
-    //     bytes32 userOpHash = keccak256("userOpHash");
-    //     bytes memory sign1 = signHash($ownerSks[0], userOpHash);
-    //     bytes memory sign2 = signHash($ownerSks[1], userOpHash);
-    //     bytes memory data = abi.encodePacked(sign1, sign2);
-
-    //     bytes4 result = semaphoreValidator.isValidSignatureWithSender(sender, userOpHash, data);
-    //     assertEq(result, EIP1271_MAGIC_VALUE);
-    // }
-
-    // function test_ValidateSignatureWithDataWhenTheUniqueSignaturesAreGreaterThanThreshold()
-    //     public
-    //     whenThresholdIsSet
-    // {
-    //     bytes32 userOpHash = keccak256("userOpHash");
-
-    //     bytes memory sign1 = signHash($ownerSks[0], userOpHash);
-    //     bytes memory sign2 = signHash($ownerSks[1], userOpHash);
-    //     bytes memory signature = abi.encodePacked(sign1, sign2);
-    //     bytes memory data = abi.encode($threshold, $owners);
-
-    //     bool result = semaphoreValidator.validateSignatureWithData(userOpHash, signature, data);
-    //     assertTrue(result);
-    // }
+        assertEq(validationData, VALIDATION_SUCCESS);
+    }
 }

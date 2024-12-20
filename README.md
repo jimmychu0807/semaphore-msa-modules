@@ -1,5 +1,7 @@
 ## Semaphore Modular Smart Contract (MSA) Validator Module
 
+[Development Notes](./docs/development.md)
+
 The module aims to adhere with **ERC-7579** standard ([introduction](https://erc7579.com/), [eip](https://eips.ethereum.org/EIPS/eip-7579)) and is forked from [rhinestonewtf/module-template](https://github.com/rhinestonewtf/module-template).
 
 ## Using the template
@@ -41,9 +43,3 @@ source .env && forge verify-contract --chain-id [YOUR_CHAIN_ID] --watch --ethers
 ## Contributing
 
 For feature or change requests, feel free to open a PR, start a discussion or get in touch with us.
-
-## MSA Validator Module Development Notes
-
-- Need to implement `Identity.verifySignature()` contract function. Check if there is any open source project that have implemented that.
-
-- How to handle **msg.value** in validateUserOp when it is a token transfer?
