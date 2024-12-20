@@ -31,7 +31,7 @@ function getEmptySemaphoreProof() pure returns (ISemaphore.SemaphoreProof memory
         nullifier: 0,
         message: 0,
         scope: 0,
-        points: [uint256(0),0,0,0,0,0,0,0]
+        points: [uint256(0), 0, 0, 0, 0, 0, 0, 0]
     });
 }
 
@@ -42,12 +42,19 @@ library IdentityLib {
         return Identity.wrap(keccak256(abi.encodePacked(seed, address(this))));
     }
 
-    function publicKey(Identity self) public pure returns(uint256 pubX, uint256 pubY) {
+    function publicKey(Identity self) public pure returns (uint256 pubX, uint256 pubY) {
         pubX = 0;
         pubY = 0;
     }
 
-    function signHash(Identity self, bytes32 hash) public pure returns (bytes[96] memory signature) {
+    function signHash(
+        Identity self,
+        bytes32 hash
+    )
+        public
+        pure
+        returns (bytes[96] memory signature)
+    {
         // TODO: implement Eddsa poseidon signature. This part:
         // https://github.com/privacy-scaling-explorations/zk-kit/blob/main/packages/eddsa-poseidon/src/eddsa-poseidon-factory.ts#L93-L118
     }

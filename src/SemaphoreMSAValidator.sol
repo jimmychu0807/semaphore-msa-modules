@@ -15,20 +15,21 @@ import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
 import { Identity } from "./utils/Identity.sol";
 
 // Ensure the following match with the 3 function calls.
-bytes4 constant INITIATE_TX_SEL = bytes4(abi.encodeCall(
-    SemaphoreMSAValidator.initiateTx,
-    ('', ISemaphore.SemaphoreProof(0,0,0,0,0,[uint256(0),0,0,0,0,0,0,0]), false)
-));
+bytes4 constant INITIATE_TX_SEL = bytes4(
+    abi.encodeCall(
+        SemaphoreMSAValidator.initiateTx,
+        ("", ISemaphore.SemaphoreProof(0, 0, 0, 0, 0, [uint256(0), 0, 0, 0, 0, 0, 0, 0]), false)
+    )
+);
 
-bytes4 constant SIGN_TX_SEL = bytes4(abi.encodeCall(
-    SemaphoreMSAValidator.signTx,
-    ('', ISemaphore.SemaphoreProof(0,0,0,0,0,[uint256(0),0,0,0,0,0,0,0]), false)
-));
+bytes4 constant SIGN_TX_SEL = bytes4(
+    abi.encodeCall(
+        SemaphoreMSAValidator.signTx,
+        ("", ISemaphore.SemaphoreProof(0, 0, 0, 0, 0, [uint256(0), 0, 0, 0, 0, 0, 0, 0]), false)
+    )
+);
 
-bytes4 constant EXECUTE_TX_SEL = bytes4(abi.encodeCall(
-    SemaphoreMSAValidator.executeTx,
-    ('')
-));
+bytes4 constant EXECUTE_TX_SEL = bytes4(abi.encodeCall(SemaphoreMSAValidator.executeTx, ("")));
 
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     using LibSort for *;
@@ -75,7 +76,8 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     mapping(address account => uint8 threshold) public thresholds;
 
     // smart account -> hash(call(params)) -> valid proof count
-    mapping(address account => mapping(bytes32 txHash => CallDataCount callDataCount)) public acctTxCount;
+    mapping(address account => mapping(bytes32 txHash => CallDataCount callDataCount)) public
+        acctTxCount;
 
     // keep track of seqNum of txs that require threshold signature
     mapping(address account => uint256 seqNum) public acctSeqNum;
@@ -190,7 +192,8 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         uint256 groupId = groupMapping[account];
         if (!groups.hasMember(groupId, rmOwner)) revert MemberNotExists(account, rmOwner);
 
-        //TODO: add the 3rd param: merkleProofSiblings. Now I set it to 0 to make it passes the compiler
+        //TODO: add the 3rd param: merkleProofSiblings. Now I set it to 0 to make it passes the
+        // compiler
         semaphore.removeMember(groupId, rmOwner, new uint256[](0));
 
         emit RemovedMember(account, rmOwner);
@@ -219,8 +222,9 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         txHash = keccak256(abi.encode(callData, seq));
 
         // Check: validate the proof is related to the callData
-        if (groupId != proof.scope || uint256(txHash) != proof.message)
+        if (groupId != proof.scope || uint256(txHash) != proof.message) {
             revert TxAndProofDontMatch(account, txHash);
+        }
 
         CallDataCount storage cdc = acctTxCount[account][txHash];
         if (cdc.sigCount != 0) revert TxHasBeenInitiated(account, txHash);
@@ -308,12 +312,12 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
 
         // The userOp.signature is 160 bytes containing:
         //   (uint256 pubX (32 bytes), uint256 pubY (32 bytes), bytes[96] signature (96 bytes))
-        if (userOp.signature.length != 160) revert InvalidSignatureLen(account, userOp.signature.length);
+        if (userOp.signature.length != 160) {
+            revert InvalidSignatureLen(account, userOp.signature.length);
+        }
 
-        (uint256 pubKeyX, uint256 pubKeyY, bytes[96] memory signature) = abi.decode(
-            userOp.signature,
-            (uint256, uint256, bytes[96])
-        );
+        (uint256 pubKeyX, uint256 pubKeyY, bytes[96] memory signature) =
+            abi.decode(userOp.signature, (uint256, uint256, bytes[96]));
 
         // Verify signature using the public key
         bytes memory pubKey = abi.encode(pubKeyX, pubKeyY);
@@ -329,10 +333,8 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
 
         // Allow only these three types on function calls to pass, and reject all other on-chain
         //   calls. They must be executed via `executeTx()` function.
-        if ((funcSel == INITIATE_TX_SEL) ||
-            (funcSel == SIGN_TX_SEL) ||
-            (funcSel == EXECUTE_TX_SEL)
-        ) {
+        if ((funcSel == INITIATE_TX_SEL) || (funcSel == SIGN_TX_SEL) || (funcSel == EXECUTE_TX_SEL))
+        {
             return VALIDATION_SUCCESS;
         }
 

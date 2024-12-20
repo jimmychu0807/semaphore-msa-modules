@@ -14,8 +14,12 @@ library Identity {
     function verifySignature(
         bytes memory pubKey,
         bytes32 callData,
-        bytes[96] memory signature)
-    public pure returns (bool) {
+        bytes[96] memory signature
+    )
+        public
+        pure
+        returns (bool)
+    {
         // TODO: implement eddsa-poseidon verifySignature() method in solidity. This part:
         // https://github.com/privacy-scaling-explorations/zk-kit/blob/main/packages/eddsa-poseidon/src/eddsa-poseidon-factory.ts#L127-L158
         // Check if there is existing src to build on:

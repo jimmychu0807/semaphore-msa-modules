@@ -27,7 +27,12 @@ import {
     VALIDATION_FAILED
 } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
-import { getEmptyUserOperation, getEmptySemaphoreProof, Identity, IdentityLib } from "./utils/TestUtils.sol";
+import {
+    getEmptyUserOperation,
+    getEmptySemaphoreProof,
+    Identity,
+    IdentityLib
+} from "./utils/TestUtils.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 
 bytes4 constant EIP1271_MAGIC_VALUE = 0x1626ba7e;
@@ -167,10 +172,8 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
     function test_ValidateUserOpWithProperParams() public view {
         PackedUserOperation memory userOp = getEmptyUserOperation();
         userOp.sender = address(this);
-        userOp.callData = abi.encodeCall(
-            SemaphoreMSAValidator.initiateTx,
-            ('', getEmptySemaphoreProof(), false)
-        );
+        userOp.callData =
+            abi.encodeCall(SemaphoreMSAValidator.initiateTx, ("", getEmptySemaphoreProof(), false));
 
         bytes32 userOpHash = bytes32(keccak256("userOpHash"));
         Identity id = IdentityLib.genIdentity(1);
