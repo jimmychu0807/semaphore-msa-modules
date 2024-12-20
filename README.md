@@ -1,37 +1,23 @@
-## Module Template
+## Semaphore Modular Smart Contract (MSA) Validator Module
 
-**A template for building smart account modules using the [ModuleKit](https://github.com/rhinestonewtf/modulekit)**
+The module aims to adhere with **ERC-7579** standard ([introduction](https://erc7579.com/), [eip](https://eips.ethereum.org/EIPS/eip-7579)) and is forked from [rhinestonewtf/module-template](https://github.com/rhinestonewtf/module-template).
 
 ## Using the template
 
-### Install dependencies
-
-```shell
-pnpm install
-```
-
-### Update ModuleKit
-
-```shell
-pnpm update rhinestonewtf/modulekit
-```
-
 ### Building modules
 
-1. Create a new file in `src` and inherit from the appropriate interface (see templates)
-2. After you finished writing your module, run the following command:
-
 ```shell
-forge build
-```
+# Install dependencies
+pnpm install
 
-### Testing modules
+# Update ModuleKit
+pnpm update rhinestonewtf/modulekit
 
-1. Create a new `.t.sol` file in `test` and inherit from the correct testing kit (see templates)
-2. After you finished writing your tests, run the following command:
+# Build
+pnpm build
 
-```shell
-forge test
+# Test
+pnpm test
 ```
 
 ### Deploying modules
@@ -52,34 +38,12 @@ If the verification fails, you can manually verify it on Etherscan using the fol
 source .env && forge verify-contract --chain-id [YOUR_CHAIN_ID] --watch --etherscan-api-key $ETHERSCAN_API_KEY [YOUR_MODULE_ADDRESS] src/[PATH_TO_MODULE].sol:[MODULE_CONTRACT_NAME]
 ```
 
-## Tutorials
-
-For general explainers and guided walkthroughs of building a module, check out our [documentation](https://docs.rhinestone.wtf/modulekit).
-
-## Using this repo
-
-To install the dependencies, run:
-
-```bash
-pnpm install
-```
-
-To build the project, run:
-
-```bash
-forge build
-```
-
-To run the tests, run:
-
-```bash
-forge test
-```
-
-## Development Notes
-
-- Within the validator contract context, the msg.sender is either the **smart account** contract, or the bundler. It is never the EOA that own ther smart acct, the original intender of the smart account.
-
 ## Contributing
 
 For feature or change requests, feel free to open a PR, start a discussion or get in touch with us.
+
+## MSA Validator Module Development Notes
+
+- Need to implement `Identity.verifySignature()` contract function. Check if there is any open source project that have implemented that.
+
+- How to handle **msg.value** in validateUserOp when it is a token transfer?
