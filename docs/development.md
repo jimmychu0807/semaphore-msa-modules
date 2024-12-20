@@ -1,3 +1,5 @@
+## Semaphore
+
 - On semaphore this is how it generate a proof
   `await generateProof(identity, group, message, group.root, merkleTreeDepth)`
 
@@ -18,6 +20,13 @@
       proof.points
     );
   ```
+
+## ERC-4337 Lifecycle
+
+![ERC-4337 Lifecycle](./assets/4337-lifecycle.svg)
+
+- ERC-4337: [introduction](https://www.erc4337.io/), [eip](https://eips.ethereum.org/EIPS/eip-4337)
+- ERC-7579: [introduction](https://erc7579.com/), [eip](https://eips.ethereum.org/EIPS/eip-7579)
 
 ## Tasks
 
@@ -54,3 +63,9 @@
 
 - add a signature to a tx and execute:
   - function interface: TODO
+
+## TODO & Questions
+
+- Need to implement `Identity.verifySignature()` contract function. Check if there is any open source project that have implemented that.
+
+- How to handle **msg.value** in validateUserOp when it is a token transfer?

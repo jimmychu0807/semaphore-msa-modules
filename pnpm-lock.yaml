@@ -12,16 +12,16 @@ importers:
         specifier: ~0.5.1
         version: 0.5.1(ethers@5.7.2)(hardhat@2.22.17(typescript@4.9.5))(lodash@4.17.21)(typechain@5.2.0(typescript@4.9.5))(typescript@4.9.5)
       '@semaphore-protocol/contracts':
-        specifier: ~4.7.2
-        version: 4.7.2
+        specifier: ^4.8.0
+        version: 4.8.0
       '@semaphore-protocol/core':
-        specifier: ~4.7.2
-        version: 4.7.2
+        specifier: ^4.8.0
+        version: 4.8.0
+      poseidon-solidity:
+        specifier: github:chancehudson/poseidon-solidity#main
+        version: https://codeload.github.com/chancehudson/poseidon-solidity/tar.gz/8205c97ec4a35a9adb854b70b2c9ba92668d1304
 
 packages:
-
-  '@adraffy/ens-normalize@1.10.0':
-    resolution: {integrity: sha512-nA9XHtlAkYfJxY7bce8DcN7eKxWWCWkU+1GR9d+U6MbNpfwQp8TI7vqOsBsMcHoT4mBu2kypKoSKnghEzOOq5Q==}
 
   '@adraffy/ens-normalize@1.10.1':
     resolution: {integrity: sha512-96Z2IP3mYmF1Xg2cDm8f1gWGf/HUVedQ3FMifV4kG/PQ4yEP51xDtRAEfhVNt5f/uzpNkZHwWQuUcu6D6K+Ekw==}
@@ -337,26 +337,26 @@ packages:
   '@scure/bip39@1.3.0':
     resolution: {integrity: sha512-disdg7gHuTDZtY+ZdkmLpPCk7fxZSu3gBiEGuoC1XYxv9cGx3Z6cpTggCgW6odSOOIXCiDjuGejW+aJKCY/pIQ==}
 
-  '@semaphore-protocol/contracts@4.7.2':
-    resolution: {integrity: sha512-a4GxVKJRJaup421fn4mlcfUC/e0hlICkHcLG9z9v5d+M0VPyF+xfg1cUBJ82l4SbXTfPFkovdtrNAZUUlVaLVQ==}
+  '@semaphore-protocol/contracts@4.8.0':
+    resolution: {integrity: sha512-ovcrgDqASoUofAP4o6fqADu1hj6HEZbukLL1HLlMShHmExprWVcX2G0A58QRbqW++Cwc9kHs+MvsGsMHN234mQ==}
 
-  '@semaphore-protocol/core@4.7.2':
-    resolution: {integrity: sha512-bWec8FK/Z94gYqIj0Elmcizbz9VTfKGG7EHkloi3dXPcAsdcjXO0eRPWru2lpC7XhebpUb6k4Kcq+eWYbJvpLQ==}
+  '@semaphore-protocol/core@4.8.0':
+    resolution: {integrity: sha512-c/LgOF9MmQmZub0FHYdFjFVfknh50sYAugJ4KLlXtMEHVmT51N9NnRdqMOA2a6BYB28pqV3dCgHbR8AHDlaGxQ==}
 
-  '@semaphore-protocol/group@4.7.2':
-    resolution: {integrity: sha512-J5dRhAabh1PlsI2w7HyKGOqpwCyXCAYS0jVAvkP6EGbbTsIaTXny9swQU2SmVtowlI71nzBCcH9IPAgt7huoGQ==}
+  '@semaphore-protocol/group@4.8.0':
+    resolution: {integrity: sha512-A4wxmbNwasFY8oOpi6BAwOTvdQ7amn9WHJDD8gyjFLEVYqh29GScDgCfG0DZObfNFo9r6RjP9Ghwre5k6xBGRg==}
 
-  '@semaphore-protocol/identity@4.7.2':
-    resolution: {integrity: sha512-chNxrmlhTQ2peJTYnN4UaFFBYefmo0PUSeo0Wa8GcKC+CfG+uAlPlgZyOU/Pz4sV35UnfRfgqEvcq6tnaN5uFw==}
+  '@semaphore-protocol/identity@4.8.0':
+    resolution: {integrity: sha512-E/e/ep2Md4GwevdeBNK7L2mFmdfT7GiCza94ZDNDF3JpbRzVsqaM1Uw8yg6k31Z1WU37ruUeLbfRPwIfO4hhng==}
 
-  '@semaphore-protocol/proof@4.7.2':
-    resolution: {integrity: sha512-a/7Ad53QS9Z9lHkGrVtK7EHrqglzGXi1kaBn8XE4qCxiYR2CsoLr1tZW2s1UwYCobHFZn5HnNMKTEhR0fTHIew==}
+  '@semaphore-protocol/proof@4.8.0':
+    resolution: {integrity: sha512-LEDNDKk0ipXwT2VJoahMKsA1Y8Dr7EYvP/x7CY3OTmxZhEKLcr653XjUhar+hYXHT+JCAFD5GRnWYDgOB9BQHA==}
     peerDependencies:
-      '@semaphore-protocol/group': 4.7.2
-      '@semaphore-protocol/identity': 4.7.2
+      '@semaphore-protocol/group': 4.8.0
+      '@semaphore-protocol/identity': 4.8.0
 
-  '@semaphore-protocol/utils@4.7.2':
-    resolution: {integrity: sha512-S7t5aU2qCsyXC3vlDdDEC71RO/udEeTOrD0Sp5FqISvccA89LFkVNZuttVZar8uyKEs+E3FyAhcQs9YlzNoPhQ==}
+  '@semaphore-protocol/utils@4.8.0':
+    resolution: {integrity: sha512-049etavRdV/HLnin6MHQMdE5uYMAh4M3ocSQvaFxf5yZ+tRt+5QVdbrEzt45ZcjK8uwUqtTLLy0okaZ6RH2wnw==}
 
   '@sentry/core@5.30.0':
     resolution: {integrity: sha512-TmfrII8w1PQZSZgPpUESqjB+jC6MvZJZdLtE/0hZ+SrnKhW3x5WlYLvTXZpcWePYBku7rl2wn1RZu6uT0qCTeg==}
@@ -436,9 +436,6 @@ packages:
 
   '@types/ms@0.7.34':
     resolution: {integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==}
-
-  '@types/node@18.15.13':
-    resolution: {integrity: sha512-N+0kuo9KgrUQ1Sn/ifDXsvg0TTleP7rIy4zOBGECxAljqvqfqpTfzx0Q1NUedOixRMBfe2Whhb056a42cWs26Q==}
 
   '@types/node@20.17.10':
     resolution: {integrity: sha512-/jrvh5h6NXhEauFFexRin69nA0uHJ5gwk4iDivp/DeoEua3uwCUto6PC86IpRITBOs4+6i2I56K5x5b6WYGXHA==}
@@ -691,12 +688,8 @@ packages:
     resolution: {integrity: sha512-BhYE+WDaywFg2TBWYNXAE+8B1ATnThNBqXHP5nQu0jWJdVvY2hvkpyB3qOmtmDePiS5/BDQ8wASEWGMWRG148g==}
     engines: {node: '>= 0.4'}
 
-  call-bind@1.0.8:
-    resolution: {integrity: sha512-oKlSFMcMwpUg2ednkhQ454wfWiU/ul3CkJe/PEHcTKuiX6RpbehUiFMXu13HalGZxfUwCQzZG747YXBn1im9ww==}
-    engines: {node: '>= 0.4'}
-
-  call-bound@1.0.2:
-    resolution: {integrity: sha512-0lk0PHFe/uz0vl527fG9CgdE9WdafjDbCXvBbs+LUv000TVt2Jjhqbs4Jwm8gz070w8xXyEAxrPOMullsxXeGg==}
+  call-bound@1.0.3:
+    resolution: {integrity: sha512-YTd+6wGlNlPxSuri7Y6X8tY2dmm12UMH66RpKMhiX6rsk5wXXnYgbUcOt8kiS31/AjfoTOvCsE+w8nZQLQnzHA==}
     engines: {node: '>= 0.4'}
 
   callsites@3.1.0:
@@ -726,8 +719,8 @@ packages:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
     engines: {node: '>= 8.10.0'}
 
-  chokidar@4.0.1:
-    resolution: {integrity: sha512-n8enUVCED/KVRQlab1hr3MVpcVMvxtZjmEa956u+4YijlmQED223XMSYj2tLuKvr4jcCTzNNMpQDUer72MMmzA==}
+  chokidar@4.0.2:
+    resolution: {integrity: sha512-/b57FK+bblSU+dfewfFe0rT1YjVDfOmeLQwCAuC+vwvgLkXboATqqmy+Ipux6JrF6L5joe5CBnFOw+gLWH6yKg==}
     engines: {node: '>= 14.16.0'}
 
   ci-info@2.0.0:
@@ -840,10 +833,6 @@ packages:
     resolution: {integrity: sha512-4tvttepXG1VaYGrRibk5EwJd1t4udunSOVMdLSAL6mId1ix438oPwPZMALY41FCijukO1L0twNcGsdzS7dHgDg==}
     engines: {node: '>=10'}
 
-  define-data-property@1.1.4:
-    resolution: {integrity: sha512-rBMvIzlpA8v6E+SJZoo++HAYqsLrkg7MSfIinMPFhmkorw7X+dOXVJQs+QT69zGkzMyfDnIMN2Wid1+NbL3T+A==}
-    engines: {node: '>= 0.4'}
-
   delayed-stream@1.0.0:
     resolution: {integrity: sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ==}
     engines: {node: '>=0.4.0'}
@@ -867,8 +856,8 @@ packages:
     resolution: {tarball: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0}
     version: 1.0.0
 
-  dunder-proto@1.0.0:
-    resolution: {integrity: sha512-9+Sj30DIu+4KvHqMfLUGLFYL2PkURSYMVXJyXe92nFRvlYq5hBjLEhblKB+vkd/WVlUYMWigiY07T91Fkk0+4A==}
+  dunder-proto@1.0.1:
+    resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
 
   ejs@3.1.10:
@@ -990,10 +979,6 @@ packages:
   ethers@5.7.2:
     resolution: {integrity: sha512-wswUsmWo1aOK8rR7DIKiWSw9DbLWe6x98Jrn8wcTflTVvaXhAMaB5zGAXy0GYQEQp9iO1iSHWVyARQm11zUtyg==}
 
-  ethers@6.10.0:
-    resolution: {integrity: sha512-nMNwYHzs6V1FR3Y4cdfxSQmNgZsRj1RiTU25JwvnJLmyzw9z3SKxNc2XKDuiXXo/v9ds5Mp9m6HBabgYQQ26tA==}
-    engines: {node: '>=14.0.0'}
-
   ethers@6.13.4:
     resolution: {integrity: sha512-21YtnZVg4/zKkCQPjrDj38B1r4nQvTZLopUGMLQ1ePU2zV/joCfDC3t3iKQjWRzjjjbzR+mdAIoikeBRNkdllA==}
     engines: {node: '>=14.0.0'}
@@ -1076,13 +1061,13 @@ packages:
       debug:
         optional: true
 
+  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/5f1b1c6f607c34c76d5cefa33b41337b0d4699b4:
+    resolution: {tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/5f1b1c6f607c34c76d5cefa33b41337b0d4699b4}
+    version: 1.9.4
+
   forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/8a225d81aa8e2e013580564588c79abb65eacc9e:
     resolution: {tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/8a225d81aa8e2e013580564588c79abb65eacc9e}
     version: 1.9.3
-
-  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/d3db4ef90a72b7d24aa5a2e5c649593eaef7801d:
-    resolution: {tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/d3db4ef90a72b7d24aa5a2e5c649593eaef7801d}
-    version: 1.9.4
 
   form-data-encoder@2.1.4:
     resolution: {integrity: sha512-yDYSgNMraqvnxiEXO4hi88+YZxaHC6QKzb5N84iRCTDeRO7ZALpir/lVmf/uXUhnwUr2O4HU8s/n6x+yNjQkHw==}
@@ -1219,9 +1204,6 @@ packages:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
     engines: {node: '>=8'}
 
-  has-property-descriptors@1.0.2:
-    resolution: {integrity: sha512-55JNKuIW+vq4Ke1BjOTjM2YctQIvCT7GFzHwmfZPGo5wnrgkid0YQtnAleFSqumZm4az3n2BS+erby5ipJdgrg==}
-
   has-symbols@1.1.0:
     resolution: {integrity: sha512-1cDNdwJ2Jaohmb3sg4OmKaMBwuC48sYni5HUw2DvsC8LjGTLK9h+eb1X6RyuOHe4hT0ULCW68iomhjUoKUqlPQ==}
     engines: {node: '>= 0.4'}
@@ -1316,8 +1298,8 @@ packages:
     resolution: {integrity: sha512-ZMERYes6pDydyuGidse7OsHxtbI7WVeUEozgR/g7rd0xUimYNlvZRE/K2MgZTjWy725IfelLeVcEM97mmtRGXw==}
     engines: {node: '>=8'}
 
-  is-core-module@2.15.1:
-    resolution: {integrity: sha512-z0vtXSwucUJtANQWldhbtbt7BnL0vxiFjIdDLAatwhDYty2bad6s+rijD6Ri4YuYJubLzIJLUidCh09e1djEVQ==}
+  is-core-module@2.16.0:
+    resolution: {integrity: sha512-urTSINYfAYgcbLb0yDQ6egFm6h3Mo1DcF9EkyXSRjjzdHbsulg01qhwWuXdOoUBuTkbQ80KDboXa0vFJ+BDH+g==}
     engines: {node: '>= 0.4'}
 
   is-extglob@2.1.1:
@@ -1451,8 +1433,8 @@ packages:
     resolution: {integrity: sha512-4MqMiKP90ybymYvsut0CH2g4XWbfLtmlCkXmtmdcDCxNB+mQcu1w/1+L/VD7vi/PSv7X2JYV7SCcR+jiPXnQtA==}
     engines: {node: '>= 0.4'}
 
-  mcl-wasm@1.7.0:
-    resolution: {integrity: sha512-ok9uE7ekFh5+orI0dFT19KeY/y5P6ONp0dks8oo/KniyNK6mJ0zloL3+s6LiEQXW8VxQHwsfZslitL/R7MM9ew==}
+  mcl-wasm@1.8.0:
+    resolution: {integrity: sha512-j6kekpd/i6XLHKgUPLPOqts3EUIw+lOFPdyQ4cqepONZ2R/dtfc3+DnYMJXKXw4JF8c6hfcBZ04gbYWOXurv+Q==}
     engines: {node: '>=14.17'}
 
   md5.js@1.3.5:
@@ -1666,6 +1648,10 @@ packages:
   poseidon-solidity@0.0.5:
     resolution: {integrity: sha512-NzrvSwHzvZgT4hvg2GyGqeR+UOU/eLSEt4wAoXEua+VaR7NTKKwx1X9bPlh1VMBEVEno+IWvkRBbidFGzTeAqQ==}
 
+  poseidon-solidity@https://codeload.github.com/chancehudson/poseidon-solidity/tar.gz/8205c97ec4a35a9adb854b70b2c9ba92668d1304:
+    resolution: {tarball: https://codeload.github.com/chancehudson/poseidon-solidity/tar.gz/8205c97ec4a35a9adb854b70b2c9ba92668d1304}
+    version: 0.0.5
+
   prelude-ls@1.1.2:
     resolution: {integrity: sha512-ESF23V4SKG6lVSGZgYNpbsiaAkdab6ZgOxe52p7+Kid3W3u3bxR4Vfd/o21dmN7jSt0IwgZ4v5MUd26FEtXE9w==}
     engines: {node: '>= 0.8.0'}
@@ -1756,8 +1742,8 @@ packages:
   resolve@1.17.0:
     resolution: {integrity: sha512-ic+7JYiV8Vi2yzQGFWOkiZD5Z9z7O2Zhm9XMaTxdJExKasieFCr+yXZ/WmXsckHiKl12ar0y6XiXDx3m4RHn1w==}
 
-  resolve@1.22.8:
-    resolution: {integrity: sha512-oKWePCxqpd6FlLvGV1VU0x7bkPmmCNolxzjMf4NczoDnQcIWrAF+cPtZn5i6n+RfD2d9i0tzpKnG6Yk168yIyw==}
+  resolve@1.22.9:
+    resolution: {integrity: sha512-QxrmX1DzraFIi9PxdG5VkRfRwIgjwyud+z/iBwfRRrVmHc+P9Q7u2lSSpQ6bjr2gy5lrqIiU9vb6iAeGf2400A==}
     hasBin: true
 
   responselike@3.0.0:
@@ -1811,10 +1797,6 @@ packages:
   serialize-javascript@6.0.2:
     resolution: {integrity: sha512-Saa1xPByTTq2gdeFZYLLo+RFE35NHZkAbqZeWNd3BpzppeVisAqpDjcp8dyf6uIvEqJRd46jemmyA4iFIeVk8g==}
 
-  set-function-length@1.2.2:
-    resolution: {integrity: sha512-pgRc4hJ4/sNjWCSS9AmnS40x3bNMDTknHgL5UaMBTMyJnU90EgWh1Rz+MC9eFu4BuN/UwZjKQuY/1v3rM7HMfg==}
-    engines: {node: '>= 0.4'}
-
   setimmediate@1.0.5:
     resolution: {integrity: sha512-MATJdZp8sLqDl/68LfQmbP8zKPLQNV6BIZoIgrscFDQ+RsvK/BxeDQOgyxKKoh0y/8h3BqVFnCqQ/gd+reiIXA==}
 
@@ -1858,9 +1840,9 @@ packages:
     resolution: {integrity: sha512-x4cOCR4YXSyBlLtfnUUwfbZrw8wFd/Y0lk83eexJzKwZB8ELdpH+10ts8YtDsm2/a3WK7c7p514bbE8NpqxW8w==}
     hasBin: true
 
-  solady@https://codeload.github.com/vectorized/solady/tar.gz/513f581675374706dbe947284d6b12d19ce35a2a:
-    resolution: {tarball: https://codeload.github.com/vectorized/solady/tar.gz/513f581675374706dbe947284d6b12d19ce35a2a}
-    version: 0.0.281
+  solady@https://codeload.github.com/vectorized/solady/tar.gz/0dfa99736008ee4d0ee3cd0edd24e2fcfa227b8e:
+    resolution: {tarball: https://codeload.github.com/vectorized/solady/tar.gz/0dfa99736008ee4d0ee3cd0edd24e2fcfa227b8e}
+    version: 0.0.285
 
   solarray@https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684:
     resolution: {tarball: https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684}
@@ -1989,9 +1971,6 @@ packages:
 
   tslib@1.14.1:
     resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
-
-  tslib@2.4.0:
-    resolution: {integrity: sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ==}
 
   tslib@2.7.0:
     resolution: {integrity: sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==}
@@ -2158,18 +2137,6 @@ packages:
       utf-8-validate:
         optional: true
 
-  ws@8.5.0:
-    resolution: {integrity: sha512-BWX0SWVgLPzYwF8lTzEy1egjhS4S4OEAHfsO8o65WOVsrnSRGaSiUaa9e0ggGlkMTtBlmOpEXiie9RUcBO86qg==}
-    engines: {node: '>=10.0.0'}
-    peerDependencies:
-      bufferutil: ^4.0.1
-      utf-8-validate: ^5.0.2
-    peerDependenciesMeta:
-      bufferutil:
-        optional: true
-      utf-8-validate:
-        optional: true
-
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
     engines: {node: '>=10'}
@@ -2197,8 +2164,6 @@ packages:
       ethers: ^5.7.0
 
 snapshots:
-
-  '@adraffy/ens-normalize@1.10.0': {}
 
   '@adraffy/ens-normalize@1.10.1': {}
 
@@ -2643,7 +2608,7 @@ snapshots:
       ds-test: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0
       forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/8a225d81aa8e2e013580564588c79abb65eacc9e
       prettier: 2.8.8
-      solady: https://codeload.github.com/vectorized/solady/tar.gz/513f581675374706dbe947284d6b12d19ce35a2a
+      solady: https://codeload.github.com/vectorized/solady/tar.gz/0dfa99736008ee4d0ee3cd0edd24e2fcfa227b8e
     transitivePeerDependencies:
       - bufferutil
       - encoding
@@ -2663,8 +2628,8 @@ snapshots:
       '@rhinestone/sentinellist': https://codeload.github.com/rhinestonewtf/sentinellist/tar.gz/e722c5cc68c570d535bc3c9f85b3ce90cdc38807
       ds-test: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0
       excessively-safe-call: '@nomad-xyz/excessively-safe-call@https://codeload.github.com/nomad-xyz/ExcessivelySafeCall/tar.gz/81cd99ce3e69117d665d7601c330ea03b97acce0'
-      forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/d3db4ef90a72b7d24aa5a2e5c649593eaef7801d
-      solady: https://codeload.github.com/vectorized/solady/tar.gz/513f581675374706dbe947284d6b12d19ce35a2a
+      forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/5f1b1c6f607c34c76d5cefa33b41337b0d4699b4
+      solady: https://codeload.github.com/vectorized/solady/tar.gz/0dfa99736008ee4d0ee3cd0edd24e2fcfa227b8e
       solarray: https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684
       solhint: 5.0.3(typescript@4.9.5)
     transitivePeerDependencies:
@@ -2680,7 +2645,7 @@ snapshots:
 
   '@rhinestone/sentinellist@https://codeload.github.com/rhinestonewtf/sentinellist/tar.gz/e722c5cc68c570d535bc3c9f85b3ce90cdc38807':
     dependencies:
-      forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/d3db4ef90a72b7d24aa5a2e5c649593eaef7801d
+      forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/5f1b1c6f607c34c76d5cefa33b41337b0d4699b4
 
   '@scure/base@1.1.9': {}
 
@@ -2706,46 +2671,46 @@ snapshots:
       '@noble/hashes': 1.4.0
       '@scure/base': 1.1.9
 
-  '@semaphore-protocol/contracts@4.7.2':
+  '@semaphore-protocol/contracts@4.8.0':
     dependencies:
       '@zk-kit/lean-imt.sol': 2.0.0
 
-  '@semaphore-protocol/core@4.7.2':
+  '@semaphore-protocol/core@4.8.0':
     dependencies:
-      '@semaphore-protocol/group': 4.7.2
-      '@semaphore-protocol/identity': 4.7.2
-      '@semaphore-protocol/proof': 4.7.2(@semaphore-protocol/group@4.7.2)(@semaphore-protocol/identity@4.7.2)
+      '@semaphore-protocol/group': 4.8.0
+      '@semaphore-protocol/identity': 4.8.0
+      '@semaphore-protocol/proof': 4.8.0(@semaphore-protocol/group@4.8.0)(@semaphore-protocol/identity@4.8.0)
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@semaphore-protocol/group@4.7.2':
+  '@semaphore-protocol/group@4.8.0':
     dependencies:
       '@zk-kit/lean-imt': 2.2.2
       '@zk-kit/utils': 1.2.1
       poseidon-lite: 0.3.0
 
-  '@semaphore-protocol/identity@4.7.2':
+  '@semaphore-protocol/identity@4.8.0':
     dependencies:
       '@zk-kit/baby-jubjub': 1.0.3
       '@zk-kit/eddsa-poseidon': 1.0.4
       '@zk-kit/utils': 1.2.1
       poseidon-lite: 0.3.0
 
-  '@semaphore-protocol/proof@4.7.2(@semaphore-protocol/group@4.7.2)(@semaphore-protocol/identity@4.7.2)':
+  '@semaphore-protocol/proof@4.8.0(@semaphore-protocol/group@4.8.0)(@semaphore-protocol/identity@4.8.0)':
     dependencies:
-      '@semaphore-protocol/group': 4.7.2
-      '@semaphore-protocol/identity': 4.7.2
-      '@semaphore-protocol/utils': 4.7.2
+      '@semaphore-protocol/group': 4.8.0
+      '@semaphore-protocol/identity': 4.8.0
+      '@semaphore-protocol/utils': 4.8.0
       '@zk-kit/artifacts': 1.8.0
       '@zk-kit/utils': 1.2.1
-      ethers: 6.10.0
+      ethers: 6.13.4
       snarkjs: 0.7.4
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@semaphore-protocol/utils@4.7.2':
+  '@semaphore-protocol/utils@4.8.0':
     dependencies:
       ethers: 6.13.4
     transitivePeerDependencies:
@@ -2814,7 +2779,7 @@ snapshots:
   '@thehubbleproject/bls@0.5.1':
     dependencies:
       ethers: 5.7.2
-      mcl-wasm: 1.7.0
+      mcl-wasm: 1.8.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -2852,8 +2817,6 @@ snapshots:
   '@types/mocha@9.1.1': {}
 
   '@types/ms@0.7.34': {}
-
-  '@types/node@18.15.13': {}
 
   '@types/node@20.17.10':
     dependencies:
@@ -3170,16 +3133,9 @@ snapshots:
       es-errors: 1.3.0
       function-bind: 1.1.2
 
-  call-bind@1.0.8:
+  call-bound@1.0.3:
     dependencies:
       call-bind-apply-helpers: 1.0.1
-      es-define-property: 1.0.1
-      get-intrinsic: 1.2.6
-      set-function-length: 1.2.2
-
-  call-bound@1.0.2:
-    dependencies:
-      call-bind: 1.0.8
       get-intrinsic: 1.2.6
 
   callsites@3.1.0: {}
@@ -3216,7 +3172,7 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
-  chokidar@4.0.1:
+  chokidar@4.0.2:
     dependencies:
       readdirp: 4.0.2
 
@@ -3324,12 +3280,6 @@ snapshots:
 
   defer-to-connect@2.0.1: {}
 
-  define-data-property@1.1.4:
-    dependencies:
-      es-define-property: 1.0.1
-      es-errors: 1.3.0
-      gopd: 1.2.0
-
   delayed-stream@1.0.0: {}
 
   depd@2.0.0: {}
@@ -3346,7 +3296,7 @@ snapshots:
 
   ds-test@https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0: {}
 
-  dunder-proto@1.0.0:
+  dunder-proto@1.0.1:
     dependencies:
       call-bind-apply-helpers: 1.0.1
       es-errors: 1.3.0
@@ -3541,19 +3491,6 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  ethers@6.10.0:
-    dependencies:
-      '@adraffy/ens-normalize': 1.10.0
-      '@noble/curves': 1.2.0
-      '@noble/hashes': 1.3.2
-      '@types/node': 18.15.13
-      aes-js: 4.0.0-beta.5
-      tslib: 2.4.0
-      ws: 8.5.0
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-
   ethers@6.13.4:
     dependencies:
       '@adraffy/ens-normalize': 1.10.1
@@ -3644,9 +3581,9 @@ snapshots:
     optionalDependencies:
       debug: 4.4.0(supports-color@8.1.1)
 
-  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/8a225d81aa8e2e013580564588c79abb65eacc9e: {}
+  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/5f1b1c6f607c34c76d5cefa33b41337b0d4699b4: {}
 
-  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/d3db4ef90a72b7d24aa5a2e5c649593eaef7801d: {}
+  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/8a225d81aa8e2e013580564588c79abb65eacc9e: {}
 
   form-data-encoder@2.1.4: {}
 
@@ -3695,7 +3632,7 @@ snapshots:
   get-intrinsic@1.2.6:
     dependencies:
       call-bind-apply-helpers: 1.0.1
-      dunder-proto: 1.0.0
+      dunder-proto: 1.0.1
       es-define-property: 1.0.1
       es-errors: 1.3.0
       es-object-atoms: 1.0.0
@@ -3843,7 +3780,7 @@ snapshots:
       aggregate-error: 3.1.0
       ansi-escapes: 4.3.2
       boxen: 5.1.2
-      chokidar: 4.0.1
+      chokidar: 4.0.2
       ci-info: 2.0.0
       debug: 4.4.0(supports-color@8.1.1)
       enquirer: 2.4.1
@@ -3886,10 +3823,6 @@ snapshots:
   has-flag@3.0.0: {}
 
   has-flag@4.0.0: {}
-
-  has-property-descriptors@1.0.2:
-    dependencies:
-      es-define-property: 1.0.1
 
   has-symbols@1.1.0: {}
 
@@ -3982,7 +3915,7 @@ snapshots:
     dependencies:
       binary-extensions: 2.3.0
 
-  is-core-module@2.15.1:
+  is-core-module@2.16.0:
     dependencies:
       hasown: 2.0.2
 
@@ -4098,7 +4031,7 @@ snapshots:
 
   math-intrinsics@1.0.0: {}
 
-  mcl-wasm@1.7.0:
+  mcl-wasm@1.8.0:
     dependencies:
       '@types/node': 20.17.10
 
@@ -4298,6 +4231,8 @@ snapshots:
 
   poseidon-solidity@0.0.5: {}
 
+  poseidon-solidity@https://codeload.github.com/chancehudson/poseidon-solidity/tar.gz/8205c97ec4a35a9adb854b70b2c9ba92668d1304: {}
+
   prelude-ls@1.1.2: {}
 
   prettier@2.8.8: {}
@@ -4353,7 +4288,7 @@ snapshots:
 
   rechoir@0.6.2:
     dependencies:
-      resolve: 1.22.8
+      resolve: 1.22.9
 
   recursive-readdir@2.2.3:
     dependencies:
@@ -4381,9 +4316,9 @@ snapshots:
     dependencies:
       path-parse: 1.0.7
 
-  resolve@1.22.8:
+  resolve@1.22.9:
     dependencies:
-      is-core-module: 2.15.1
+      is-core-module: 2.16.0
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
 
@@ -4445,15 +4380,6 @@ snapshots:
     dependencies:
       randombytes: 2.1.0
 
-  set-function-length@1.2.2:
-    dependencies:
-      define-data-property: 1.1.4
-      es-errors: 1.3.0
-      function-bind: 1.1.2
-      get-intrinsic: 1.2.6
-      gopd: 1.2.0
-      has-property-descriptors: 1.0.2
-
   setimmediate@1.0.5: {}
 
   setprototypeof@1.2.0: {}
@@ -4476,14 +4402,14 @@ snapshots:
 
   side-channel-map@1.0.1:
     dependencies:
-      call-bound: 1.0.2
+      call-bound: 1.0.3
       es-errors: 1.3.0
       get-intrinsic: 1.2.6
       object-inspect: 1.13.3
 
   side-channel-weakmap@1.0.2:
     dependencies:
-      call-bound: 1.0.2
+      call-bound: 1.0.3
       es-errors: 1.3.0
       get-intrinsic: 1.2.6
       object-inspect: 1.13.3
@@ -4518,7 +4444,7 @@ snapshots:
       logplease: 1.2.15
       r1csfile: 0.0.48
 
-  solady@https://codeload.github.com/vectorized/solady/tar.gz/513f581675374706dbe947284d6b12d19ce35a2a: {}
+  solady@https://codeload.github.com/vectorized/solady/tar.gz/0dfa99736008ee4d0ee3cd0edd24e2fcfa227b8e: {}
 
   solarray@https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684: {}
 
@@ -4686,8 +4612,6 @@ snapshots:
 
   tslib@1.14.1: {}
 
-  tslib@2.4.0: {}
-
   tslib@2.7.0: {}
 
   tsort@0.0.1: {}
@@ -4808,8 +4732,6 @@ snapshots:
   ws@7.5.10: {}
 
   ws@8.17.1: {}
-
-  ws@8.5.0: {}
 
   y18n@5.0.8: {}
 

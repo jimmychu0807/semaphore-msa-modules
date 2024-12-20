@@ -2,18 +2,45 @@
 pragma solidity >=0.8.23 <=0.8.29;
 
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
+import {
+    VALIDATION_SUCCESS,
+    VALIDATION_FAILED
+} from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
 import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
+import { Identity } from "./utils/Identity.sol";
+
+// Ensure the following match with the 3 function calls.
+bytes4 constant INITIATE_TX_SEL = bytes4(
+    abi.encodeCall(
+        SemaphoreMSAValidator.initiateTx,
+        ("", ISemaphore.SemaphoreProof(0, 0, 0, 0, 0, [uint256(0), 0, 0, 0, 0, 0, 0, 0]), false)
+    )
+);
+
+bytes4 constant SIGN_TX_SEL = bytes4(
+    abi.encodeCall(
+        SemaphoreMSAValidator.signTx,
+        ("", ISemaphore.SemaphoreProof(0, 0, 0, 0, 0, [uint256(0), 0, 0, 0, 0, 0, 0, 0]), false)
+    )
+);
+
+bytes4 constant EXECUTE_TX_SEL = bytes4(abi.encodeCall(SemaphoreMSAValidator.executeTx, ("")));
 
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     using LibSort for *;
 
     // Constants
     uint8 constant MAX_MEMBERS = 32;
+
+    struct CallDataCount {
+        bytes callData;
+        uint8 sigCount;
+    }
 
     // Errors
     error CannotRemoveOwner();
@@ -24,8 +51,11 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     error MemberNotExists(address account, uint256 cmt);
     error IsMemberAlready(address acount, uint256 cmt);
     error TxHasBeenInitiated(address account, bytes32 txHash);
-    error TxNotExist(address account, bytes32 txHash);
+    error TxHashNotFound(address account, bytes32 txHash);
     error ThresholdNotReach(address account, uint8 threshold, uint8 current);
+    error TxAndProofDontMatch(address account, bytes32 txHash);
+    error InvalidSignatureLen(address account, uint256 len);
+    error InvalidUserOpSignature(address account, bytes32 userOpHash, bytes[96] signature);
 
     // Events
     event ModuleInitialized(address indexed account);
@@ -45,11 +75,9 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     mapping(address account => uint256 groupId) public groupMapping;
     mapping(address account => uint8 threshold) public thresholds;
 
-    // commitments(users) count for each smart account
-    mapping(address account => uint8 count) public memberCount;
-
     // smart account -> hash(call(params)) -> valid proof count
-    mapping(address account => mapping(bytes32 txHash => uint8 count)) public acctTxCount;
+    mapping(address account => mapping(bytes32 txHash => CallDataCount callDataCount)) public
+        acctTxCount;
 
     // keep track of seqNum of txs that require threshold signature
     mapping(address account => uint256 seqNum) public acctSeqNum;
@@ -100,7 +128,6 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
 
         // Completed all checks by this point. Write to the storage.
         thresholds[account] = threshold;
-        memberCount[account] = cmtLen;
 
         uint256 groupId = semaphore.createGroup();
         groupMapping[account] = groupId;
@@ -115,20 +142,25 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         // remove from our data structure
         address account = msg.sender;
         delete thresholds[account];
-        delete memberCount[account];
         delete groupMapping[account];
         delete acctSeqNum[account];
 
-        // TODO: what is a good way to delete entries associated to `acctTxCount[account]`,
-        //   The following line is not a valid solidity code.
+        //TODO: what is a good way to delete entries associated with `acctTxCount[account]`,
+        //   The following line will make the compiler fail.
         // delete acctTxCount[account];
 
         emit ModuleUninitialized(account);
     }
 
+    function memberCount(address account) public view returns (uint8 cnt) {
+        // account doesn't belong to a semaphore group. We return 0
+        if (thresholds[account] == 0) return 0;
+        cnt = uint8(groups.getMerkleTreeSize(groupMapping[account]));
+    }
+
     function setThreshold(uint8 newThreshold) external moduleInstalled {
         address account = msg.sender;
-        if (newThreshold == 0 || newThreshold > memberCount[account]) revert InvalidThreshold();
+        if (newThreshold == 0 || newThreshold > memberCount(account)) revert InvalidThreshold();
 
         thresholds[account] = newThreshold;
         emit ThresholdSet(account, newThreshold);
@@ -141,14 +173,13 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         // 2. check ownerCount < MAX_MEMBERS
         // 3. cehck owner not existed yet
         if (cmt == uint256(0)) revert InvalidIdCommitment();
-        if (memberCount[account] == MAX_MEMBERS) revert MaxMemberReached();
+        if (memberCount(account) == MAX_MEMBERS) revert MaxMemberReached();
 
         uint256 groupId = groupMapping[account];
 
         if (groups.hasMember(groupId, cmt)) revert IsMemberAlready(account, cmt);
 
         semaphore.addMember(groupId, cmt);
-        memberCount[account] += 1;
 
         emit AddedMember(account, cmt);
     }
@@ -156,20 +187,24 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     function removeMember(uint256 rmOwner) external moduleInstalled {
         address account = msg.sender;
 
-        if (memberCount[account] == thresholds[account]) revert CannotRemoveOwner();
+        if (memberCount(account) == thresholds[account]) revert CannotRemoveOwner();
+
         uint256 groupId = groupMapping[account];
         if (!groups.hasMember(groupId, rmOwner)) revert MemberNotExists(account, rmOwner);
 
-        memberCount[account] -= 1;
-
-        // TODO: add the 3rd param: merkleProofSiblings
+        //TODO: add the 3rd param: merkleProofSiblings. Now I set it to 0 to make it passes the
+        // compiler
         semaphore.removeMember(groupId, rmOwner, new uint256[](0));
 
         emit RemovedMember(account, rmOwner);
     }
 
+    function getNextSeqNum(address account) external returns (uint256) {
+        return acctSeqNum[account];
+    }
+
     function initiateTx(
-        bytes calldata txParams,
+        bytes calldata callData,
         ISemaphore.SemaphoreProof calldata proof,
         bool execute
     )
@@ -181,26 +216,34 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         address account = msg.sender;
         uint256 groupId = groupMapping[account];
 
-        // TODO: validate txParams are a valid tx call with propoer parameters. How?
-
         // By this point, txParams should be validated.
         // combine the txParams with the account nonce and compute its hash
         uint256 seq = acctSeqNum[account];
-        txHash = keccak256(abi.encode(txParams, seq));
+        txHash = keccak256(abi.encode(callData, seq));
 
-        if (acctTxCount[account][txHash] != 0) revert TxHasBeenInitiated(account, txHash);
+        // Check: validate the proof is related to the callData
+        if (groupId != proof.scope || uint256(txHash) != proof.message) {
+            revert TxAndProofDontMatch(account, txHash);
+        }
 
+        CallDataCount storage cdc = acctTxCount[account][txHash];
+        if (cdc.sigCount != 0) revert TxHasBeenInitiated(account, txHash);
+
+        // the callData and proof should have some kind of inherent relationship
         semaphore.validateProof(groupId, proof);
+
+        //TODO: how do you handle plain chain native tokens transfer?
 
         // By this point, the proof also passed semaphore check.
         // Start writing to the storage
         acctSeqNum[account] += 1;
-        acctTxCount[account][txHash] = 1;
+        cdc.callData = callData;
+        cdc.sigCount = 1;
 
         emit InitiatedTx(account, txHash);
 
         // execute the transaction if condition allows
-        if (execute && acctTxCount[account][txHash] >= thresholds[account]) executeTx(txHash);
+        if (execute && cdc.sigCount >= thresholds[account]) executeTx(txHash);
     }
 
     function signTx(
@@ -215,30 +258,32 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         address account = msg.sender;
         uint256 groupId = groupMapping[account];
 
+        if (proof.scope != groupId) revert TxAndProofDontMatch(account, txHash);
+
         // Check if the txHash exist
-        if (acctTxCount[account][txHash] == 0) revert TxNotExist(account, txHash);
+        CallDataCount storage cdc = acctTxCount[account][txHash];
+        if (cdc.sigCount == 0) revert TxHashNotFound(account, txHash);
 
         semaphore.validateProof(groupId, proof);
 
-        acctTxCount[account][txHash] += 1;
-
+        cdc.sigCount += 1;
         emit SignedTx(account, txHash);
 
         // execute the transaction if condition allows
-        if (execute && acctTxCount[account][txHash] >= thresholds[account]) executeTx(txHash);
+        if (execute && cdc.sigCount >= thresholds[account]) executeTx(txHash);
     }
 
     function executeTx(bytes32 txHash) public moduleInstalled {
         // retrieve the group ID
         address account = msg.sender;
         uint256 groupId = groupMapping[account];
-
         uint8 threshold = thresholds[account];
-        uint8 current = acctTxCount[account][txHash];
+        CallDataCount storage cdc = acctTxCount[account][txHash];
 
-        if (current < threshold) revert ThresholdNotReach(account, threshold, current);
+        if (cdc.sigCount == 0) revert TxHashNotFound(account, txHash);
+        if (cdc.sigCount < threshold) revert ThresholdNotReach(account, threshold, cdc.sigCount);
 
-        // TODO: make the actual contract call here
+        //TODO: make the actual contract call here
 
         emit ExecutedTx(account, txHash);
 
@@ -262,10 +307,38 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         // you want to exclude initiateTx, signTx, executeTx from needing tx count.
         // you just need to ensure they are a valid proof from the semaphore group members
 
-        bool sigFailed = false;
-        (uint256 sender, bytes memory _signature) = abi.decode(userOp.signature, (uint256, bytes));
+        address account = userOp.sender;
+        uint256 groupId = groupMapping[account];
 
-        return _packValidationData(!sigFailed, type(uint48).max, 0);
+        // The userOp.signature is 160 bytes containing:
+        //   (uint256 pubX (32 bytes), uint256 pubY (32 bytes), bytes[96] signature (96 bytes))
+        if (userOp.signature.length != 160) {
+            revert InvalidSignatureLen(account, userOp.signature.length);
+        }
+
+        (uint256 pubKeyX, uint256 pubKeyY, bytes[96] memory signature) =
+            abi.decode(userOp.signature, (uint256, uint256, bytes[96]));
+
+        // Verify signature using the public key
+        bytes memory pubKey = abi.encode(pubKeyX, pubKeyY);
+        if (!Identity.verifySignature(pubKey, userOpHash, signature)) {
+            revert InvalidUserOpSignature(account, userOpHash, signature);
+        }
+
+        // Verify if the identity commitment is one of the semaphore group members
+        uint256 cmt = Identity.generateCommitment(pubKey);
+        if (!groups.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
+
+        (bytes4 funcSel) = abi.decode(userOp.callData, (bytes4));
+
+        // Allow only these three types on function calls to pass, and reject all other on-chain
+        //   calls. They must be executed via `executeTx()` function.
+        if ((funcSel == INITIATE_TX_SEL) || (funcSel == SIGN_TX_SEL) || (funcSel == EXECUTE_TX_SEL))
+        {
+            return VALIDATION_SUCCESS;
+        }
+
+        return VALIDATION_FAILED;
     }
 
     function isValidSignatureWithSender(

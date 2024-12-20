@@ -17,8 +17,9 @@
   },
   "devDependencies": {
     "@rhinestone/modulekit": "~0.5.1",
-    "@semaphore-protocol/contracts": "~4.7.2",
-    "@semaphore-protocol/core": "~4.7.2"
+    "@semaphore-protocol/contracts": "^4.8.0",
+    "@semaphore-protocol/core": "^4.8.0",
+    "poseidon-solidity": "github:chancehudson/poseidon-solidity#main"
   },
   "files": [
     "src",
