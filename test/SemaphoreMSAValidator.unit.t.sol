@@ -2,7 +2,7 @@
 pragma solidity ^0.8.23;
 
 import { Test } from "forge-std/Test.sol";
-// import { console } from "forge-std/console.sol";
+import { console } from "forge-std/console.sol";
 
 import {
     RhinestoneModuleKit,
@@ -34,8 +34,6 @@ import {
     IdentityLib
 } from "./utils/TestUtils.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
-
-bytes4 constant EIP1271_MAGIC_VALUE = 0x1626ba7e;
 
 contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
     using ModuleKitHelpers for *;
@@ -169,18 +167,18 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         semaphore.validateProof(groupId, goodProof);
     }
 
-    function test_ValidateUserOpWithProperParams() public view {
+    function test_ValidateUserOpWithProperParams() public {
         PackedUserOperation memory userOp = getEmptyUserOperation();
         userOp.sender = address(this);
         userOp.callData =
             abi.encodeCall(SemaphoreMSAValidator.initiateTx, ("", getEmptySemaphoreProof(), false));
 
         bytes32 userOpHash = bytes32(keccak256("userOpHash"));
-        Identity id = IdentityLib.genIdentity(1);
+        console.log("userOpHash:");
+        console.logBytes32(userOpHash);
 
-        (uint256 pubX, uint256 pubY) = id.publicKey();
-        // TODO: probably need to use assembly to make this byte series compact.
-        userOp.signature = abi.encode(pubX, pubY, id.signHash(userOpHash));
+        Identity id = IdentityLib.genIdentity(1);
+        userOp.signature = id.signHash(userOpHash, vm);
 
         uint256 validationData = ERC7579ValidatorBase.ValidationData.unwrap(
             semaphoreValidator.validateUserOp(userOp, userOpHash)
