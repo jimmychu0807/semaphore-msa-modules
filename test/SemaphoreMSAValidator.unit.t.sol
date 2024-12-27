@@ -24,7 +24,8 @@ import { SemaphoreMSAValidator, ERC7579ValidatorBase } from "../src/SemaphoreMSA
 import { IERC7579Module, IERC7579Validator } from "modulekit/Modules.sol";
 import {
     VALIDATION_SUCCESS,
-    VALIDATION_FAILED
+    VALIDATION_FAILED,
+    MODULE_TYPE_VALIDATOR
 } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 import {
@@ -35,6 +36,12 @@ import {
 } from "./utils/TestUtils.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 
+struct User {
+    uint256 sk;
+    address addr;
+    uint256 cmt; // user commitment
+}
+
 contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
     using ModuleKitHelpers for *;
     using LibSort for *;
@@ -42,13 +49,12 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
 
     AccountInstance internal smartAcct;
     SemaphoreMSAValidator internal semaphoreValidator;
-
-    uint256 cmt1 = 1;
-    uint256 cmt2 = 2;
-
-    uint256 $threshold = 2;
-    address[] $users;
-    uint256[] $userSks;
+    User[] $users;
+    uint256[] $memberCmts = [
+        uint256(18699903263915756199535533399390350858126023699350081471896734858638858200219),
+        uint256(4446973358529698253939037684201229393105675634248270727935122282482202195132),
+        uint256(16658210975476022044027345155568543847928305944324616901189666478659011192021)
+    ];
 
     function setUp() public virtual {
         // init() function comes from contract AuxiliaryFactory:
@@ -66,38 +72,36 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         vm.label(address(semaphoreValidator), "SemaphoreMSAValidator");
 
         // Create two users
-        (address _user1, uint256 _user1Sk) = makeAddrAndKey("user1");
-        (address _user2, uint256 _user2Sk) = makeAddrAndKey("user2");
+        (address addr, uint256 sk) = makeAddrAndKey("user1");
+        vm.deal(addr, 10 ether);
+        $users.push(User({ sk: sk, addr: addr, cmt: 1 }));
 
-        // deal some money to the test users
-        vm.deal(_user1, 10 ether);
-        vm.deal(_user2, 10 ether);
+        (addr, sk) = makeAddrAndKey("user2");
+        vm.deal(addr, 10 ether);
+        $users.push(User({ sk: sk, addr: addr, cmt: 2 }));
+    }
 
-        // Store user info in our storage
-        $users.push(_user1);
-        $users.push(_user2);
-        $userSks.push(_user1Sk);
-        $userSks.push(_user2Sk);
+    modifier setupSmartAcctOneUser() {
+        // Create the smart account and install the validator with one admin
+        smartAcct = makeAccountInstance("SemaphoreMSAValidator");
+        vm.deal(smartAcct.account, 10 ether);
+        uint256[] memory cmts = new uint256[](1);
+        cmts[0] = $users[0].cmt;
+        smartAcct.installModule({
+            moduleTypeId: MODULE_TYPE_VALIDATOR,
+            module: address(semaphoreValidator),
+            // TODO: optimize this to use encodePacked()
+            data: abi.encode(uint8(1), cmts)
+        });
+        _;
     }
 
     function test_SemaphoreDeployProperly() public {
         ISemaphore semaphore = semaphoreValidator.semaphore();
         ISemaphoreGroups groups = semaphoreValidator.groups();
 
-        address admin = $users[0];
-        uint256 groupId = semaphore.createGroup(admin);
-
-        // Test Add members
-        uint256[] memory members = new uint256[](3);
-        members[0] = uint256(
-            18_699_903_263_915_756_199_535_533_399_390_350_858_126_023_699_350_081_471_896_734_858_638_858_200_219
-        );
-        members[1] = uint256(
-            4_446_973_358_529_698_253_939_037_684_201_229_393_105_675_634_248_270_727_935_122_282_482_202_195_132
-        );
-        members[2] = uint256(
-            16_658_210_975_476_022_044_027_345_155_568_543_847_928_305_944_324_616_901_189_666_478_659_011_192_021
-        );
+        User storage admin = $users[0];
+        uint256 groupId = semaphore.createGroup(admin.addr);
 
         // Test 1: non-admin cannot add members. Should revert here
         vm.expectRevert(ISemaphoreGroups.Semaphore__CallerIsNotTheGroupAdmin.selector);
@@ -107,10 +111,10 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         //   We don't check for the event log data because we don't know the merkle root (4th param)
         //   yet at this point.
         vm.expectEmit(true, true, true, false);
-        emit ISemaphoreGroups.MembersAdded(groupId, 0, members, 0);
+        emit ISemaphoreGroups.MembersAdded(groupId, 0, $memberCmts, 0);
 
-        vm.prank(admin);
-        semaphore.addMembers(groupId, members);
+        vm.prank(admin.addr);
+        semaphore.addMembers(groupId, $memberCmts);
 
         // Hard-code a bad proof
         uint256 merkleTreeRoot = groups.getMerkleTreeRoot(groupId);
@@ -131,23 +135,21 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
 
         // Hard-code a good proof, generate with js
         uint256[8] memory points = [
-            8_754_155_586_417_785_722_495_470_355_400_612_435_163_491_722_543_495_943_821_566_022_238_250_742_089,
-            9_311_277_326_082_450_661_421_961_776_323_317_578_243_683_731_284_276_799_789_402_550_732_654_540_221,
-            21_085_626_846_082_214_868_906_508_770_789_165_162_256_682_314_918_488_454_768_199_138_554_866_360_967,
-            21_443_185_256_751_033_286_080_864_270_977_332_698_900_979_912_547_135_282_775_393_829_978_819_886_983,
-            6_146_766_603_522_887_336_268_534_704_733_943_707_329_586_494_820_302_567_246_261_601_613_119_898_050,
-            6_045_075_051_598_445_696_915_996_184_912_833_218_616_283_726_504_301_031_952_692_097_009_324_813_608,
-            7_934_176_176_660_057_205_882_670_886_568_952_288_755_193_231_800_611_293_588_747_925_476_169_302_192,
-            13_153_394_304_570_492_498_284_582_612_982_233_846_934_220_238_727_913_230_903_336_758_335_153_705_366
+            8754155586417785722495470355400612435163491722543495943821566022238250742089,
+            9311277326082450661421961776323317578243683731284276799789402550732654540221,
+            21085626846082214868906508770789165162256682314918488454768199138554866360967,
+            21443185256751033286080864270977332698900979912547135282775393829978819886983,
+            6146766603522887336268534704733943707329586494820302567246261601613119898050,
+            6045075051598445696915996184912833218616283726504301031952692097009324813608,
+            7934176176660057205882670886568952288755193231800611293588747925476169302192,
+            13153394304570492498284582612982233846934220238727913230903336758335153705366
         ];
 
         ISemaphore.SemaphoreProof memory goodProof = ISemaphore.SemaphoreProof({
             merkleTreeDepth: merkleTreeDepth,
             merkleTreeRoot: merkleTreeRoot,
-            // solhint-disable-next-line max-line-length
-            nullifier: 9_258_620_728_367_181_689_082_100_997_241_864_348_984_639_649_085_246_237_074_656_141_003_522_567_612,
-            // solhint-disable-next-line max-line-length
-            message: 32_745_724_963_520_459_128_167_607_516_703_083_632_076_522_816_298_193_357_160_756_506_792_738_947_072,
+            nullifier: 9258620728367181689082100997241864348984639649085246237074656141003522567612,
+            message: 32745724963520459128167607516703083632076522816298193357160756506792738947072,
             scope: groupId,
             points: points
         });
@@ -167,19 +169,22 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         semaphore.validateProof(groupId, goodProof);
     }
 
-    function test_ValidateUserOpWithProperParams() public {
+    function test_onInstallWithOneUser() public setupSmartAcctOneUser {
+        assertEq(semaphoreValidator.groupMapping(smartAcct.account), 0);
+        assertEq(semaphoreValidator.thresholds(smartAcct.account), 1);
+        assertEq(semaphoreValidator.memberCount(smartAcct.account), 1);
+    }
+
+    function test_ValidateUserOpWithProperParams_OneUser() public setupSmartAcctOneUser {
         PackedUserOperation memory userOp = getEmptyUserOperation();
-        userOp.sender = address(this);
+        userOp.sender = smartAcct.account;
         userOp.callData =
             abi.encodeCall(SemaphoreMSAValidator.initiateTx, ("", getEmptySemaphoreProof(), false));
 
         bytes32 userOpHash = bytes32(keccak256("userOpHash"));
-        console.log("userOpHash:");
-        console.logBytes32(userOpHash);
 
         Identity id = IdentityLib.genIdentity(1);
-        userOp.signature = id.signHash(userOpHash, vm);
-
+        userOp.signature = id.signHash(userOpHash);
         uint256 validationData = ERC7579ValidatorBase.ValidationData.unwrap(
             semaphoreValidator.validateUserOp(userOp, userOpHash)
         );
