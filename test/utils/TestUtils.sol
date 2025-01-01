@@ -4,7 +4,7 @@ pragma solidity ^0.8.23;
 import { Vm } from "forge-std/Vm.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 import { ISemaphore } from "../../src/utils/Semaphore.sol";
-import { console } from "forge-std/console.sol";
+// import { console } from "forge-std/console.sol";
 import { LibString } from "solady/Milady.sol";
 
 struct ValidationData {
@@ -65,10 +65,7 @@ library IdentityLib {
         cmt = abi.decode(res, (uint256));
     }
 
-    function signHash(Identity self, bytes32 hash)
-        public
-        returns (bytes memory signature)
-    {
+    function signHash(Identity self, bytes32 hash) public returns (bytes memory signature) {
         uint256[2] memory pub = IdentityLib._publicKey(self);
         bytes memory hashSig = IdentityLib._signHash(self, hash);
         return abi.encodePacked(pub, hashSig);

@@ -7,14 +7,12 @@ import {
     VALIDATION_FAILED
 } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
-import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 import { LibBytes } from "solady/utils/LibBytes.sol";
 
 import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
 import { Identity } from "./utils/Identity.sol";
-
-import { console } from "forge-std/console.sol";
+// import { console } from "forge-std/console.sol";
 
 // Ensure the following match with the 3 function calls.
 bytes4 constant INITIATE_TX_SEL = bytes4(
@@ -37,7 +35,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     using LibSort for *;
 
     // Constants
-    uint8 constant MAX_MEMBERS = 32;
+    uint8 public constant MAX_MEMBERS = 32;
 
     struct CallDataCount {
         bytes callData;
@@ -339,7 +337,8 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
 
         // Allow only these three types on function calls to pass, and reject all other on-chain
         //   calls. They must be executed via `executeTx()` function.
-        if ((funcSel == INITIATE_TX_SEL) || (funcSel == SIGN_TX_SEL) || (funcSel == EXECUTE_TX_SEL)) {
+        if ((funcSel == INITIATE_TX_SEL) || (funcSel == SIGN_TX_SEL) || (funcSel == EXECUTE_TX_SEL))
+        {
             return VALIDATION_SUCCESS;
         }
 
