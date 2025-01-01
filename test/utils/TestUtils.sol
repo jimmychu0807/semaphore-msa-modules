@@ -53,6 +53,18 @@ library IdentityLib {
         return IdentityLib._publicKey(self);
     }
 
+    function commitment(Identity self) public returns (uint256 cmt) {
+        // This is using the identity-cli javascript call, instead of identity
+        string[] memory cmd = new string[](4);
+        cmd[0] = "pnpm";
+        cmd[1] = "semaphore-identity";
+        cmd[2] = "get-commitment";
+        cmd[3] = vm.toString(Identity.unwrap(self));
+
+        bytes memory res = vm.ffi(cmd);
+        cmt = abi.decode(res, (uint256));
+    }
+
     function signHash(Identity self, bytes32 hash)
         public
         returns (bytes memory signature)

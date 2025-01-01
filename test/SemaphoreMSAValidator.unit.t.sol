@@ -39,7 +39,7 @@ import { LibSort } from "solady/utils/LibSort.sol";
 struct User {
     uint256 sk;
     address addr;
-    uint256 cmt; // user commitment
+    Identity identity; // user commitment
 }
 
 contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
@@ -50,11 +50,6 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
     AccountInstance internal smartAcct;
     SemaphoreMSAValidator internal semaphoreValidator;
     User[] $users;
-    uint256[] $memberCmts = [
-        uint256(18699903263915756199535533399390350858126023699350081471896734858638858200219),
-        uint256(4446973358529698253939037684201229393105675634248270727935122282482202195132),
-        uint256(16658210975476022044027345155568543847928305944324616901189666478659011192021)
-    ];
 
     function setUp() public virtual {
         // init() function comes from contract AuxiliaryFactory:
@@ -74,11 +69,11 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         // Create two users
         (address addr, uint256 sk) = makeAddrAndKey("user1");
         vm.deal(addr, 10 ether);
-        $users.push(User({ sk: sk, addr: addr, cmt: 1 }));
+        $users.push(User({ sk: sk, addr: addr, identity: IdentityLib.genIdentity(1) }));
 
         (addr, sk) = makeAddrAndKey("user2");
         vm.deal(addr, 10 ether);
-        $users.push(User({ sk: sk, addr: addr, cmt: 2 }));
+        $users.push(User({ sk: sk, addr: addr, identity: IdentityLib.genIdentity(2) }));
     }
 
     modifier setupSmartAcctOneUser() {
@@ -86,7 +81,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         smartAcct = makeAccountInstance("SemaphoreMSAValidator");
         vm.deal(smartAcct.account, 10 ether);
         uint256[] memory cmts = new uint256[](1);
-        cmts[0] = $users[0].cmt;
+        cmts[0] = $users[0].identity.commitment();
         smartAcct.installModule({
             moduleTypeId: MODULE_TYPE_VALIDATOR,
             module: address(semaphoreValidator),
@@ -103,6 +98,11 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         User storage admin = $users[0];
         uint256 groupId = semaphore.createGroup(admin.addr);
 
+        uint256[] memory memberCnts = new uint256[](3);
+        memberCnts[0] = uint256(18699903263915756199535533399390350858126023699350081471896734858638858200219);
+        memberCnts[1] = uint256(4446973358529698253939037684201229393105675634248270727935122282482202195132);
+        memberCnts[2] = uint256(16658210975476022044027345155568543847928305944324616901189666478659011192021);
+
         // Test 1: non-admin cannot add members. Should revert here
         vm.expectRevert(ISemaphoreGroups.Semaphore__CallerIsNotTheGroupAdmin.selector);
         semaphore.addMember(groupId, uint256(4));
@@ -111,10 +111,10 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         //   We don't check for the event log data because we don't know the merkle root (4th param)
         //   yet at this point.
         vm.expectEmit(true, true, true, false);
-        emit ISemaphoreGroups.MembersAdded(groupId, 0, $memberCmts, 0);
+        emit ISemaphoreGroups.MembersAdded(groupId, 0, memberCnts, 0);
 
         vm.prank(admin.addr);
-        semaphore.addMembers(groupId, $memberCmts);
+        semaphore.addMembers(groupId, memberCnts);
 
         // Hard-code a bad proof
         uint256 merkleTreeRoot = groups.getMerkleTreeRoot(groupId);
@@ -175,7 +175,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         assertEq(semaphoreValidator.memberCount(smartAcct.account), 1);
     }
 
-    function test_ValidateUserOpWithProperParams_OneUser() public setupSmartAcctOneUser {
+    function test_ValidateUserOpWithNonMember() public setupSmartAcctOneUser {
         PackedUserOperation memory userOp = getEmptyUserOperation();
         userOp.sender = smartAcct.account;
         userOp.callData =
@@ -183,12 +183,19 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
 
         bytes32 userOpHash = bytes32(keccak256("userOpHash"));
 
-        Identity id = IdentityLib.genIdentity(1);
+        Identity id = IdentityLib.genIdentity(100);
         userOp.signature = id.signHash(userOpHash);
+
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                SemaphoreMSAValidator.MemberNotExists.selector,
+                smartAcct.account,
+                id.commitment()
+            )
+        );
+
         uint256 validationData = ERC7579ValidatorBase.ValidationData.unwrap(
             semaphoreValidator.validateUserOp(userOp, userOpHash)
         );
-
-        assertEq(validationData, VALIDATION_SUCCESS);
     }
 }

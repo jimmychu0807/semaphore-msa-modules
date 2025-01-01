@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.23 <=0.8.29;
 
-import { PoseidonT2 } from "poseidon-solidity/PoseidonT2.sol";
+import { PoseidonT3 } from "poseidon-solidity/PoseidonT3.sol";
 import { console } from "forge-std/console.sol";
 import { Vm } from "forge-std/Vm.sol";
 import { LibString } from "solady/Milady.sol";
@@ -9,11 +9,9 @@ import { LibString } from "solady/Milady.sol";
 library Identity {
     Vm private constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
 
-    function generateCommitment(bytes memory pubKey) public pure returns (uint256 cmt) {
-        // Although pubKey is actually two bigints, (pubKeyX, pubKey Y).
-        // The commitment is generated with only the first uint256 (32 bytes).
-        (uint256 pubKeyX) = abi.decode(pubKey, (uint256));
-        cmt = PoseidonT2.hash([pubKeyX]);
+    function getCommitment(bytes memory pubKey) public pure returns (uint256 cmt) {
+        (uint256 pkX, uint256 pkY) = abi.decode(pubKey, (uint256, uint256));
+        cmt = PoseidonT3.hash([pkX, pkY]);
     }
 
     function verifySignature(
@@ -25,9 +23,6 @@ library Identity {
     {
         (uint256 pkX, uint256 pkY, uint256 s0, uint256 s1, uint256 s2) =
             abi.decode(signature, (uint256, uint256, uint256, uint256, uint256));
-
-        console.log("pubkey: (%s,%s)", pkX, pkY);
-        console.log("signature: (%s,%s,%s)", s0, s1, s2);
 
         // TODO: implement eddsa-poseidon verifySignature() method in solidity. This part:
         // https://github.com/privacy-scaling-explorations/zk-kit/blob/main/packages/eddsa-poseidon/src/eddsa-poseidon-factory.ts#L127-L158

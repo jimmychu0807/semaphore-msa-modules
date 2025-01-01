@@ -9,7 +9,7 @@ import {
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
-import { ECDSA } from "solady/utils/ECDSA.sol";
+import { LibBytes } from "solady/utils/LibBytes.sol";
 
 import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
 import { Identity } from "./utils/Identity.sol";
@@ -314,14 +314,8 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     {
         // you want to exclude initiateTx, signTx, executeTx from needing tx count.
         // you just need to ensure they are a valid proof from the semaphore group members
-
-        console.log("validateUserOp");
-
         address account = userOp.sender;
         uint256 groupId = groupMapping[account];
-
-        console.log("account: %s", account);
-        console.log("groupId: %s", groupId);
 
         // The userOp.signature is 160 bytes containing:
         //   (uint256 pubX (32 bytes), uint256 pubY (32 bytes), bytes[96] signature (96 bytes))
@@ -329,21 +323,22 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
             revert InvalidSignatureLen(account, userOp.signature.length);
         }
 
-        (uint256 pkX, uint256 pkY) = abi.decode(userOp.signature, (uint256, uint256));
-
         // Verify signature using the public key
         if (!Identity.verifySignature(userOpHash, userOp.signature)) {
             revert InvalidUserOpSignature(account, userOpHash, userOp.signature);
         }
 
         // Verify if the identity commitment is one of the semaphore group members
-        // uint256 cmt = Identity.generateCommitment(pubKey);
-        // if (!groups.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
+        bytes memory pubKey = LibBytes.slice(userOp.signature, 0, 66);
+        uint256 cmt = Identity.getCommitment(pubKey);
 
+        if (!groups.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
+
+        // Validate the userOp.callData length before extracting 4 bytes out
         // (bytes4 funcSel) = abi.decode(userOp.callData, (bytes4));
 
-        // // Allow only these three types on function calls to pass, and reject all other on-chain
-        // //   calls. They must be executed via `executeTx()` function.
+        // Allow only these three types on function calls to pass, and reject all other on-chain
+        //   calls. They must be executed via `executeTx()` function.
         // if ((funcSel == INITIATE_TX_SEL) || (funcSel == SIGN_TX_SEL) || (funcSel == EXECUTE_TX_SEL))
         // {
         //     return VALIDATION_SUCCESS;
