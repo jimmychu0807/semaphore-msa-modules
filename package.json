@@ -17,9 +17,12 @@
   },
   "devDependencies": {
     "@rhinestone/modulekit": "~0.5.1",
-    "@semaphore-protocol/contracts": "^4.8.0",
-    "@semaphore-protocol/core": "^4.8.0",
-    "poseidon-solidity": "github:chancehudson/poseidon-solidity#main"
+    "@semaphore-protocol/contracts": "github:jimmychu0807/semaphore#identity-cli&path:/packages/contracts/contracts",
+    "@semaphore-protocol/core": "github:jimmychu0807/semaphore#identity-cli&path:/packages/core",
+    "@semaphore-protocol/identity": "github:jimmychu0807/semaphore#identity-cli&path:/packages/identity",
+    "poseidon-solidity": "github:chancehudson/poseidon-solidity#main",
+    "rimraf": "^5.0.5",
+    "solady": "^0.0.287"
   },
   "files": [
     "src",
@@ -33,7 +36,7 @@
     "build": "forge build",
     "build:optimized": "FOUNDRY_PROFILE=optimized forge build",
     "build:smt": "FOUNDRY_PROFILE=smt forge build",
-    "clean": "rm -rf artifacts broadcast cache docs out out-optimized out-svg",
+    "clean": "rimraf artifacts broadcast cache docs out out-optimized out-svg node_modules",
     "gas:report": "forge test --gas-report --mp \"./test/integration/**/*.sol\" --nmt \"test(Fuzz)?_RevertWhen_\\w{1,}?\"",
     "gas:snapshot": "forge snapshot --mp \"./test/integration/**/*.sol\" --nmt \"test(Fuzz)?_RevertWhen_\\w{1,}?\"",
     "gas:snapshot:optimized": "pnpm run build:optimized && FOUNDRY_PROFILE=test-optimized forge snapshot --mp \"./test/integration/**/*.sol\" --nmt \"test(Fork)?(Fuzz)?_RevertWhen_\\w{1,}?\"",
@@ -43,7 +46,7 @@
     "prepack": "pnpm install && bash ./shell/prepare-artifacts.sh",
     "prettier:check": "prettier --no-error-on-unmatched-pattern -c \"{src,test,script}/**/*.{json,md,svg,yml}\"",
     "prettier:write": "prettier --no-error-on-unmatched-pattern -w \"{src,test,script}/**/*.{json,md,svg,yml}\"",
-    "test": "COMPLIANCE=true forge test",
+    "test": "COMPLIANCE=true forge test --ffi",
     "test:lite": "FOUNDRY_PROFILE=lite forge test",
     "test:optimized": "pnpm run build:optimized && FOUNDRY_PROFILE=test-optimized forge test"
   },

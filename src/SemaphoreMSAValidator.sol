@@ -7,12 +7,12 @@ import {
     VALIDATION_FAILED
 } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
-import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
-import { ECDSA } from "solady/utils/ECDSA.sol";
+import { LibBytes } from "solady/utils/LibBytes.sol";
 
 import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
 import { Identity } from "./utils/Identity.sol";
+// import { console } from "forge-std/console.sol";
 
 // Ensure the following match with the 3 function calls.
 bytes4 constant INITIATE_TX_SEL = bytes4(
@@ -35,7 +35,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     using LibSort for *;
 
     // Constants
-    uint8 constant MAX_MEMBERS = 32;
+    uint8 public constant MAX_MEMBERS = 32;
 
     struct CallDataCount {
         bytes callData;
@@ -55,7 +55,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     error ThresholdNotReach(address account, uint8 threshold, uint8 current);
     error TxAndProofDontMatch(address account, bytes32 txHash);
     error InvalidSignatureLen(address account, uint256 len);
-    error InvalidUserOpSignature(address account, bytes32 userOpHash, bytes[96] signature);
+    error InvalidUserOpSignature(address account, bytes32 userOpHash, bytes signature);
 
     // Events
     event ModuleInitialized(address indexed account);
@@ -111,8 +111,14 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         address account = msg.sender;
         if (thresholds[account] > 0) revert AlreadyInitialized(account);
 
+        // console.log("bytes:");
+        // console.logBytes(data);
+
         // OwnableValidator
         (uint8 threshold, uint256[] memory cmts) = abi.decode(data, (uint8, uint256[]));
+
+        // console.log("threshold: %s, cmt len: %s", threshold, cmts.length);
+        // console.log("cmt: %s", cmts[0]);
 
         // Check all address are valid
         (bool found,) = cmts.searchSorted(uint256(0));
@@ -300,13 +306,12 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         bytes32 userOpHash
     )
         external
-        view
+        // view
         override
         returns (ValidationData)
     {
         // you want to exclude initiateTx, signTx, executeTx from needing tx count.
         // you just need to ensure they are a valid proof from the semaphore group members
-
         address account = userOp.sender;
         uint256 groupId = groupMapping[account];
 
@@ -316,19 +321,18 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
             revert InvalidSignatureLen(account, userOp.signature.length);
         }
 
-        (uint256 pubKeyX, uint256 pubKeyY, bytes[96] memory signature) =
-            abi.decode(userOp.signature, (uint256, uint256, bytes[96]));
-
         // Verify signature using the public key
-        bytes memory pubKey = abi.encode(pubKeyX, pubKeyY);
-        if (!Identity.verifySignature(pubKey, userOpHash, signature)) {
-            revert InvalidUserOpSignature(account, userOpHash, signature);
+        if (!Identity.verifySignature(userOpHash, userOp.signature)) {
+            revert InvalidUserOpSignature(account, userOpHash, userOp.signature);
         }
 
         // Verify if the identity commitment is one of the semaphore group members
-        uint256 cmt = Identity.generateCommitment(pubKey);
+        bytes memory pubKey = LibBytes.slice(userOp.signature, 0, 66);
+        uint256 cmt = Identity.getCommitment(pubKey);
+
         if (!groups.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
 
+        // Validate the userOp.callData length before extracting 4 bytes out
         (bytes4 funcSel) = abi.decode(userOp.callData, (bytes4));
 
         // Allow only these three types on function calls to pass, and reject all other on-chain
