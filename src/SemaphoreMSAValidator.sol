@@ -335,16 +335,15 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         if (!groups.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
 
         // Validate the userOp.callData length before extracting 4 bytes out
-        // (bytes4 funcSel) = abi.decode(userOp.callData, (bytes4));
+        (bytes4 funcSel) = abi.decode(userOp.callData, (bytes4));
 
         // Allow only these three types on function calls to pass, and reject all other on-chain
         //   calls. They must be executed via `executeTx()` function.
-        // if ((funcSel == INITIATE_TX_SEL) || (funcSel == SIGN_TX_SEL) || (funcSel == EXECUTE_TX_SEL))
-        // {
-        //     return VALIDATION_SUCCESS;
-        // }
+        if ((funcSel == INITIATE_TX_SEL) || (funcSel == SIGN_TX_SEL) || (funcSel == EXECUTE_TX_SEL)) {
+            return VALIDATION_SUCCESS;
+        }
 
-        // return VALIDATION_FAILED;
+        return VALIDATION_FAILED;
     }
 
     function isValidSignatureWithSender(

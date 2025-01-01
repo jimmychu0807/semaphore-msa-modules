@@ -198,4 +198,22 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
             semaphoreValidator.validateUserOp(userOp, userOpHash)
         );
     }
+
+    function test_ValidateUserOpWithMember() public setupSmartAcctOneUser {
+        PackedUserOperation memory userOp = getEmptyUserOperation();
+        userOp.sender = smartAcct.account;
+        userOp.callData =
+            abi.encodeCall(SemaphoreMSAValidator.initiateTx, ("", getEmptySemaphoreProof(), false));
+
+        bytes32 userOpHash = bytes32(keccak256("userOpHash"));
+
+        Identity id = $users[0].identity;
+        userOp.signature = id.signHash(userOpHash);
+
+        uint256 validationData = ERC7579ValidatorBase.ValidationData.unwrap(
+            semaphoreValidator.validateUserOp(userOp, userOpHash)
+        );
+
+        assertEq(validationData, VALIDATION_SUCCESS);
+    }
 }
