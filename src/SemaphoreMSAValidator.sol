@@ -13,7 +13,7 @@ import { LibBytes } from "solady/utils/LibBytes.sol";
 import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
 import { ValidatorLibBytes } from "./utils/ValidatorLibBytes.sol";
 import { Identity } from "./utils/Identity.sol";
-import { console } from "forge-std/console.sol";
+// import { console } from "forge-std/console.sol";
 
 // Ensure the following match with the 3 function calls.
 bytes4 constant INITIATE_TX_SEL = bytes4(
@@ -117,7 +117,8 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
 
         uint256 dataLen = data.length;
 
-        // here we check if dataLen exist and dataLen, minus the first 8-byte threshold value, is in a multiple of commitment-byte length.
+        // here we check if dataLen exist and dataLen, minus the first 8-byte threshold value, is in
+        // a multiple of commitment-byte length.
         if (dataLen == 0 || (dataLen - 1) % CMT_BYTELEN != 0) revert InvalidInstallData();
 
         uint8 threshold = uint8(bytes1(data[:1]));
