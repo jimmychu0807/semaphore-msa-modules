@@ -80,8 +80,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         smartAcct.installModule({
             moduleTypeId: MODULE_TYPE_VALIDATOR,
             module: address(semaphoreValidator),
-            // TODO: optimize this to use encodePacked()
-            data: abi.encode(uint8(1), cmts)
+            data: abi.encodePacked(uint8(1), cmts)
         });
         _;
     }
