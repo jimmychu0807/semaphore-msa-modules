@@ -120,15 +120,8 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         // here we check if dataLen exist and dataLen, minus the first 8-byte threshold value, is in a multiple of commitment-byte length.
         if (dataLen == 0 || (dataLen - 1) % CMT_BYTELEN != 0) revert InvalidInstallData();
 
-        console.log("100");
-        bytes memory thresBytes = LibBytes.slice(data, 0, 1);
-        console.logBytes(thresBytes);
-
-        (uint8 threshold) = abi.decode(thresBytes, (uint8));
-
-        console.log("200");
-
-        bytes memory cmtBytes = LibBytes.slice(data, 1, dataLen);
+        uint8 threshold = uint8(bytes1(data[:1]));
+        bytes memory cmtBytes = data[1:dataLen];
         uint256[] memory cmts = cmtBytes.convertToCmts();
 
         // Check the relation between threshold and ownersLen are valid
