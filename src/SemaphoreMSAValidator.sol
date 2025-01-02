@@ -11,8 +11,9 @@ import { LibSort } from "solady/utils/LibSort.sol";
 import { LibBytes } from "solady/utils/LibBytes.sol";
 
 import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
+import { ValidatorLibBytes } from "./utils/ValidatorLibBytes.sol";
 import { Identity } from "./utils/Identity.sol";
-// import { console } from "forge-std/console.sol";
+import { console } from "forge-std/console.sol";
 
 // Ensure the following match with the 3 function calls.
 bytes4 constant INITIATE_TX_SEL = bytes4(
@@ -33,9 +34,11 @@ bytes4 constant EXECUTE_TX_SEL = bytes4(abi.encodeCall(SemaphoreMSAValidator.exe
 
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     using LibSort for *;
+    using ValidatorLibBytes for bytes;
 
     // Constants
     uint8 public constant MAX_MEMBERS = 32;
+    uint8 internal constant CMT_BYTELEN = 32;
 
     struct CallDataCount {
         bytes callData;
@@ -44,7 +47,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
 
     // Errors
     error CannotRemoveOwner();
-    error InvalidIdCommitment();
+    error InvalidCommitment();
     error InvalidThreshold();
     error MaxMemberReached();
     error NotSortedAndUnique();
@@ -54,6 +57,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     error TxHashNotFound(address account, bytes32 txHash);
     error ThresholdNotReach(address account, uint8 threshold, uint8 current);
     error TxAndProofDontMatch(address account, bytes32 txHash);
+    error InvalidInstallData();
     error InvalidSignatureLen(address account, uint256 len);
     error InvalidUserOpSignature(address account, bytes32 userOpHash, bytes signature);
 
@@ -111,26 +115,31 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         address account = msg.sender;
         if (thresholds[account] > 0) revert AlreadyInitialized(account);
 
-        // console.log("bytes:");
-        // console.logBytes(data);
+        uint256 dataLen = data.length;
 
-        // OwnableValidator
-        (uint8 threshold, uint256[] memory cmts) = abi.decode(data, (uint8, uint256[]));
+        // here we check if dataLen exist and dataLen, minus the first 8-byte threshold value, is in a multiple of commitment-byte length.
+        if (dataLen == 0 || (dataLen - 1) % CMT_BYTELEN != 0) revert InvalidInstallData();
 
-        // console.log("threshold: %s, cmt len: %s", threshold, cmts.length);
-        // console.log("cmt: %s", cmts[0]);
+        console.log("100");
+        bytes memory thresBytes = LibBytes.slice(data, 0, 1);
+        console.logBytes(thresBytes);
 
-        // Check all address are valid
-        (bool found,) = cmts.searchSorted(uint256(0));
-        if (found) revert InvalidIdCommitment();
+        (uint8 threshold) = abi.decode(thresBytes, (uint8));
 
-        if (!cmts.isSortedAndUniquified()) revert NotSortedAndUnique();
+        console.log("200");
+
+        bytes memory cmtBytes = LibBytes.slice(data, 1, dataLen);
+        uint256[] memory cmts = cmtBytes.convertToCmts();
 
         // Check the relation between threshold and ownersLen are valid
         if (cmts.length > MAX_MEMBERS) revert MaxMemberReached();
+        if (cmts.length < threshold) revert InvalidThreshold();
 
-        uint8 cmtLen = uint8(cmts.length);
-        if (cmtLen == 0 || cmtLen < threshold) revert InvalidThreshold();
+        // Check if all commitments are valid
+        (bool found,) = cmts.searchSorted(uint256(0));
+        if (found) revert InvalidCommitment();
+
+        if (!cmts.isSortedAndUniquified()) revert NotSortedAndUnique();
 
         // Completed all checks by this point. Write to the storage.
         thresholds[account] = threshold;
@@ -178,7 +187,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         // 1. check newOwner != 0
         // 2. check ownerCount < MAX_MEMBERS
         // 3. cehck owner not existed yet
-        if (cmt == uint256(0)) revert InvalidIdCommitment();
+        if (cmt == uint256(0)) revert InvalidCommitment();
         if (memberCount(account) == MAX_MEMBERS) revert MaxMemberReached();
 
         uint256 groupId = groupMapping[account];
