@@ -59,7 +59,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     error TxAndProofDontMatch(address account, bytes32 txHash);
     error InvalidInstallData();
     error InvalidSignatureLen(address account, uint256 len);
-    error InvalidUserOpSignature(address account, bytes32 userOpHash, bytes signature);
+    error InvalidSignature(address account, bytes signature);
 
     // Events
     event ModuleInitialized(address indexed account);
@@ -326,7 +326,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
 
         // Verify signature using the public key
         if (!Identity.verifySignature(userOpHash, userOp.signature)) {
-            revert InvalidUserOpSignature(account, userOpHash, userOp.signature);
+            revert InvalidSignature(account, userOp.signature);
         }
 
         // Verify if the identity commitment is one of the semaphore group members
@@ -344,7 +344,6 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         {
             return VALIDATION_SUCCESS;
         }
-
         return VALIDATION_FAILED;
     }
 
