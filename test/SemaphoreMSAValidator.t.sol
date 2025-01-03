@@ -1,11 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
+// forge
 import { Test } from "forge-std/Test.sol";
-// import { console } from "forge-std/console.sol";
+import { console } from "forge-std/console.sol";
 
+// Rhinestone Modulekit
 import { RhinestoneModuleKit, ModuleKitHelpers, AccountInstance } from "modulekit/ModuleKit.sol";
+import { IERC7579Module, IERC7579Validator } from "modulekit/Modules.sol";
+import {
+    VALIDATION_SUCCESS,
+    VALIDATION_FAILED,
+    MODULE_TYPE_VALIDATOR
+} from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
+import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
+import { ERC4337Helpers } from "modulekit/test/utils/ERC4337Helpers.sol";
 
+// Semaphore
 import {
     Semaphore,
     ISemaphore,
@@ -16,13 +27,6 @@ import {
 
 import { SemaphoreMSAValidator, ERC7579ValidatorBase } from "../src/SemaphoreMSAValidator.sol";
 
-// import { IERC7579Module, IERC7579Validator } from "modulekit/Modules.sol";
-import {
-    VALIDATION_SUCCESS,
-    VALIDATION_FAILED,
-    MODULE_TYPE_VALIDATOR
-} from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
-import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 import {
     getEmptyUserOperation,
     getEmptySemaphoreProof,
@@ -77,6 +81,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         vm.deal(smartAcct.account, 10 ether);
         uint256[] memory cmts = new uint256[](1);
         cmts[0] = $users[0].identity.commitment();
+
         smartAcct.installModule({
             moduleTypeId: MODULE_TYPE_VALIDATOR,
             module: address(semaphoreValidator),
@@ -173,9 +178,37 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         assertEq(semaphoreValidator.groupMapping(smartAcct.account), 0);
         assertEq(semaphoreValidator.thresholds(smartAcct.account), 1);
         assertEq(semaphoreValidator.memberCount(smartAcct.account), 1);
+        assertEq(semaphoreValidator.isInitialized(smartAcct.account), true);
     }
 
-    function test_ValidateUserOpWithNonMember() public setupSmartAcctOneUser {
+    function test_onInstallWithInvalidData() public {
+        smartAcct = makeAccountInstance("SemaphoreMSAValidator");
+        vm.deal(smartAcct.account, 1 ether);
+
+        // Test: InvalidInstallData
+        smartAcct.expect4337Revert(SemaphoreMSAValidator.InvalidInstallData.selector);
+        smartAcct.installModule({
+            moduleTypeId: MODULE_TYPE_VALIDATOR,
+            module: address(semaphoreValidator),
+            data: abi.encodePacked(bytes16(hex"deadbeef"))
+        });
+    }
+
+    function test_duplicateInstall() public setupSmartAcctOneUser {
+        // The modifier has already installed the validator in smartAcct
+        uint256[] memory cmts = new uint256[](1);
+        cmts[0] = $users[0].identity.commitment();
+
+        // Test: should revert due to duplicate install
+        smartAcct.expect4337Revert();
+        smartAcct.installModule({
+            moduleTypeId: MODULE_TYPE_VALIDATOR,
+            module: address(semaphoreValidator),
+            data: abi.encodePacked(uint8(1), cmts)
+        });
+    }
+
+    function test_validateUserOpWithNonMember() public setupSmartAcctOneUser {
         PackedUserOperation memory userOp = getEmptyUserOperation();
         userOp.sender = smartAcct.account;
         userOp.callData =
@@ -197,7 +230,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         );
     }
 
-    function test_ValidateUserOpWithMember() public setupSmartAcctOneUser {
+    function test_validateUserOpWithMember() public setupSmartAcctOneUser {
         PackedUserOperation memory userOp = getEmptyUserOperation();
         userOp.sender = smartAcct.account;
         userOp.callData =
@@ -213,5 +246,17 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         );
 
         assertEq(validationData, VALIDATION_SUCCESS);
+    }
+
+    function test_initiateTransferOneUser() public setupSmartAcctOneUser {
+        revert("to be implemented");
+    }
+
+    function test_initiateTxOneUser() public setupSmartAcctOneUser {
+        revert("to be implemented");
+    }
+
+    function test_initiateTxExecuteOneUser() public setupSmartAcctOneUser {
+        revert("to be implemented");
     }
 }
