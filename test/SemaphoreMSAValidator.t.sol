@@ -3,7 +3,7 @@ pragma solidity ^0.8.23;
 
 // forge
 import { Test } from "forge-std/Test.sol";
-import { console } from "forge-std/console.sol";
+// import { console } from "forge-std/console.sol";
 
 // Rhinestone Modulekit
 import {
@@ -188,7 +188,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         userOpData.userOp.signature = forgedSgn;
 
         // TODO: checking with Konrad Rhinestone on this
-        smartAcct.expect4337Revert(/* SemaphoreMSAValidator.InvalidSignature.selector */);
+        smartAcct.expect4337Revert( /* SemaphoreMSAValidator.InvalidSignature.selector */ );
         userOpData.execUserOps();
     }
 
@@ -203,7 +203,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         userOpData.userOp.signature = recipient.identity.signHash(userOpData.userOpHash);
 
         // TODO: checking with Konrad Rhinestone on this
-        smartAcct.expect4337Revert(/* SemaphoreMSAValidator.MemberNotExists.selector */);
+        smartAcct.expect4337Revert( /* SemaphoreMSAValidator.MemberNotExists.selector */ );
         userOpData.execUserOps();
     }
 

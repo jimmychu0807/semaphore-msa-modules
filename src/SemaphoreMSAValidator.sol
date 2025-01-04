@@ -13,7 +13,7 @@ import { LibBytes } from "solady/utils/LibBytes.sol";
 import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
 import { ValidatorLibBytes } from "./utils/ValidatorLibBytes.sol";
 import { Identity } from "./utils/Identity.sol";
-import { console } from "forge-std/console.sol";
+// import { console } from "forge-std/console.sol";
 
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     using LibSort for *;
@@ -25,14 +25,18 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
 
     // Ensure the following match with the 3 function calls.
     bytes4[4] internal ALLOWED_SELECTORS = [
-        bytes4(abi.encodeCall(
-            this.initiateTx,
-            ("", ISemaphore.SemaphoreProof(0, 0, 0, 0, 0, [uint256(0), 0, 0, 0, 0, 0, 0, 0]), false)
-        )),
-        bytes4(abi.encodeCall(
-            this.signTx,
-            ("", ISemaphore.SemaphoreProof(0, 0, 0, 0, 0, [uint256(0), 0, 0, 0, 0, 0, 0, 0]), false)
-        )),
+        bytes4(
+            abi.encodeCall(
+                this.initiateTx,
+                ("", ISemaphore.SemaphoreProof(0, 0, 0, 0, 0, [uint256(0), 0, 0, 0, 0, 0, 0, 0]), false)
+            )
+        ),
+        bytes4(
+            abi.encodeCall(
+                this.signTx,
+                ("", ISemaphore.SemaphoreProof(0, 0, 0, 0, 0, [uint256(0), 0, 0, 0, 0, 0, 0, 0]), false)
+            )
+        ),
         bytes4(abi.encodeCall(this.executeTx, (""))),
         bytes4("") // this is for native token transfer
     ];
