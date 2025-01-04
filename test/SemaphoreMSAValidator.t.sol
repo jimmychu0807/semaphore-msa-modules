@@ -200,7 +200,6 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
             callData: "",
             txValidator: address(semaphoreValidator)
         });
-
         userOpData.userOp.signature = recipient.identity.signHash(userOpData.userOpHash);
 
         // TODO: checking with Konrad Rhinestone on this
@@ -209,10 +208,22 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
     }
 
     function test_initiateNativeTransferOneUserMember() public setupSmartAcctOneUser {
-        revert("to be implemented");
+        User storage member = $users[0];
+        User storage recipient = $users[1];
+
+        UserOpData memory userOpData = smartAcct.getExecOps({
+            target: recipient.addr,
+            value: 1 ether,
+            callData: "",
+            txValidator: address(semaphoreValidator)
+        });
+
+        userOpData.userOp.signature = member.identity.signHash(userOpData.userOpHash);
+
+        userOpData.execUserOps();
     }
 
-    function test_initiateTxExecuteOneUser() public setupSmartAcctOneUser {
+    function test_initiateTxExecuteOneUserMember() public setupSmartAcctOneUser {
         revert("to be implemented");
     }
 }

@@ -15,23 +15,6 @@ import { ValidatorLibBytes } from "./utils/ValidatorLibBytes.sol";
 import { Identity } from "./utils/Identity.sol";
 import { console } from "forge-std/console.sol";
 
-// Ensure the following match with the 3 function calls.
-bytes4 constant INITIATE_TX_SEL = bytes4(
-    abi.encodeCall(
-        SemaphoreMSAValidator.initiateTx,
-        ("", ISemaphore.SemaphoreProof(0, 0, 0, 0, 0, [uint256(0), 0, 0, 0, 0, 0, 0, 0]), false)
-    )
-);
-
-bytes4 constant SIGN_TX_SEL = bytes4(
-    abi.encodeCall(
-        SemaphoreMSAValidator.signTx,
-        ("", ISemaphore.SemaphoreProof(0, 0, 0, 0, 0, [uint256(0), 0, 0, 0, 0, 0, 0, 0]), false)
-    )
-);
-
-bytes4 constant EXECUTE_TX_SEL = bytes4(abi.encodeCall(SemaphoreMSAValidator.executeTx, ("")));
-
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     using LibSort for *;
     using ValidatorLibBytes for bytes;
@@ -39,6 +22,20 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     // Constants
     uint8 public constant MAX_MEMBERS = 32;
     uint8 internal constant CMT_BYTELEN = 32;
+
+    // Ensure the following match with the 3 function calls.
+    bytes4[4] internal ALLOWED_SELECTORS = [
+        bytes4(abi.encodeCall(
+            this.initiateTx,
+            ("", ISemaphore.SemaphoreProof(0, 0, 0, 0, 0, [uint256(0), 0, 0, 0, 0, 0, 0, 0]), false)
+        )),
+        bytes4(abi.encodeCall(
+            this.signTx,
+            ("", ISemaphore.SemaphoreProof(0, 0, 0, 0, 0, [uint256(0), 0, 0, 0, 0, 0, 0, 0]), false)
+        )),
+        bytes4(abi.encodeCall(this.executeTx, (""))),
+        bytes4("") // this is for native token transfer
+    ];
 
     struct CallDataCount {
         bytes callData;
@@ -313,6 +310,12 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         override
         returns (ValidationData)
     {
+        // console.log("userOp sender: %s", userOp.sender);
+        // console.log("userOp callData:");
+        // console.logBytes(userOp.callData);
+        // console.log("userOpHash:");
+        // console.logBytes32(userOpHash);
+
         // you want to exclude initiateTx, signTx, executeTx from needing tx count.
         // you just need to ensure they are a valid proof from the semaphore group members
         address account = userOp.sender;
@@ -335,13 +338,20 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
 
         if (!groups.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
 
-        // Validate the userOp.callData length before extracting 4 bytes out
-        (bytes4 funcSel) = abi.decode(userOp.callData, (bytes4));
+        // For callData, the first 120 bytes are reserved by ERC-7579 use. Then 32 bytes of value,
+        //   then the remaining as the callData passed in getExecOps
+        bytes memory valAndCallData = userOp.callData[120:];
+        (uint256 val) = abi.decode(LibBytes.slice(valAndCallData, 0, 32), (uint256));
+        bytes4 funcSel = bytes4(LibBytes.slice(valAndCallData, 32, 36));
 
-        // Allow only these three types on function calls to pass, and reject all other on-chain
+        // console.log("val: %s", val);
+        // console.log("funcSel:");
+        // console.logBytes4(funcSel);
+
+        // Allow only these few types on function calls to pass, and reject all other on-chain
         //   calls. They must be executed via `executeTx()` function.
-        if ((funcSel == INITIATE_TX_SEL) || (funcSel == SIGN_TX_SEL) || (funcSel == EXECUTE_TX_SEL))
-        {
+        if (_isAllowedSelector(funcSel)) {
+            // TODO: How to handle native token transfer?
             return VALIDATION_SUCCESS;
         }
         return VALIDATION_FAILED;
@@ -372,6 +382,13 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         returns (bool validSig)
     {
         return true;
+    }
+
+    function _isAllowedSelector(bytes4 sel) internal view returns (bool allowed) {
+        for (uint256 i = 0; i < ALLOWED_SELECTORS.length; ++i) {
+            if (sel == ALLOWED_SELECTORS[i]) return true;
+        }
+        return false;
     }
 
     /*//////////////////////////////////////////////////////////////////////////
