@@ -65,6 +65,7 @@ library IdentityLib {
         cmt = abi.decode(res, (uint256));
     }
 
+    // The return value is a 32 + 32 + 96 bytes array
     function signHash(Identity self, bytes32 hash) public returns (bytes memory signature) {
         uint256[2] memory pub = IdentityLib._publicKey(self);
         bytes memory hashSig = IdentityLib._signHash(self, hash);

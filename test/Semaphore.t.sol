@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
+// forge
 import { Test } from "forge-std/Test.sol";
-// import { console } from "forge-std/console.sol";
 
-import { RhinestoneModuleKit, ModuleKitHelpers, AccountInstance } from "modulekit/ModuleKit.sol";
-
+// Semaphore
 import {
     Semaphore,
     ISemaphore,
@@ -14,80 +13,34 @@ import {
     SemaphoreVerifier
 } from "../src/utils/Semaphore.sol";
 
-import { SemaphoreMSAValidator, ERC7579ValidatorBase } from "../src/SemaphoreMSAValidator.sol";
-
-// import { IERC7579Module, IERC7579Validator } from "modulekit/Modules.sol";
-import {
-    VALIDATION_SUCCESS,
-    VALIDATION_FAILED,
-    MODULE_TYPE_VALIDATOR
-} from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
-import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
-import {
-    getEmptyUserOperation,
-    getEmptySemaphoreProof,
-    Identity,
-    IdentityLib
-} from "./utils/TestUtils.sol";
-import { LibSort } from "solady/utils/LibSort.sol";
-
 struct User {
     uint256 sk;
     address addr;
-    Identity identity; // user commitment
 }
 
-contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
-    using ModuleKitHelpers for *;
-    using LibSort for *;
-    using IdentityLib for Identity;
-
-    AccountInstance internal smartAcct;
-    SemaphoreMSAValidator internal semaphoreValidator;
+contract SemaphoreUnitTest is Test {
+    Semaphore semaphore;
     User[] internal $users;
 
     function setUp() public virtual {
-        // init() function comes from contract AuxiliaryFactory:
-        //   https://github.com/rhinestonewtf/modulekit/blob/main/src/test/Auxiliary.sol
-        super.init();
-
         // Deploy Semaphore
         SemaphoreVerifier semaphoreVerifier = new SemaphoreVerifier();
         vm.label(address(semaphoreVerifier), "SemaphoreVerifier");
-        Semaphore semaphore = new Semaphore(ISemaphoreVerifier(address(semaphoreVerifier)));
+        semaphore = new Semaphore(ISemaphoreVerifier(address(semaphoreVerifier)));
         vm.label(address(semaphore), "Semaphore");
-
-        // Create the validator
-        semaphoreValidator = new SemaphoreMSAValidator(semaphore);
-        vm.label(address(semaphoreValidator), "SemaphoreMSAValidator");
 
         // Create two users
         (address addr, uint256 sk) = makeAddrAndKey("user1");
-        vm.deal(addr, 10 ether);
-        $users.push(User({ sk: sk, addr: addr, identity: IdentityLib.genIdentity(1) }));
+        vm.deal(addr, 1 ether);
+        $users.push(User({ sk: sk, addr: addr }));
 
         (addr, sk) = makeAddrAndKey("user2");
-        vm.deal(addr, 10 ether);
-        $users.push(User({ sk: sk, addr: addr, identity: IdentityLib.genIdentity(2) }));
+        vm.deal(addr, 1 ether);
+        $users.push(User({ sk: sk, addr: addr }));
     }
 
-    modifier setupSmartAcctOneUser() {
-        // Create the smart account and install the validator with one admin
-        smartAcct = makeAccountInstance("SemaphoreMSAValidator");
-        vm.deal(smartAcct.account, 10 ether);
-        uint256[] memory cmts = new uint256[](1);
-        cmts[0] = $users[0].identity.commitment();
-        smartAcct.installModule({
-            moduleTypeId: MODULE_TYPE_VALIDATOR,
-            module: address(semaphoreValidator),
-            data: abi.encodePacked(uint8(1), cmts)
-        });
-        _;
-    }
-
-    function test_SemaphoreDeployProperly() public {
-        ISemaphore semaphore = semaphoreValidator.semaphore();
-        ISemaphoreGroups groups = semaphoreValidator.groups();
+    function test_SemaphoreDeployed() public {
+        ISemaphoreGroups groups = ISemaphoreGroups(address(semaphore));
 
         User storage admin = $users[0];
         uint256 groupId = semaphore.createGroup(admin.addr);
@@ -167,51 +120,5 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         );
 
         semaphore.validateProof(groupId, goodProof);
-    }
-
-    function test_onInstallWithOneUser() public setupSmartAcctOneUser {
-        assertEq(semaphoreValidator.groupMapping(smartAcct.account), 0);
-        assertEq(semaphoreValidator.thresholds(smartAcct.account), 1);
-        assertEq(semaphoreValidator.memberCount(smartAcct.account), 1);
-    }
-
-    function test_ValidateUserOpWithNonMember() public setupSmartAcctOneUser {
-        PackedUserOperation memory userOp = getEmptyUserOperation();
-        userOp.sender = smartAcct.account;
-        userOp.callData =
-            abi.encodeCall(SemaphoreMSAValidator.initiateTx, ("", getEmptySemaphoreProof(), false));
-
-        bytes32 userOpHash = bytes32(keccak256("userOpHash"));
-
-        Identity id = IdentityLib.genIdentity(100);
-        userOp.signature = id.signHash(userOpHash);
-
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                SemaphoreMSAValidator.MemberNotExists.selector, smartAcct.account, id.commitment()
-            )
-        );
-
-        ERC7579ValidatorBase.ValidationData.unwrap(
-            semaphoreValidator.validateUserOp(userOp, userOpHash)
-        );
-    }
-
-    function test_ValidateUserOpWithMember() public setupSmartAcctOneUser {
-        PackedUserOperation memory userOp = getEmptyUserOperation();
-        userOp.sender = smartAcct.account;
-        userOp.callData =
-            abi.encodeCall(SemaphoreMSAValidator.initiateTx, ("", getEmptySemaphoreProof(), false));
-
-        bytes32 userOpHash = bytes32(keccak256("userOpHash"));
-
-        Identity id = $users[0].identity;
-        userOp.signature = id.signHash(userOpHash);
-
-        uint256 validationData = ERC7579ValidatorBase.ValidationData.unwrap(
-            semaphoreValidator.validateUserOp(userOp, userOpHash)
-        );
-
-        assertEq(validationData, VALIDATION_SUCCESS);
     }
 }
