@@ -13,7 +13,7 @@ import { LibBytes } from "solady/utils/LibBytes.sol";
 import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
 import { ValidatorLibBytes } from "./utils/ValidatorLibBytes.sol";
 import { Identity } from "./utils/Identity.sol";
-// import { console } from "forge-std/console.sol";
+import { console } from "forge-std/console.sol";
 
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     using LibSort for *;
@@ -24,26 +24,17 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     uint8 internal constant CMT_BYTELEN = 32;
 
     // Ensure the following match with the 3 function calls.
-    bytes4[4] internal ALLOWED_SELECTORS = [
-        bytes4(
-            abi.encodeCall(
-                this.initiateTx,
-                ("", ISemaphore.SemaphoreProof(0, 0, 0, 0, 0, [uint256(0), 0, 0, 0, 0, 0, 0, 0]), false)
-            )
-        ),
-        bytes4(
-            abi.encodeCall(
-                this.signTx,
-                ("", ISemaphore.SemaphoreProof(0, 0, 0, 0, 0, [uint256(0), 0, 0, 0, 0, 0, 0, 0]), false)
-            )
-        ),
-        bytes4(abi.encodeCall(this.executeTx, (""))),
-        bytes4("") // this is for native token transfer
+    bytes4[3] internal ALLOWED_SELECTORS = [
+        this.initiateTx.selector,
+        this.signTx.selector,
+        this.executeTx.selector
     ];
 
-    struct CallDataCount {
+    struct ExtCallCount {
+        address targetAddr;
         bytes callData;
-        uint8 sigCount;
+        uint256 value;
+        uint8 count;
     }
 
     // Errors
@@ -61,6 +52,8 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     error InvalidInstallData();
     error InvalidSignatureLen(address account, uint256 len);
     error InvalidSignature(address account, bytes signature);
+    error NonAllowedSelector(address account, bytes4 funcSel);
+    error NonValidatorCallBanned(address targetAddr, address selfAddr);
 
     // Events
     event ModuleInitialized(address indexed account);
@@ -68,7 +61,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     event AddedMember(address indexed, uint256 indexed commitment);
     event RemovedMember(address indexed, uint256 indexed commitment);
     event ThresholdSet(address indexed account, uint8 indexed threshold);
-    event InitiatedTx(address indexed account, bytes32 indexed txHash);
+    event InitiatedTx(address indexed account, uint256 indexed seq, bytes32 indexed txHash);
     event SignedTx(address indexed account, bytes32 indexed txHash);
     event ExecutedTx(address indexed account, bytes32 indexed txHash);
 
@@ -81,7 +74,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     mapping(address account => uint8 threshold) public thresholds;
 
     // smart account -> hash(call(params)) -> valid proof count
-    mapping(address account => mapping(bytes32 txHash => CallDataCount callDataCount)) public
+    mapping(address account => mapping(bytes32 txHash => ExtCallCount callDataCount)) public
         acctTxCount;
 
     // keep track of seqNum of txs that require threshold signature
@@ -214,7 +207,8 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     }
 
     function initiateTx(
-        bytes calldata callData,
+        address targetAddr,
+        bytes calldata txCallData,
         ISemaphore.SemaphoreProof calldata proof,
         bool execute
     )
@@ -222,6 +216,9 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         moduleInstalled
         returns (bytes32 txHash)
     {
+        console.log("initiateTx targetAddr: %s", targetAddr);
+        console.logBytes(txCallData);
+
         // retrieve the group ID
         address account = msg.sender;
         uint256 groupId = groupMapping[account];
@@ -229,15 +226,15 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         // By this point, txParams should be validated.
         // combine the txParams with the account nonce and compute its hash
         uint256 seq = acctSeqNum[account];
-        txHash = keccak256(abi.encode(callData, seq));
+        txHash = keccak256(abi.encodePacked(seq, targetAddr, txCallData));
 
         // Check: validate the proof is related to the callData
         if (groupId != proof.scope || uint256(txHash) != proof.message) {
             revert TxAndProofDontMatch(account, txHash);
         }
 
-        CallDataCount storage cdc = acctTxCount[account][txHash];
-        if (cdc.sigCount != 0) revert TxHasBeenInitiated(account, txHash);
+        ExtCallCount storage ecc = acctTxCount[account][txHash];
+        if (ecc.count != 0) revert TxHasBeenInitiated(account, txHash);
 
         // the callData and proof should have some kind of inherent relationship
         semaphore.validateProof(groupId, proof);
@@ -247,13 +244,18 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         // By this point, the proof also passed semaphore check.
         // Start writing to the storage
         acctSeqNum[account] += 1;
-        cdc.callData = callData;
-        cdc.sigCount = 1;
+        ecc.targetAddr = targetAddr;
+        ecc.callData = txCallData;
 
-        emit InitiatedTx(account, txHash);
+        // TODO: how do you store the value of a call?
+        // ecc.value = 0;
+
+        ecc.count = 1;
+
+        emit InitiatedTx(account, seq, txHash);
 
         // execute the transaction if condition allows
-        if (execute && cdc.sigCount >= thresholds[account]) executeTx(txHash);
+        if (execute && ecc.count >= thresholds[account]) executeTx(txHash);
     }
 
     function signTx(
@@ -271,16 +273,16 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         if (proof.scope != groupId) revert TxAndProofDontMatch(account, txHash);
 
         // Check if the txHash exist
-        CallDataCount storage cdc = acctTxCount[account][txHash];
-        if (cdc.sigCount == 0) revert TxHashNotFound(account, txHash);
+        ExtCallCount storage cdc = acctTxCount[account][txHash];
+        if (cdc.count == 0) revert TxHashNotFound(account, txHash);
 
         semaphore.validateProof(groupId, proof);
 
-        cdc.sigCount += 1;
+        cdc.count += 1;
         emit SignedTx(account, txHash);
 
         // execute the transaction if condition allows
-        if (execute && cdc.sigCount >= thresholds[account]) executeTx(txHash);
+        if (execute && cdc.count >= thresholds[account]) executeTx(txHash);
     }
 
     function executeTx(bytes32 txHash) public moduleInstalled {
@@ -288,10 +290,10 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         address account = msg.sender;
         uint256 groupId = groupMapping[account];
         uint8 threshold = thresholds[account];
-        CallDataCount storage cdc = acctTxCount[account][txHash];
+        ExtCallCount storage cdc = acctTxCount[account][txHash];
 
-        if (cdc.sigCount == 0) revert TxHashNotFound(account, txHash);
-        if (cdc.sigCount < threshold) revert ThresholdNotReach(account, threshold, cdc.sigCount);
+        if (cdc.count == 0) revert TxHashNotFound(account, txHash);
+        if (cdc.count < threshold) revert ThresholdNotReach(account, threshold, cdc.count);
 
         //TODO: make the actual contract call here
 
@@ -342,6 +344,10 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
 
         if (!groups.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
 
+        // We don't allow call to other contract.
+        address targetAddr = address(bytes20(userOp.callData[100:120]));
+        if (targetAddr != address(this)) revert NonValidatorCallBanned(targetAddr, address(this));
+
         // For callData, the first 120 bytes are reserved by ERC-7579 use. Then 32 bytes of value,
         //   then the remaining as the callData passed in getExecOps
         bytes memory valAndCallData = userOp.callData[120:];
@@ -354,11 +360,9 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
 
         // Allow only these few types on function calls to pass, and reject all other on-chain
         //   calls. They must be executed via `executeTx()` function.
-        if (_isAllowedSelector(funcSel)) {
-            // TODO: How to handle native token transfer?
-            return VALIDATION_SUCCESS;
-        }
-        return VALIDATION_FAILED;
+        if (_isAllowedSelector(funcSel)) return VALIDATION_SUCCESS;
+
+        revert NonAllowedSelector(account, funcSel);
     }
 
     function isValidSignatureWithSender(
