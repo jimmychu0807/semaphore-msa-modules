@@ -3,7 +3,7 @@ pragma solidity ^0.8.23;
 
 // forge
 import { Test } from "forge-std/Test.sol";
-import { console } from "forge-std/console.sol";
+// import { console } from "forge-std/console.sol";
 
 // Rhinestone Modulekit
 import {
@@ -15,7 +15,6 @@ import {
 import { IERC7579Module, IERC7579Validator } from "modulekit/Modules.sol";
 import {
     VALIDATION_SUCCESS,
-    VALIDATION_FAILED,
     MODULE_TYPE_VALIDATOR
 } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
@@ -149,8 +148,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
             0,
             address(semaphoreValidator),
             abi.encodeCall(
-                SemaphoreMSAValidator.initiateTx,
-                (address(0), "", getEmptySemaphoreProof(), false)
+                SemaphoreMSAValidator.initiateTx, (address(0), "", getEmptySemaphoreProof(), false)
             )
         );
 
@@ -177,8 +175,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
             0,
             address(semaphoreValidator),
             abi.encodeCall(
-                SemaphoreMSAValidator.initiateTx,
-                (address(0), "", getEmptySemaphoreProof(), false)
+                SemaphoreMSAValidator.initiateTx, (address(0), "", getEmptySemaphoreProof(), false)
             )
         );
 
@@ -198,10 +195,9 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         User storage recipient = $users[1];
         UserOpData memory userOpData = smartAcct.getExecOps({
             target: address(semaphoreValidator),
-            value: 1,
+            value: 1 ether,
             callData: abi.encodeCall(
-                SemaphoreMSAValidator.initiateTx,
-                (recipient.addr, "", getEmptySemaphoreProof(), false)
+                SemaphoreMSAValidator.initiateTx, (recipient.addr, "", getEmptySemaphoreProof(), false)
             ),
             txValidator: address(semaphoreValidator)
         });
@@ -215,26 +211,28 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         userOpData.execUserOps();
     }
 
-    // TODO: fix
-    function test_initiateTokensTransferMemberInvalidSemaphoreProof() public setupSmartAcctOneMember {
+    function test_initiateTokensTransferMemberInvalidSemaphoreProof()
+        public
+        setupSmartAcctOneMember
+    {
         User storage member = $users[0];
         User storage recipient = $users[1];
         UserOpData memory userOpData = smartAcct.getExecOps({
             target: address(semaphoreValidator),
-            value: 1,
+            value: 1 ether,
             callData: abi.encodeCall(
-                SemaphoreMSAValidator.initiateTx,
-                (recipient.addr, "", getEmptySemaphoreProof(), false)
+                SemaphoreMSAValidator.initiateTx, (recipient.addr, "", getEmptySemaphoreProof(), false)
             ),
             txValidator: address(semaphoreValidator)
         });
         userOpData.userOp.signature = member.identity.signHash(userOpData.userOpHash);
 
-        smartAcct.expect4337Revert(SemaphoreMSAValidator.InvalidSignature.selector);
+        smartAcct.expect4337Revert(SemaphoreMSAValidator.InvalidSemaphoreProof.selector);
         userOpData.execUserOps();
     }
 
-    function test_initiateTxOneMemberNonValidatorCall() public
+    function test_initiateTxOneMemberNonValidatorCall()
+        public
         setupSmartAcctOneMember
         deploySimpleContract
     {
@@ -254,7 +252,8 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         userOpData.execUserOps();
     }
 
-    function test_initiateTxOneMemberAllowedSelectorInvalidSemaphoreProof() public
+    function test_initiateTxOneMemberAllowedSelectorInvalidSemaphoreProof()
+        public
         setupSmartAcctOneMember
         deploySimpleContract
     {

@@ -2,10 +2,7 @@
 pragma solidity >=0.8.23 <=0.8.29;
 
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
-import {
-    VALIDATION_SUCCESS,
-    VALIDATION_FAILED
-} from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
+import { VALIDATION_SUCCESS } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 import { LibBytes } from "solady/utils/LibBytes.sol";
@@ -13,7 +10,7 @@ import { LibBytes } from "solady/utils/LibBytes.sol";
 import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
 import { ValidatorLibBytes } from "./utils/ValidatorLibBytes.sol";
 import { Identity } from "./utils/Identity.sol";
-import { console } from "forge-std/console.sol";
+// import { console } from "forge-std/console.sol";
 
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     using LibSort for *;
@@ -24,11 +21,8 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     uint8 internal constant CMT_BYTELEN = 32;
 
     // Ensure the following match with the 3 function calls.
-    bytes4[3] internal ALLOWED_SELECTORS = [
-        this.initiateTx.selector,
-        this.signTx.selector,
-        this.executeTx.selector
-    ];
+    bytes4[3] internal ALLOWED_SELECTORS =
+        [this.initiateTx.selector, this.signTx.selector, this.executeTx.selector];
 
     struct ExtCallCount {
         address targetAddr;
@@ -213,11 +207,12 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         bool execute
     )
         external
+        payable
         moduleInstalled
         returns (bytes32 txHash)
     {
-        console.log("initiateTx targetAddr: %s", targetAddr);
-        console.logBytes(txCallData);
+        // console.log("initiateTx targetAddr: %s", targetAddr);
+        // console.logBytes(txCallData);
 
         // retrieve the group ID
         address account = msg.sender;
@@ -233,21 +228,14 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
 
         // finally, check semaphore proof
         try semaphore.validateProof(groupId, proof) {
-            //TODO: how do you handle plain chain native tokens transfer?
-
-            // By this point, the proof also passed semaphore check.
-            // Start writing to the storage
+            // By this point, the proof also passed semaphore check. Start writing to the storage
             acctSeqNum[account] += 1;
             ecc.targetAddr = targetAddr;
             ecc.callData = txCallData;
-
-            // TODO: how do you store the value of a call?
-            // ecc.value = 0;
-
+            ecc.value = msg.value;
             ecc.count = 1;
 
             emit InitiatedTx(account, seq, txHash);
-
             // execute the transaction if condition allows
             if (execute && ecc.count >= thresholds[account]) executeTx(txHash);
         } catch Error(string memory reason) {
