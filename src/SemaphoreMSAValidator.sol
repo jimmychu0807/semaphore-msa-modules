@@ -48,10 +48,10 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     error TxHasBeenInitiated(address account, bytes32 txHash);
     error TxHashNotFound(address account, bytes32 txHash);
     error ThresholdNotReach(address account, uint8 threshold, uint8 current);
-    error TxAndProofDontMatch(address account, bytes32 txHash);
     error InvalidInstallData();
     error InvalidSignatureLen(address account, uint256 len);
     error InvalidSignature(address account, bytes signature);
+    error InvalidSemaphoreProof(bytes reason);
     error NonAllowedSelector(address account, bytes4 funcSel);
     error NonValidatorCallBanned(address targetAddr, address selfAddr);
 
@@ -228,34 +228,33 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         uint256 seq = acctSeqNum[account];
         txHash = keccak256(abi.encodePacked(seq, targetAddr, txCallData));
 
-        // Check: validate the proof is related to the callData
-        if (groupId != proof.scope || uint256(txHash) != proof.message) {
-            revert TxAndProofDontMatch(account, txHash);
-        }
-
         ExtCallCount storage ecc = acctTxCount[account][txHash];
         if (ecc.count != 0) revert TxHasBeenInitiated(account, txHash);
 
-        // the callData and proof should have some kind of inherent relationship
-        semaphore.validateProof(groupId, proof);
+        // finally, check semaphore proof
+        try semaphore.validateProof(groupId, proof) {
+            //TODO: how do you handle plain chain native tokens transfer?
 
-        //TODO: how do you handle plain chain native tokens transfer?
+            // By this point, the proof also passed semaphore check.
+            // Start writing to the storage
+            acctSeqNum[account] += 1;
+            ecc.targetAddr = targetAddr;
+            ecc.callData = txCallData;
 
-        // By this point, the proof also passed semaphore check.
-        // Start writing to the storage
-        acctSeqNum[account] += 1;
-        ecc.targetAddr = targetAddr;
-        ecc.callData = txCallData;
+            // TODO: how do you store the value of a call?
+            // ecc.value = 0;
 
-        // TODO: how do you store the value of a call?
-        // ecc.value = 0;
+            ecc.count = 1;
 
-        ecc.count = 1;
+            emit InitiatedTx(account, seq, txHash);
 
-        emit InitiatedTx(account, seq, txHash);
-
-        // execute the transaction if condition allows
-        if (execute && ecc.count >= thresholds[account]) executeTx(txHash);
+            // execute the transaction if condition allows
+            if (execute && ecc.count >= thresholds[account]) executeTx(txHash);
+        } catch Error(string memory reason) {
+            revert InvalidSemaphoreProof(bytes(reason));
+        } catch (bytes memory reason) {
+            revert InvalidSemaphoreProof(reason);
+        }
     }
 
     function signTx(
@@ -269,8 +268,6 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         // retrieve the group ID
         address account = msg.sender;
         uint256 groupId = groupMapping[account];
-
-        if (proof.scope != groupId) revert TxAndProofDontMatch(account, txHash);
 
         // Check if the txHash exist
         ExtCallCount storage cdc = acctTxCount[account][txHash];

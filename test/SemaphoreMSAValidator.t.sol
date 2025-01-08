@@ -194,13 +194,15 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         assertEq(validationData, VALIDATION_SUCCESS);
     }
 
-    // TODO: fix the userOp
     function test_initiateTokensTransferInvalidSignature() public setupSmartAcctOneMember {
         User storage recipient = $users[1];
         UserOpData memory userOpData = smartAcct.getExecOps({
-            target: recipient.addr,
+            target: address(semaphoreValidator),
             value: 1,
-            callData: "",
+            callData: abi.encodeCall(
+                SemaphoreMSAValidator.initiateTx,
+                (recipient.addr, "", getEmptySemaphoreProof(), false)
+            ),
             txValidator: address(semaphoreValidator)
         });
 
@@ -213,24 +215,23 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         userOpData.execUserOps();
     }
 
-    // TODO: fix the userOp
+    // TODO: fix
     function test_initiateTokensTransferMemberInvalidSemaphoreProof() public setupSmartAcctOneMember {
         User storage member = $users[0];
         User storage recipient = $users[1];
-
         UserOpData memory userOpData = smartAcct.getExecOps({
-            target: recipient.addr,
-            value: 1 ether,
-            callData: "",
+            target: address(semaphoreValidator),
+            value: 1,
+            callData: abi.encodeCall(
+                SemaphoreMSAValidator.initiateTx,
+                (recipient.addr, "", getEmptySemaphoreProof(), false)
+            ),
             txValidator: address(semaphoreValidator)
         });
-
-        // TODO: need more testing in this case
         userOpData.userOp.signature = member.identity.signHash(userOpData.userOpHash);
 
+        smartAcct.expect4337Revert(SemaphoreMSAValidator.InvalidSignature.selector);
         userOpData.execUserOps();
-
-        revert("more need to be implemented");
     }
 
     function test_initiateTxOneMemberNonValidatorCall() public
@@ -261,21 +262,18 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         uint256 testVal = 7;
 
         bytes memory txCallData = abi.encodeCall(SimpleContract.setVal, (testVal));
-        ISemaphore.SemaphoreProof memory smProof = getEmptySemaphoreProof();
-
         UserOpData memory userOpData = smartAcct.getExecOps({
             target: address(semaphoreValidator),
             value: 0,
             callData: abi.encodeCall(
                 SemaphoreMSAValidator.initiateTx,
-                (address(simpleContract), txCallData, smProof, false)
+                (address(simpleContract), txCallData, getEmptySemaphoreProof(), false)
             ),
             txValidator: address(semaphoreValidator)
         });
-
         userOpData.userOp.signature = member.identity.signHash(userOpData.userOpHash);
 
-        smartAcct.expect4337Revert(SemaphoreMSAValidator.TxAndProofDontMatch.selector);
+        smartAcct.expect4337Revert(SemaphoreMSAValidator.InvalidSemaphoreProof.selector);
         userOpData.execUserOps();
     }
 }
