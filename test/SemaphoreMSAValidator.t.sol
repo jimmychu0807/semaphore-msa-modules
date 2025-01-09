@@ -140,7 +140,23 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
     }
 
     function test_onUninstall() public setupSmartAcctOneMember {
-        revert("to be implemented");
+        // Test for `ModuleUninitialized` event. Seem you won't be able to catch the event
+        //   with normal vm.expectEmit
+        // vm.expectEmit(true, false, false, false, address(semaphoreValidator));
+        // emit SemaphoreMSAValidator.ModuleUninitialized(smartAcct.account);
+
+        smartAcct.uninstallModule({
+            moduleTypeId: MODULE_TYPE_VALIDATOR,
+            module: address(semaphoreValidator),
+            data: ""
+        });
+
+        assertEq(semaphoreValidator.thresholds(smartAcct.account), 0);
+        assertEq(semaphoreValidator.memberCount(smartAcct.account), 0);
+        assertEq(semaphoreValidator.isInitialized(smartAcct.account), false);
+
+        (bool bExist, uint256 groupId) = semaphoreValidator.getGroupId(smartAcct.account);
+        assertEq(bExist, false);
     }
 
     // Test only validateUserOp()
