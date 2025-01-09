@@ -20,6 +20,9 @@ importers:
       '@semaphore-protocol/identity':
         specifier: github:jimmychu0807/semaphore#identity-cli&path:/packages/identity
         version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/823a4d0c94fba934073a6cda51da91144af35f76#path:/packages/identity
+      '@semaphore-protocol/proof':
+        specifier: github:jimmychu0807/semaphore#identity-cli&path:/packages/proof
+        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/5e809a5215b152d80b2c457edbc21cb0a7b6e510#path:/packages/proof
       poseidon-solidity:
         specifier: github:chancehudson/poseidon-solidity#main
         version: https://codeload.github.com/chancehudson/poseidon-solidity/tar.gz/8205c97ec4a35a9adb854b70b2c9ba92668d1304
@@ -523,6 +526,11 @@ packages:
     peerDependencies:
       '@semaphore-protocol/group': 4.8.2
       '@semaphore-protocol/identity': 4.8.2
+
+  '@semaphore-protocol/proof@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/5e809a5215b152d80b2c457edbc21cb0a7b6e510#path:/packages/proof':
+    resolution: {path: /packages/proof, tarball: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/5e809a5215b152d80b2c457edbc21cb0a7b6e510}
+    version: 4.8.2
+    hasBin: true
 
   '@semaphore-protocol/utils@4.8.2':
     resolution: {integrity: sha512-GAJwDJVic+7P4RnCc6kFMXuHzbkcXwiqNe2WsnycILhkmNB0q0bQHiQAAYyXFeJVcAWvv1SJiYMbfJkgIJsJDQ==}
@@ -1261,13 +1269,13 @@ packages:
     resolution: {integrity: sha512-Ld2g8rrAyMYFXBhEqMz8ZAHBi4J4uS1i/CxGMDnjyFWddMXLVcDp051DZfu+t7+ab7Wv6SMqpWmyFIj5UbfFvg==}
     engines: {node: '>=14'}
 
+  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/726a6ee5fc8427a0013d6f624e486c9130c0e336:
+    resolution: {tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/726a6ee5fc8427a0013d6f624e486c9130c0e336}
+    version: 1.9.5
+
   forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/8a225d81aa8e2e013580564588c79abb65eacc9e:
     resolution: {tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/8a225d81aa8e2e013580564588c79abb65eacc9e}
     version: 1.9.3
-
-  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/b5a86914561f38735ef1fc357685de3e7c92dc48:
-    resolution: {tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/b5a86914561f38735ef1fc357685de3e7c92dc48}
-    version: 1.9.5
 
   form-data-encoder@2.1.4:
     resolution: {integrity: sha512-yDYSgNMraqvnxiEXO4hi88+YZxaHC6QKzb5N84iRCTDeRO7ZALpir/lVmf/uXUhnwUr2O4HU8s/n6x+yNjQkHw==}
@@ -2993,7 +3001,7 @@ snapshots:
       '@rhinestone/sentinellist': https://codeload.github.com/rhinestonewtf/sentinellist/tar.gz/e722c5cc68c570d535bc3c9f85b3ce90cdc38807
       ds-test: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0
       excessively-safe-call: '@nomad-xyz/excessively-safe-call@https://codeload.github.com/nomad-xyz/ExcessivelySafeCall/tar.gz/81cd99ce3e69117d665d7601c330ea03b97acce0'
-      forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/b5a86914561f38735ef1fc357685de3e7c92dc48
+      forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/726a6ee5fc8427a0013d6f624e486c9130c0e336
       solady: https://codeload.github.com/vectorized/solady/tar.gz/de9aee59648862bb98affd578248d1e75c7073ad
       solarray: https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684
       solhint: 5.0.3(typescript@4.9.5)
@@ -3010,7 +3018,7 @@ snapshots:
 
   '@rhinestone/sentinellist@https://codeload.github.com/rhinestonewtf/sentinellist/tar.gz/e722c5cc68c570d535bc3c9f85b3ce90cdc38807':
     dependencies:
-      forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/b5a86914561f38735ef1fc357685de3e7c92dc48
+      forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/726a6ee5fc8427a0013d6f624e486c9130c0e336
 
   '@scure/base@1.1.9': {}
 
@@ -3080,6 +3088,21 @@ snapshots:
       '@zk-kit/utils': 1.2.1
       ethers: 6.13.4
       snarkjs: 0.7.4
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
+  '@semaphore-protocol/proof@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/5e809a5215b152d80b2c457edbc21cb0a7b6e510#path:/packages/proof':
+    dependencies:
+      '@semaphore-protocol/group': 4.8.2
+      '@semaphore-protocol/identity': 4.8.2
+      '@semaphore-protocol/utils': 4.8.2
+      '@zk-kit/artifacts': 1.8.0
+      '@zk-kit/utils': 1.2.1
+      commander: 12.1.0
+      ethers: 6.13.4
+      snarkjs: 0.7.4
+      tsx: 4.19.2
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -4003,9 +4026,9 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
-  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/8a225d81aa8e2e013580564588c79abb65eacc9e: {}
+  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/726a6ee5fc8427a0013d6f624e486c9130c0e336: {}
 
-  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/b5a86914561f38735ef1fc357685de3e7c92dc48: {}
+  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/8a225d81aa8e2e013580564588c79abb65eacc9e: {}
 
   form-data-encoder@2.1.4: {}
 

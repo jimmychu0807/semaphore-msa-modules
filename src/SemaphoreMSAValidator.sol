@@ -10,7 +10,7 @@ import { LibBytes } from "solady/utils/LibBytes.sol";
 import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
 import { ValidatorLibBytes } from "./utils/ValidatorLibBytes.sol";
 import { Identity } from "./utils/Identity.sol";
-// import { console } from "forge-std/console.sol";
+import { console } from "forge-std/console.sol";
 
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     using LibSort for *;
@@ -200,6 +200,12 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         return acctSeqNum[account];
     }
 
+    function getGroupId(address account) external returns (bool, uint256) {
+        uint256 groupId = groupMapping[account];
+        if (thresholds[account] == 0) return (false, 0);
+        return (true, groupId);
+    }
+
     function initiateTx(
         address targetAddr,
         bytes calldata txCallData,
@@ -211,9 +217,6 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         moduleInstalled
         returns (bytes32 txHash)
     {
-        // console.log("initiateTx targetAddr: %s", targetAddr);
-        // console.logBytes(txCallData);
-
         // retrieve the group ID
         address account = msg.sender;
         uint256 groupId = groupMapping[account];
@@ -221,7 +224,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         // By this point, txParams should be validated.
         // combine the txParams with the account nonce and compute its hash
         uint256 seq = acctSeqNum[account];
-        txHash = keccak256(abi.encodePacked(seq, targetAddr, txCallData));
+        txHash = keccak256(abi.encodePacked(seq, targetAddr, msg.value, txCallData));
 
         ExtCallCount storage ecc = acctTxCount[account][txHash];
         if (ecc.count != 0) revert TxHasBeenInitiated(account, txHash);

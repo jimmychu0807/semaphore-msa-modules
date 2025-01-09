@@ -20,6 +20,7 @@
     "@semaphore-protocol/contracts": "github:jimmychu0807/semaphore#identity-cli&path:/packages/contracts/contracts",
     "@semaphore-protocol/core": "github:jimmychu0807/semaphore#identity-cli&path:/packages/core",
     "@semaphore-protocol/identity": "github:jimmychu0807/semaphore#identity-cli&path:/packages/identity",
+    "@semaphore-protocol/proof": "github:jimmychu0807/semaphore#identity-cli&path:/packages/proof",
     "poseidon-solidity": "github:chancehudson/poseidon-solidity#main",
     "rimraf": "^5.0.5",
     "solady": "^0.0.287"
