@@ -267,8 +267,18 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         // Expecting `InitiatedTx` event to be emitted
         vm.expectEmit(true, true, true, true, address(semaphoreValidator));
         emit SemaphoreMSAValidator.InitiatedTx(smartAcct.account, seq, txHash);
-
         userOpData.execUserOps();
+
+        // Test the states are changed accordingly
+        assertEq(semaphoreValidator.acctSeqNum(smartAcct.account), seq + 1);
+
+        (address eccTargetAddr, bytes memory eccCallData, uint256 eccValue, uint8 eccCount) =
+            semaphoreValidator.acctTxCount(smartAcct.account, txHash);
+
+        assertEq(eccTargetAddr, targetAddr);
+        assertEq(eccValue, value);
+        assertEq(eccCallData, "");
+        assertEq(eccCount, 1);
     }
 
     function test_initiateTxOneMemberNonValidatorCall()
