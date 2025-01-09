@@ -10,7 +10,7 @@ import { LibBytes } from "solady/utils/LibBytes.sol";
 import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
 import { ValidatorLibBytes } from "./utils/ValidatorLibBytes.sol";
 import { Identity } from "./utils/Identity.sol";
-// import { console } from "forge-std/console.sol";
+import { console } from "forge-std/console.sol";
 
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     using LibSort for *;
@@ -280,10 +280,13 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         uint8 threshold = thresholds[account];
         ExtCallCount storage cdc = acctTxCount[account][txHash];
 
+        console.log("executeTx");
+
         if (cdc.count == 0) revert TxHashNotFound(account, txHash);
         if (cdc.count < threshold) revert ThresholdNotReach(account, threshold, cdc.count);
 
         //TODO: make the actual contract call here
+        console.log("actually make the execution call");
 
         emit ExecutedTx(account, txHash);
 
