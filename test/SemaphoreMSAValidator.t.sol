@@ -3,7 +3,7 @@ pragma solidity ^0.8.23;
 
 // forge
 import { Test } from "forge-std/Test.sol";
-import { console } from "forge-std/console.sol";
+// import { console } from "forge-std/console.sol";
 
 // Rhinestone Modulekit
 import {
@@ -234,10 +234,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         userOpData.execUserOps();
     }
 
-    function test_initiateTokensTransferMemberValid()
-        public
-        setupSmartAcctOneMember
-    {
+    function test_initiateTokensTransferMemberValid() public setupSmartAcctOneMember {
         User storage member = $users[0];
 
         uint256 value = 1 ether;
@@ -251,15 +248,14 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         assert(bExist);
         uint256[] memory members = new uint256[](1);
         members[0] = member.identity.commitment();
-        ISemaphore.SemaphoreProof memory smProof = member.identity.generateSempahoreProof(groupId, members, txHash);
+        ISemaphore.SemaphoreProof memory smProof =
+            member.identity.generateSempahoreProof(groupId, members, txHash);
 
         // Composing the UserOpData
         UserOpData memory userOpData = smartAcct.getExecOps({
             target: address(semaphoreValidator),
             value: value,
-            callData: abi.encodeCall(
-                SemaphoreMSAValidator.initiateTx, (targetAddr, "", smProof, false)
-            ),
+            callData: abi.encodeCall(SemaphoreMSAValidator.initiateTx, (targetAddr, "", smProof, false)),
             txValidator: address(semaphoreValidator)
         });
         userOpData.userOp.signature = member.identity.signHash(userOpData.userOpHash);

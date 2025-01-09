@@ -4,7 +4,7 @@ pragma solidity ^0.8.23;
 import { Vm } from "forge-std/Vm.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 import { ISemaphore } from "../../src/utils/Semaphore.sol";
-import { console } from "forge-std/console.sol";
+// import { console } from "forge-std/console.sol";
 import { LibString } from "solady/Milady.sol";
 
 struct ValidationData {
@@ -83,8 +83,14 @@ library IdentityLib {
         return abi.encodePacked(pub, hashSig);
     }
 
-    function generateSempahoreProof(Identity self, uint256 groupId, uint256[] memory members, bytes32 hash)
-        public returns (ISemaphore.SemaphoreProof memory proof)
+    function generateSempahoreProof(
+        Identity self,
+        uint256 groupId,
+        uint256[] memory members,
+        bytes32 hash
+    )
+        public
+        returns (ISemaphore.SemaphoreProof memory proof)
     {
         string[] memory cmd = new string[](7);
         cmd[0] = "pnpm";
