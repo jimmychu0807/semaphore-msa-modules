@@ -83,6 +83,57 @@ library IdentityLib {
         return abi.encodePacked(pub, hashSig);
     }
 
+    function generateSempahoreProof(
+        Identity self,
+        uint256 groupId,
+        uint256[] memory members,
+        bytes32 hash
+    )
+        public
+        returns (ISemaphore.SemaphoreProof memory proof)
+    {
+        string[] memory cmd = new string[](7);
+        cmd[0] = "pnpm";
+        cmd[1] = "semaphore-proof";
+        cmd[2] = "gen-proof";
+        cmd[3] = vm.toString(Identity.unwrap(self));
+        cmd[4] = IdentityLib._uint256ArrToString(members);
+        cmd[5] = LibString.toString(groupId);
+        cmd[6] = LibString.toHexString(uint256(hash));
+
+        bytes memory outBytes = vm.ffi(cmd);
+        string memory outStr = string(outBytes);
+
+        uint256[] memory points = vm.parseJsonUintArray(outStr, "$.points");
+        proof = ISemaphore.SemaphoreProof({
+            merkleTreeDepth: vm.parseJsonUint(outStr, "$.merkleTreeDepth"),
+            merkleTreeRoot: vm.parseJsonUint(outStr, "$.merkleTreeRoot"),
+            nullifier: vm.parseJsonUint(outStr, "$.nullifier"),
+            message: vm.parseJsonUint(outStr, "$.message"),
+            scope: vm.parseJsonUint(outStr, "$.scope"),
+            points: [
+                points[0],
+                points[1],
+                points[2],
+                points[3],
+                points[4],
+                points[5],
+                points[6],
+                points[7]
+            ]
+        });
+    }
+
+    function _uint256ArrToString(uint256[] memory arr) internal returns (string memory retStr) {
+        for (uint256 i = 0; i < arr.length; i++) {
+            if (i == arr.length - 1) {
+                retStr = string.concat(retStr, LibString.toString(arr[i]));
+            } else {
+                retStr = string.concat(retStr, LibString.toString(arr[i]), ",");
+            }
+        }
+    }
+
     function _publicKey(Identity self) internal returns (uint256[2] memory pubUint) {
         string[] memory cmd = new string[](4);
         cmd[0] = "pnpm";

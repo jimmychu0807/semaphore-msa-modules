@@ -103,10 +103,13 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
     }
 
     function test_onInstallWithOneMember() public setupSmartAcctOneMember {
-        assertEq(semaphoreValidator.groupMapping(smartAcct.account), 0);
         assertEq(semaphoreValidator.thresholds(smartAcct.account), 1);
         assertEq(semaphoreValidator.memberCount(smartAcct.account), 1);
         assertEq(semaphoreValidator.isInitialized(smartAcct.account), true);
+
+        (bool bExist, uint256 groupId) = semaphoreValidator.getGroupId(smartAcct.account);
+        assertEq(bExist, true);
+        assertEq(groupId, 0);
     }
 
     function test_onInstallWithInvalidData() public {
@@ -137,7 +140,23 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
     }
 
     function test_onUninstall() public setupSmartAcctOneMember {
-        revert("to be implemented");
+        // Test for `ModuleUninitialized` event. Seem you won't be able to catch the event
+        //   with normal vm.expectEmit
+        // vm.expectEmit(true, false, false, false, address(semaphoreValidator));
+        // emit SemaphoreMSAValidator.ModuleUninitialized(smartAcct.account);
+
+        smartAcct.uninstallModule({
+            moduleTypeId: MODULE_TYPE_VALIDATOR,
+            module: address(semaphoreValidator),
+            data: ""
+        });
+
+        assertEq(semaphoreValidator.thresholds(smartAcct.account), 0);
+        assertEq(semaphoreValidator.memberCount(smartAcct.account), 0);
+        assertEq(semaphoreValidator.isInitialized(smartAcct.account), false);
+
+        (bool bExist, uint256 groupId) = semaphoreValidator.getGroupId(smartAcct.account);
+        assertEq(bExist, false);
     }
 
     // Test only validateUserOp()
@@ -229,6 +248,49 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
 
         smartAcct.expect4337Revert(SemaphoreMSAValidator.InvalidSemaphoreProof.selector);
         userOpData.execUserOps();
+    }
+
+    function test_initiateTokensTransferMemberValid() public setupSmartAcctOneMember {
+        User storage member = $users[0];
+
+        uint256 value = 1 ether;
+        address targetAddr = $users[1].addr;
+        uint256 seq = semaphoreValidator.getNextSeqNum(smartAcct.account);
+
+        bytes32 txHash = keccak256(abi.encodePacked(seq, targetAddr, value, ""));
+
+        // Generate the semaphore proof
+        (bool bExist, uint256 groupId) = semaphoreValidator.getGroupId(smartAcct.account);
+        assert(bExist);
+        uint256[] memory members = new uint256[](1);
+        members[0] = member.identity.commitment();
+        ISemaphore.SemaphoreProof memory smProof =
+            member.identity.generateSempahoreProof(groupId, members, txHash);
+
+        // Composing the UserOpData
+        UserOpData memory userOpData = smartAcct.getExecOps({
+            target: address(semaphoreValidator),
+            value: value,
+            callData: abi.encodeCall(SemaphoreMSAValidator.initiateTx, (targetAddr, "", smProof, false)),
+            txValidator: address(semaphoreValidator)
+        });
+        userOpData.userOp.signature = member.identity.signHash(userOpData.userOpHash);
+
+        // Expecting `InitiatedTx` event to be emitted
+        vm.expectEmit(true, true, true, true, address(semaphoreValidator));
+        emit SemaphoreMSAValidator.InitiatedTx(smartAcct.account, seq, txHash);
+        userOpData.execUserOps();
+
+        // Test the states are changed accordingly
+        assertEq(semaphoreValidator.acctSeqNum(smartAcct.account), seq + 1);
+
+        (address eccTargetAddr, bytes memory eccCallData, uint256 eccValue, uint8 eccCount) =
+            semaphoreValidator.acctTxCount(smartAcct.account, txHash);
+
+        assertEq(eccTargetAddr, targetAddr);
+        assertEq(eccValue, value);
+        assertEq(eccCallData, "");
+        assertEq(eccCount, 1);
     }
 
     function test_initiateTxOneMemberNonValidatorCall()
