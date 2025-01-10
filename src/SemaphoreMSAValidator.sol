@@ -4,13 +4,12 @@ pragma solidity >=0.8.23 <=0.8.29;
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { VALIDATION_SUCCESS } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
-import { LibSort } from "solady/utils/LibSort.sol";
-import { LibBytes } from "solady/utils/LibBytes.sol";
+import { LibSort, LibBytes } from "solady/Milady.sol";
 
 import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
 import { ValidatorLibBytes } from "./utils/ValidatorLibBytes.sol";
 import { Identity } from "./utils/Identity.sol";
-import { console } from "forge-std/console.sol";
+// import { console } from "forge-std/console.sol";
 
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     using LibSort for *;
@@ -48,6 +47,9 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     error InvalidSemaphoreProof(bytes reason);
     error NonAllowedSelector(address account, bytes4 funcSel);
     error NonValidatorCallBanned(address targetAddr, address selfAddr);
+    error InitiateTxWithNullAddress(address account);
+    error InitiateTxWithNullCallDataAndNullValue(address account, address targetAddr);
+    error ExecuteTxFailure(address account, address targetAddr, uint256 value, bytes callData);
 
     // Events
     event ModuleInitialized(address indexed account);
@@ -196,11 +198,11 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         emit RemovedMember(account, rmOwner);
     }
 
-    function getNextSeqNum(address account) external returns (uint256) {
+    function getNextSeqNum(address account) external view returns (uint256) {
         return acctSeqNum[account];
     }
 
-    function getGroupId(address account) external returns (bool, uint256) {
+    function getGroupId(address account) external view returns (bool, uint256) {
         uint256 groupId = groupMapping[account];
         if (thresholds[account] == 0) return (false, 0);
         return (true, groupId);
@@ -220,6 +222,14 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         // retrieve the group ID
         address account = msg.sender;
         uint256 groupId = groupMapping[account];
+
+        // Check:
+        //   1. targetAddr cannot be 0
+        //   2. if txCallData is blank, then msg.value must be > 0, else revert
+        if (targetAddr == address(0)) revert InitiateTxWithNullAddress(account);
+        if (LibBytes.cmp(txCallData, "") == 0 && msg.value == 0) {
+            revert InitiateTxWithNullCallDataAndNullValue(account, targetAddr);
+        }
 
         // By this point, txParams should be validated.
         // combine the txParams with the account nonce and compute its hash
@@ -273,25 +283,29 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         if (execute && cdc.count >= thresholds[account]) executeTx(txHash);
     }
 
-    function executeTx(bytes32 txHash) public moduleInstalled {
+    function executeTx(bytes32 txHash) public moduleInstalled returns (bytes memory) {
         // retrieve the group ID
         address account = msg.sender;
-        uint256 groupId = groupMapping[account];
         uint8 threshold = thresholds[account];
-        ExtCallCount storage cdc = acctTxCount[account][txHash];
+        ExtCallCount storage ecc = acctTxCount[account][txHash];
 
-        console.log("executeTx");
+        // console.log("executeTx");
+        if (ecc.count == 0) revert TxHashNotFound(account, txHash);
+        if (ecc.count < threshold) revert ThresholdNotReach(account, threshold, ecc.count);
 
-        if (cdc.count == 0) revert TxHashNotFound(account, txHash);
-        if (cdc.count < threshold) revert ThresholdNotReach(account, threshold, cdc.count);
-
-        //TODO: make the actual contract call here
-        console.log("actually make the execution call");
+        // console.log("executeTx - check pass");
+        // REVIEW: Is there a better way to make external contract call given the target address,
+        // value, and call data.
+        address payable targetAddr = payable(ecc.targetAddr);
+        (bool success, bytes memory returnData) = targetAddr.call{ value: ecc.value }(ecc.callData);
+        if (!success) revert ExecuteTxFailure(account, targetAddr, ecc.value, ecc.callData);
 
         emit ExecutedTx(account, txHash);
 
         // Clean up the storage
         delete acctTxCount[account][txHash];
+
+        return returnData;
     }
 
     /**
@@ -342,7 +356,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         // For callData, the first 120 bytes are reserved by ERC-7579 use. Then 32 bytes of value,
         //   then the remaining as the callData passed in getExecOps
         bytes memory valAndCallData = userOp.callData[120:];
-        (uint256 val) = abi.decode(LibBytes.slice(valAndCallData, 0, 32), (uint256));
+        // (uint256 val) = abi.decode(LibBytes.slice(valAndCallData, 0, 32), (uint256));
         bytes4 funcSel = bytes4(LibBytes.slice(valAndCallData, 32, 36));
 
         // console.log("val: %s", val);

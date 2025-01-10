@@ -124,7 +124,11 @@ library IdentityLib {
         });
     }
 
-    function _uint256ArrToString(uint256[] memory arr) internal returns (string memory retStr) {
+    function _uint256ArrToString(uint256[] memory arr)
+        internal
+        pure
+        returns (string memory retStr)
+    {
         for (uint256 i = 0; i < arr.length; i++) {
             if (i == arr.length - 1) {
                 retStr = string.concat(retStr, LibString.toString(arr[i]));

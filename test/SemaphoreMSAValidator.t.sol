@@ -3,7 +3,7 @@ pragma solidity ^0.8.23;
 
 // forge-std
 import { Test } from "forge-std/Test.sol";
-import { console } from "forge-std/console.sol";
+// import { console } from "forge-std/console.sol";
 
 // Rhinestone Modulekit
 import {
@@ -155,7 +155,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         assertEq(semaphoreValidator.memberCount(smartAcct.account), 0);
         assertEq(semaphoreValidator.isInitialized(smartAcct.account), false);
 
-        (bool bExist, uint256 groupId) = semaphoreValidator.getGroupId(smartAcct.account);
+        (bool bExist,) = semaphoreValidator.getGroupId(smartAcct.account);
         assertEq(bExist, false);
     }
 
@@ -250,7 +250,11 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         userOpData.execUserOps();
     }
 
-    function test_initiateTokensTransferMemberValid() public setupSmartAcctOneMember returns (bytes32 txHash) {
+    function test_initiateTokensTransferMemberValid()
+        public
+        setupSmartAcctOneMember
+        returns (bytes32 txHash)
+    {
         User storage member = $users[0];
 
         uint256 value = 1 ether;
@@ -258,7 +262,9 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         uint256 seq = semaphoreValidator.getNextSeqNum(smartAcct.account);
         txHash = keccak256(abi.encodePacked(seq, targetAddr, value, ""));
 
-        { // Using scope to limit the number of local variables, work around the `stack too deep` error.
+        {
+            // Using scope to limit the number of local variables, work around the `stack too deep`
+            // error.
             // Generate the semaphore proof
             (bool bExist, uint256 groupId) = semaphoreValidator.getGroupId(smartAcct.account);
             assert(bExist);
@@ -271,7 +277,9 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
             UserOpData memory userOpData = smartAcct.getExecOps({
                 target: address(semaphoreValidator),
                 value: value,
-                callData: abi.encodeCall(SemaphoreMSAValidator.initiateTx, (targetAddr, "", smProof, false)),
+                callData: abi.encodeCall(
+                    SemaphoreMSAValidator.initiateTx, (targetAddr, "", smProof, false)
+                ),
                 txValidator: address(semaphoreValidator)
             });
             userOpData.userOp.signature = member.identity.signHash(userOpData.userOpHash);
@@ -294,18 +302,45 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         assertEq(eccCount, 1);
     }
 
-    function test_initiateTokensTransferMemberValidAndExecute() public {
+    function test_initiateTokensTransferMemberValidAndExecuteInvalidTxHash() public {
+        bytes32 forgedHash = test_initiateTokensTransferMemberValid();
+        // Changed the last 2 bytes to 0xffff
+        forgedHash = forgedHash | bytes32(uint256(65_535));
+
+        User storage member = $users[0];
+
+        // Now execute the token transfer.
+        // Composing the UserOpData.
+        UserOpData memory userOpData = smartAcct.getExecOps({
+            target: address(semaphoreValidator),
+            value: 0,
+            callData: abi.encodeCall(SemaphoreMSAValidator.executeTx, (forgedHash)),
+            txValidator: address(semaphoreValidator)
+        });
+        userOpData.userOp.signature = member.identity.signHash(userOpData.userOpHash);
+
+        smartAcct.expect4337Revert(
+            abi.encodeWithSelector(
+                SemaphoreMSAValidator.TxHashNotFound.selector, smartAcct.account, forgedHash
+            )
+        );
+        userOpData.execUserOps();
+    }
+
+    function test_ExecuteTxFailure() public pure {
+        revert("to be implemented");
+    }
+
+    function test_initiateTokensTransferMemberValidAndExecuteValid() public {
         bytes32 txHash = test_initiateTokensTransferMemberValid();
 
         User storage member = $users[0];
         address targetAddr = $users[1].addr;
         uint256 value = 1 ether;
         uint256 beforeBalance = targetAddr.balance;
-        console.log("before Balance: %s", beforeBalance);
 
-        // Now execute the token transfer
-
-        // Composing the UserOpData
+        // Now execute the token transfer.
+        // Composing the UserOpData.
         UserOpData memory userOpData = smartAcct.getExecOps({
             target: address(semaphoreValidator),
             value: 0,
@@ -313,10 +348,57 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
             txValidator: address(semaphoreValidator)
         });
         userOpData.userOp.signature = member.identity.signHash(userOpData.userOpHash);
+
+        // Test event emission
+        vm.expectEmit(true, true, true, true, address(semaphoreValidator));
+        emit SemaphoreMSAValidator.ExecutedTx(smartAcct.account, txHash);
         userOpData.execUserOps();
 
         uint256 afterBalance = targetAddr.balance;
-        console.log("after Balance: %s", afterBalance);
+        assertEq(afterBalance - beforeBalance, value);
+    }
+
+    function test_initiateTokensTransferMemberAndExecuteValid() public setupSmartAcctOneMember {
+        User storage member = $users[0];
+        uint256 value = 1 ether;
+        address targetAddr = $users[1].addr;
+        uint256 beforeBalance = targetAddr.balance;
+        uint256 seq = semaphoreValidator.getNextSeqNum(smartAcct.account);
+        bytes32 txHash = keccak256(abi.encodePacked(seq, targetAddr, value, ""));
+
+        {
+            // Using scope to limit the number of local variables, work around the `stack too deep`
+            // error.
+            // Generate the semaphore proof
+            (bool bExist, uint256 groupId) = semaphoreValidator.getGroupId(smartAcct.account);
+            assert(bExist);
+            uint256[] memory members = new uint256[](1);
+            members[0] = member.identity.commitment();
+            ISemaphore.SemaphoreProof memory smProof =
+                member.identity.generateSempahoreProof(groupId, members, txHash);
+
+            // Composing the UserOpData
+            UserOpData memory userOpData = smartAcct.getExecOps({
+                target: address(semaphoreValidator),
+                value: value,
+                callData: abi.encodeCall(
+                    SemaphoreMSAValidator.initiateTx, (targetAddr, "", smProof, true)
+                ),
+                txValidator: address(semaphoreValidator)
+            });
+            userOpData.userOp.signature = member.identity.signHash(userOpData.userOpHash);
+
+            // Expecting `InitiatedTx` event to be emitted
+            vm.expectEmit(true, true, true, true, address(semaphoreValidator));
+            emit SemaphoreMSAValidator.InitiatedTx(smartAcct.account, seq, txHash);
+            vm.expectEmit(true, true, true, true, address(semaphoreValidator));
+            emit SemaphoreMSAValidator.ExecutedTx(smartAcct.account, txHash);
+            userOpData.execUserOps();
+        }
+
+        // Confirm user balance has changed
+        uint256 afterBalance = targetAddr.balance;
+        assertEq(afterBalance - beforeBalance, value);
     }
 
     function test_initiateTxOneMemberNonValidatorCall()
