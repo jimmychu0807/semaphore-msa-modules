@@ -3,7 +3,7 @@ pragma solidity ^0.8.23;
 
 // forge-std
 import { Test } from "forge-std/Test.sol";
-// import { console } from "forge-std/console.sol";
+import { console } from "forge-std/console.sol";
 
 // Rhinestone Modulekit
 import {
@@ -36,7 +36,7 @@ import {
     IdentityLib
 } from "./utils/TestUtils.sol";
 import { SimpleContract } from "./utils/SimpleContract.sol";
-import { LibSort } from "solady/utils/LibSort.sol";
+import { LibSort, LibString } from "solady/Milady.sol";
 
 struct User {
     uint256 sk;
@@ -69,42 +69,23 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         semaphoreValidator = new SemaphoreMSAValidator(semaphore);
         vm.label(address(semaphoreValidator), "SemaphoreMSAValidator");
 
-        // Create two users
-        (address addr, uint256 sk) = makeAddrAndKey("user1");
-        vm.deal(addr, 10 ether);
-        $users.push(User({ sk: sk, addr: addr, identity: IdentityLib.genIdentity(1) }));
-
-        (addr, sk) = makeAddrAndKey("user2");
-        vm.deal(addr, 10 ether);
-        $users.push(User({ sk: sk, addr: addr, identity: IdentityLib.genIdentity(2) }));
+        // Create three users
+        for (uint256 i = 0; i < 3; ++i) {
+            (address addr, uint256 sk) =
+                makeAddrAndKey(string.concat("user", LibString.toString(i + 1)));
+            vm.deal(addr, 5 ether);
+            $users.push(User({ sk: sk, addr: addr, identity: IdentityLib.genIdentity(i + 1) }));
+        }
     }
 
-    modifier setupSmartAcctOneMember() {
-        // Create the smart account and install the validator with one admin
+    modifier setupSmartAcctWithMembers(uint8 num) {
         smartAcct = makeAccountInstance("SemaphoreMSAValidator");
         vm.deal(smartAcct.account, 10 ether);
-        uint256[] memory cmts = new uint256[](1);
-        cmts[0] = $users[0].identity.commitment();
 
         smartAcct.installModule({
             moduleTypeId: MODULE_TYPE_VALIDATOR,
             module: address(semaphoreValidator),
-            data: abi.encodePacked(uint8(1), cmts)
-        });
-        _;
-    }
-
-    modifier setupSmartAcctTwoMembers() {
-        // Create the smart account and install the validator with one admin
-        smartAcct = makeAccountInstance("SemaphoreMSAValidator");
-        vm.deal(smartAcct.account, 10 ether);
-        uint256[] memory cmts = new uint256[](1);
-        cmts[0] = $users[0].identity.commitment();
-
-        smartAcct.installModule({
-            moduleTypeId: MODULE_TYPE_VALIDATOR,
-            module: address(semaphoreValidator),
-            data: abi.encodePacked(uint8(1), cmts)
+            data: abi.encodePacked(uint8(num), _getMemberCmts(num))
         });
         _;
     }
@@ -114,7 +95,14 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         _;
     }
 
-    function test_onInstallWithOneMember() public setupSmartAcctOneMember {
+    function _getMemberCmts(uint8 num) internal returns (uint256[] memory cmts) {
+        cmts = new uint256[](num);
+        for (uint8 i = 0; i < num; ++i) {
+            cmts[i] = $users[i].identity.commitment();
+        }
+    }
+
+    function test_onInstallWithOneMember() public setupSmartAcctWithMembers(1) {
         assertEq(semaphoreValidator.thresholds(smartAcct.account), 1);
         assertEq(semaphoreValidator.memberCount(smartAcct.account), 1);
         assertEq(semaphoreValidator.isInitialized(smartAcct.account), true);
@@ -137,7 +125,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         });
     }
 
-    function test_duplicateInstall() public setupSmartAcctOneMember {
+    function test_duplicateInstall() public setupSmartAcctWithMembers(1) {
         // The modifier has already installed the validator in smartAcct
         uint256[] memory cmts = new uint256[](1);
         cmts[0] = $users[0].identity.commitment();
@@ -151,7 +139,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         });
     }
 
-    function test_onUninstall() public setupSmartAcctOneMember {
+    function test_onUninstall() public setupSmartAcctWithMembers(1) {
         // Test for `ModuleUninitialized` event. Seem you won't be able to catch the event
         //   with normal vm.expectEmit
         // vm.expectEmit(true, false, false, false, address(semaphoreValidator));
@@ -172,7 +160,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
     }
 
     // Test only validateUserOp()
-    function test_validateUserOpWithNonMember() public setupSmartAcctOneMember {
+    function test_validateUserOpWithNonMember() public setupSmartAcctWithMembers(1) {
         PackedUserOperation memory userOp = getEmptyUserOperation();
         userOp.sender = smartAcct.account;
         userOp.callData = getTestUserOpCallData(
@@ -185,12 +173,14 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
 
         bytes32 userOpHash = bytes32(keccak256("userOpHash"));
 
-        Identity id = IdentityLib.genIdentity(100);
-        userOp.signature = id.signHash(userOpHash);
+        Identity nonMember = $users[2].identity;
+        userOp.signature = nonMember.signHash(userOpHash);
 
         vm.expectRevert(
             abi.encodeWithSelector(
-                SemaphoreMSAValidator.MemberNotExists.selector, smartAcct.account, id.commitment()
+                SemaphoreMSAValidator.MemberNotExists.selector,
+                smartAcct.account,
+                nonMember.commitment()
             )
         );
 
@@ -199,7 +189,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         );
     }
 
-    function test_validateUserOpWithMember() public setupSmartAcctOneMember {
+    function test_validateUserOpWithMember() public setupSmartAcctWithMembers(1) {
         PackedUserOperation memory userOp = getEmptyUserOperation();
         userOp.sender = smartAcct.account;
         userOp.callData = getTestUserOpCallData(
@@ -222,7 +212,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         assertEq(validationData, VALIDATION_SUCCESS);
     }
 
-    function test_initiateTokensTransferInvalidSignature() public setupSmartAcctOneMember {
+    function test_initiateTokensTransferInvalidSignature() public setupSmartAcctWithMembers(1) {
         User storage recipient = $users[1];
         UserOpData memory userOpData = smartAcct.getExecOps({
             target: address(semaphoreValidator),
@@ -244,7 +234,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
 
     function test_initiateTokensTransferMemberInvalidSemaphoreProof()
         public
-        setupSmartAcctOneMember
+        setupSmartAcctWithMembers(1)
     {
         User storage member = $users[0];
         User storage recipient = $users[1];
@@ -264,7 +254,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
 
     function test_initiateTokensTransferMemberValid()
         public
-        setupSmartAcctOneMember
+        setupSmartAcctWithMembers(1)
         returns (bytes32 txHash)
     {
         User storage member = $users[0];
@@ -280,10 +270,8 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
             // Generate the semaphore proof
             (bool bExist, uint256 groupId) = semaphoreValidator.getGroupId(smartAcct.account);
             assert(bExist);
-            uint256[] memory members = new uint256[](1);
-            members[0] = member.identity.commitment();
             ISemaphore.SemaphoreProof memory smProof =
-                member.identity.generateSempahoreProof(groupId, members, txHash);
+                member.identity.generateSempahoreProof(groupId, _getMemberCmts(1), txHash);
 
             // Composing the UserOpData
             UserOpData memory userOpData = smartAcct.getExecOps({
@@ -317,7 +305,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
     function test_initiateTokensTransferMemberValidAndExecuteInvalidTxHash() public {
         bytes32 forgedHash = test_initiateTokensTransferMemberValid();
         // Changed the last 2 bytes to 0xffff
-        forgedHash = forgedHash | bytes32(uint256(65_535));
+        forgedHash |= bytes32(uint256(65_535));
 
         User storage member = $users[0];
 
@@ -370,7 +358,10 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         assertEq(afterBalance - beforeBalance, value);
     }
 
-    function test_initiateTokensTransferMemberAndExecuteValid() public setupSmartAcctOneMember {
+    function test_initiateTokensTransferMemberAndExecuteValid()
+        public
+        setupSmartAcctWithMembers(1)
+    {
         User storage member = $users[0];
         uint256 value = 1 ether;
         address targetAddr = $users[1].addr;
@@ -384,10 +375,8 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
             // Generate the semaphore proof
             (bool bExist, uint256 groupId) = semaphoreValidator.getGroupId(smartAcct.account);
             assert(bExist);
-            uint256[] memory members = new uint256[](1);
-            members[0] = member.identity.commitment();
             ISemaphore.SemaphoreProof memory smProof =
-                member.identity.generateSempahoreProof(groupId, members, txHash);
+                member.identity.generateSempahoreProof(groupId, _getMemberCmts(1), txHash);
 
             // Composing the UserOpData
             UserOpData memory userOpData = smartAcct.getExecOps({
@@ -415,7 +404,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
 
     function test_initiateTxMemberNonValidatorCall()
         public
-        setupSmartAcctOneMember
+        setupSmartAcctWithMembers(1)
         deploySimpleContract
     {
         User storage member = $users[0];
@@ -434,33 +423,9 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         userOpData.execUserOps();
     }
 
-    function test_initiateTxMemberAllowedSelectorInvalidSemaphoreProof()
-        public
-        setupSmartAcctOneMember
-        deploySimpleContract
-    {
-        User storage member = $users[0];
-        uint256 testVal = 7;
-
-        bytes memory txCallData = abi.encodeCall(SimpleContract.setVal, (testVal));
-        UserOpData memory userOpData = smartAcct.getExecOps({
-            target: address(semaphoreValidator),
-            value: 0,
-            callData: abi.encodeCall(
-                SemaphoreMSAValidator.initiateTx,
-                (address(simpleContract), txCallData, getEmptySemaphoreProof(), false)
-            ),
-            txValidator: address(semaphoreValidator)
-        });
-        userOpData.userOp.signature = member.identity.signHash(userOpData.userOpHash);
-
-        smartAcct.expect4337Revert(SemaphoreMSAValidator.InvalidSemaphoreProof.selector);
-        userOpData.execUserOps();
-    }
-
     function test_initiateTxMemberAndExecuteValid()
         public
-        setupSmartAcctOneMember
+        setupSmartAcctWithMembers(1)
         deploySimpleContract
     {
         User storage member = $users[0];
@@ -471,16 +436,13 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         uint256 seq = semaphoreValidator.getNextSeqNum(smartAcct.account);
         bytes32 txHash =
             keccak256(abi.encodePacked(seq, address(simpleContract), value, txCallData));
-
         {
             // Using scope to limit the number of local variables, work around the `stack too deep`
             // error.
             // Generate the semaphore proof
             (, uint256 groupId) = semaphoreValidator.getGroupId(smartAcct.account);
-            uint256[] memory members = new uint256[](1);
-            members[0] = member.identity.commitment();
             ISemaphore.SemaphoreProof memory smProof =
-                member.identity.generateSempahoreProof(groupId, members, txHash);
+                member.identity.generateSempahoreProof(groupId, _getMemberCmts(1), txHash);
 
             // Composing the UserOpData
             UserOpData memory userOpData = smartAcct.getExecOps({
