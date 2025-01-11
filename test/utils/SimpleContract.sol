@@ -2,7 +2,7 @@
 pragma solidity ^0.8.23;
 
 contract SimpleContract {
-    uint256 val;
+    uint256 public val;
 
     constructor(uint256 _val) {
         val = _val;

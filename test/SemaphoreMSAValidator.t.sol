@@ -12,19 +12,16 @@ import {
     AccountInstance,
     UserOpData
 } from "modulekit/ModuleKit.sol";
-import { IERC7579Module, IERC7579Validator } from "modulekit/Modules.sol";
 import {
     VALIDATION_SUCCESS,
     MODULE_TYPE_VALIDATOR
 } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
-import { ERC4337Helpers } from "modulekit/test/utils/ERC4337Helpers.sol";
 
 // Semaphore
 import {
     Semaphore,
     ISemaphore,
-    ISemaphoreGroups,
     ISemaphoreVerifier,
     SemaphoreVerifier
 } from "../src/utils/Semaphore.sol";
@@ -401,7 +398,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         assertEq(afterBalance - beforeBalance, value);
     }
 
-    function test_initiateTxOneMemberNonValidatorCall()
+    function test_initiateTxMemberNonValidatorCall()
         public
         setupSmartAcctOneMember
         deploySimpleContract
@@ -422,7 +419,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         userOpData.execUserOps();
     }
 
-    function test_initiateTxOneMemberAllowedSelectorInvalidSemaphoreProof()
+    function test_initiateTxMemberAllowedSelectorInvalidSemaphoreProof()
         public
         setupSmartAcctOneMember
         deploySimpleContract
@@ -444,5 +441,53 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
 
         smartAcct.expect4337Revert(SemaphoreMSAValidator.InvalidSemaphoreProof.selector);
         userOpData.execUserOps();
+    }
+
+    function test_initiateTxMemberAndExecuteValid()
+        public
+        setupSmartAcctOneMember
+        deploySimpleContract
+    {
+        User storage member = $users[0];
+        uint256 testVal = 7;
+        uint256 value = 0;
+
+        bytes memory txCallData = abi.encodeCall(SimpleContract.setVal, (testVal));
+        uint256 seq = semaphoreValidator.getNextSeqNum(smartAcct.account);
+        bytes32 txHash =
+            keccak256(abi.encodePacked(seq, address(simpleContract), value, txCallData));
+
+        {
+            // Using scope to limit the number of local variables, work around the `stack too deep`
+            // error.
+            // Generate the semaphore proof
+            (, uint256 groupId) = semaphoreValidator.getGroupId(smartAcct.account);
+            uint256[] memory members = new uint256[](1);
+            members[0] = member.identity.commitment();
+            ISemaphore.SemaphoreProof memory smProof =
+                member.identity.generateSempahoreProof(groupId, members, txHash);
+
+            // Composing the UserOpData
+            UserOpData memory userOpData = smartAcct.getExecOps({
+                target: address(semaphoreValidator),
+                value: value,
+                callData: abi.encodeCall(
+                    SemaphoreMSAValidator.initiateTx,
+                    (address(simpleContract), txCallData, smProof, true)
+                ),
+                txValidator: address(semaphoreValidator)
+            });
+
+            userOpData.userOp.signature = member.identity.signHash(userOpData.userOpHash);
+
+            // Expect transaction to go thru and emit two events
+            vm.expectEmit(true, true, true, true, address(semaphoreValidator));
+            emit SemaphoreMSAValidator.InitiatedTx(smartAcct.account, seq, txHash);
+            vm.expectEmit(true, true, true, true, address(semaphoreValidator));
+            emit SemaphoreMSAValidator.ExecutedTx(smartAcct.account, txHash);
+            userOpData.execUserOps();
+        }
+
+        assertEq(simpleContract.val(), testVal);
     }
 }
