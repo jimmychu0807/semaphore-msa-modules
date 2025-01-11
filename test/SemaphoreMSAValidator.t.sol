@@ -94,6 +94,21 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         _;
     }
 
+    modifier setupSmartAcctTwoMembers() {
+        // Create the smart account and install the validator with one admin
+        smartAcct = makeAccountInstance("SemaphoreMSAValidator");
+        vm.deal(smartAcct.account, 10 ether);
+        uint256[] memory cmts = new uint256[](1);
+        cmts[0] = $users[0].identity.commitment();
+
+        smartAcct.installModule({
+            moduleTypeId: MODULE_TYPE_VALIDATOR,
+            module: address(semaphoreValidator),
+            data: abi.encodePacked(uint8(1), cmts)
+        });
+        _;
+    }
+
     modifier deploySimpleContract() {
         simpleContract = new SimpleContract(0);
         _;
