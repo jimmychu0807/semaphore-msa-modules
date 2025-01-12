@@ -19,7 +19,7 @@ struct User {
 }
 
 contract SemaphoreUnitTest is Test {
-    Semaphore semaphore;
+    Semaphore internal semaphore;
     User[] internal $users;
 
     function setUp() public virtual {
