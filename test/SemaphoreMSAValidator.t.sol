@@ -209,6 +209,47 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         assertEq(validationData, VALIDATION_SUCCESS);
     }
 
+    function test_addMembers() public setupSmartAcctWithMembersThreshold(1, 1) {
+        Identity newIdentity = $users[1].identity;
+        uint256 newCommitment = newIdentity.commitment();
+
+        // Compose the userOp
+        PackedUserOperation memory userOp = getEmptyUserOperation();
+        userOp.sender = smartAcct.account;
+        userOp.callData = getTestUserOpCallData(
+            0,
+            address(semaphoreValidator),
+            abi.encodeWithSelector(SemaphoreMSAValidator.initiateTx.selector)
+        );
+        bytes32 userOpHash = bytes32(keccak256("userOpHash"));
+        userOp.signature = newIdentity.signHash(userOpHash);
+
+        // expecting the vm to revert
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                SemaphoreMSAValidator.MemberNotExists.selector, smartAcct.account, newCommitment
+            )
+        );
+        semaphoreValidator.validateUserOp(userOp, userOpHash);
+
+        // Now we add the new member
+        uint256[] memory newMembers = new uint256[](1);
+        newMembers[0] = newCommitment;
+
+        vm.prank(smartAcct.account);
+        semaphoreValidator.addMembers(newMembers);
+
+        // Test: the userOp should pass
+        uint256 validationData = ERC7579ValidatorBase.ValidationData.unwrap(
+            semaphoreValidator.validateUserOp(userOp, userOpHash)
+        );
+        assertEq(validationData, VALIDATION_SUCCESS);
+    }
+
+    function test_removeMember() public setupSmartAcctWithMembersThreshold(2, 1) {
+        revert("to be implemented");
+    }
+
     function _getSemaphoreValidatorUserOpData(
         Identity id,
         bytes memory callData,
