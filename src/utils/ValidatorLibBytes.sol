@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.23 <=0.8.29;
 
-import { LibBytes } from "solady/utils/LibBytes.sol";
-
 library ValidatorLibBytes {
     uint8 internal constant CMT_BYTELEN = 32;
 
