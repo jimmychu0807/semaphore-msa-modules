@@ -276,7 +276,11 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         userOpData.execUserOps();
     }
 
-    function setup_initiateTransferSingleMember()
+    function _setupInitiateTransferSingleMember() internal returns (bytes32, address, uint256) {
+        return _setupInitiateTransferSingleMember(false, false);
+    }
+
+    function _setupInitiateTransferSingleMember(bool bExecute, bool bExpectExecute)
         internal
         setupSmartAcctWithMembersThreshold(1, 1)
         returns (bytes32 txHash, address targetAddr, uint256 value)
@@ -297,20 +301,26 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         // Get Semaphore validator UserOpData (and signature)
         UserOpData memory userOpData = _getSemaphoreValidatorUserOpData(
             member.identity,
-            abi.encodeCall(SemaphoreMSAValidator.initiateTx, (targetAddr, "", smProof, false)),
+            abi.encodeCall(SemaphoreMSAValidator.initiateTx, (targetAddr, "", smProof, bExecute)),
             value
         );
 
         // Expecting `InitiatedTx` event to be emitted
         vm.expectEmit(true, true, true, true, address(semaphoreValidator));
         emit SemaphoreMSAValidator.InitiatedTx(smartAcct.account, seq, txHash);
+
+        // Expecting `ExecutedTx` event based on parameter
+        if (bExpectExecute) {
+            vm.expectEmit(true, true, true, true, address(semaphoreValidator));
+            emit SemaphoreMSAValidator.ExecutedTx(smartAcct.account, txHash);
+        }
         userOpData.execUserOps();
     }
 
     function test_initiateTransferSingleMember() public {
         uint256 seq = semaphoreValidator.getNextSeqNum(smartAcct.account);
 
-        (bytes32 txHash, address targetAddr, uint256 value) = setup_initiateTransferSingleMember();
+        (bytes32 txHash, address targetAddr, uint256 value) = _setupInitiateTransferSingleMember();
 
         // Test the states are changed accordingly
         assertEq(semaphoreValidator.acctSeqNum(smartAcct.account), seq + 1);
@@ -325,7 +335,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
     }
 
     function test_initiateTransferSingleMemberExecuteInvalidTxHash() public {
-        (bytes32 forgedHash,,) = setup_initiateTransferSingleMember();
+        (bytes32 forgedHash,,) = _setupInitiateTransferSingleMember();
         // Changed the last 2 bytes to 0xffff
         forgedHash |= bytes32(uint256(0xffff));
 
@@ -345,7 +355,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
 
     function test_initiateTransferSingleMemberExecute() public {
         User storage member = $users[0];
-        (bytes32 txHash, address targetAddr, uint256 value) = setup_initiateTransferSingleMember();
+        (bytes32 txHash, address targetAddr, uint256 value) = _setupInitiateTransferSingleMember();
         uint256 beforeBalance = targetAddr.balance;
 
         UserOpData memory userOpData = _getSemaphoreValidatorUserOpData(
@@ -361,40 +371,19 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         assertEq(afterBalance - beforeBalance, value);
     }
 
-    function test_initiateTransferSingleMemberExecuteCombined()
-        public
-        setupSmartAcctWithMembersThreshold(1, 1)
-    {
+    function test_initiateTransferSingleMemberExecuteCombined() public {
         User storage member = $users[0];
-        uint256 value = 1 ether;
-        address targetAddr = $users[1].addr;
-        uint256 beforeBalance = targetAddr.balance;
-        uint256 seq = semaphoreValidator.getNextSeqNum(smartAcct.account);
-        bytes32 txHash = keccak256(abi.encodePacked(seq, targetAddr, value, ""));
-        (, uint256 groupId) = semaphoreValidator.getGroupId(smartAcct.account);
-        ISemaphore.SemaphoreProof memory smProof =
-            member.identity.generateSempahoreProof(groupId, _getMemberCmts(1), txHash);
+        address recipientAddr = $users[1].addr;
+        uint256 beforeBalance = recipientAddr.balance;
+        (bytes32 txHash, address targetAddr, uint256 value) = _setupInitiateTransferSingleMember(true, true);
 
-        // Composing the UserOpData
-        UserOpData memory userOpData = _getSemaphoreValidatorUserOpData(
-            member.identity,
-            abi.encodeCall(SemaphoreMSAValidator.initiateTx, (targetAddr, "", smProof, true)),
-            value
-        );
-
-        // Expecting `InitiatedTx` event to be emitted
-        vm.expectEmit(true, true, true, true, address(semaphoreValidator));
-        emit SemaphoreMSAValidator.InitiatedTx(smartAcct.account, seq, txHash);
-        vm.expectEmit(true, true, true, true, address(semaphoreValidator));
-        emit SemaphoreMSAValidator.ExecutedTx(smartAcct.account, txHash);
-        userOpData.execUserOps();
-
-        // Confirm user balance has changed
+        // Test: user balance has updated
+        assert(recipientAddr == targetAddr);
         uint256 afterBalance = targetAddr.balance;
         assertEq(afterBalance - beforeBalance, value);
     }
 
-    function test_initiateTxSingleMemberNonValidatorCall()
+    function test_initiateTxSingleMemberNonValidatorTarget()
         public
         setupSmartAcctWithMembersThreshold(1, 1)
         deploySimpleContract
@@ -409,94 +398,72 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
             callData: abi.encodeCall(SimpleContract.setVal, (testVal)),
             txValidator: address(semaphoreValidator)
         });
-
         userOpData.userOp.signature = member.identity.signHash(userOpData.userOpHash);
 
         smartAcct.expect4337Revert(SemaphoreMSAValidator.NonValidatorCallBanned.selector);
         userOpData.execUserOps();
     }
 
-    function test_initiateTxSingleMemberSignExecuteTx()
-        public
+    function _setupInitiateTxSingleMember(bytes memory txCallData, bool bExecute)
+        internal
         setupSmartAcctWithMembersThreshold(1, 1)
         deploySimpleContract
+        returns (UserOpData memory userOpData, bytes32 txHash)
     {
         User storage member = $users[0];
-        uint256 testVal = 7;
-        uint256 value = 0;
-
-        bytes memory txCallData = abi.encodeCall(SimpleContract.setVal, (testVal));
+        // Composing txHash
         uint256 seq = semaphoreValidator.getNextSeqNum(smartAcct.account);
-        bytes32 txHash =
-            keccak256(abi.encodePacked(seq, address(simpleContract), value, txCallData));
-        {
-            (, uint256 groupId) = semaphoreValidator.getGroupId(smartAcct.account);
-            ISemaphore.SemaphoreProof memory smProof =
-                member.identity.generateSempahoreProof(groupId, _getMemberCmts(1), txHash);
+        address targetAddr = address(simpleContract);
+        txHash = keccak256(abi.encodePacked(seq, targetAddr, uint256(0), txCallData));
 
-            // Composing the UserOpData
-            UserOpData memory userOpData = smartAcct.getExecOps({
-                target: address(semaphoreValidator),
-                value: value,
-                callData: abi.encodeCall(
-                    SemaphoreMSAValidator.initiateTx,
-                    (address(simpleContract), txCallData, smProof, true)
-                ),
-                txValidator: address(semaphoreValidator)
-            });
+        // Composing Semaphore proof
+        (, uint256 groupId) = semaphoreValidator.getGroupId(smartAcct.account);
+        ISemaphore.SemaphoreProof memory smProof =
+            member.identity.generateSempahoreProof(groupId, _getMemberCmts(1), txHash);
 
-            userOpData.userOp.signature = member.identity.signHash(userOpData.userOpHash);
+        // Get Semaphore validator UserOpData (and signature)
+        userOpData = _getSemaphoreValidatorUserOpData(
+            member.identity,
+            abi.encodeCall(
+                SemaphoreMSAValidator.initiateTx,
+                (targetAddr, txCallData, smProof, bExecute)
+            ),
+            0
+        );
+    }
 
-            // Expect transaction to go thru and emit two events
-            vm.expectEmit(true, true, true, true, address(semaphoreValidator));
-            emit SemaphoreMSAValidator.InitiatedTx(smartAcct.account, seq, txHash);
-            vm.expectEmit(true, true, true, true, address(semaphoreValidator));
-            emit SemaphoreMSAValidator.ExecutedTx(smartAcct.account, txHash);
-            userOpData.execUserOps();
-        }
-        // Check the test contract state
+    function test_initiateTxSingleMemberSignExecuteTx() public {
+        uint256 testVal = 7;
+        bytes memory txCallData = abi.encodeCall(SimpleContract.setVal, (testVal));
+
+        (UserOpData memory userOpData, bytes32 txHash) =
+            _setupInitiateTxSingleMember(txCallData, true);
+
+        uint256 seq = semaphoreValidator.getNextSeqNum(smartAcct.account);
+
+        vm.expectEmit(true, true, true, true, address(semaphoreValidator));
+        emit SemaphoreMSAValidator.InitiatedTx(smartAcct.account, seq, txHash);
+        vm.expectEmit(true, true, true, true, address(semaphoreValidator));
+        emit SemaphoreMSAValidator.ExecutedTx(smartAcct.account, txHash);
+        userOpData.execUserOps();
+
+        // Test: the deployed contract value is updated
         assertEq(simpleContract.val(), testVal);
     }
 
-    function test_initiateTxSingleMemberInvalidExecuteTx()
-        public
-        setupSmartAcctWithMembersThreshold(1, 1)
-        deploySimpleContract
-    {
-        User storage member = $users[0];
+    function test_initiateTxSingleMemberInvalidExecuteTx() public {
         uint256 testVal = 7;
-        uint256 value = 0;
-
         bytes memory txCallData = abi.encodeCall(SimpleContract.setVal, (testVal));
-        // change the txCallData
+        // Invalidate the txCallData
         txCallData[0] = hex"ff";
         txCallData[1] = hex"ff";
 
-        uint256 seq = semaphoreValidator.getNextSeqNum(smartAcct.account);
-        bytes32 txHash =
-            keccak256(abi.encodePacked(seq, address(simpleContract), value, txCallData));
-        {
-            (, uint256 groupId) = semaphoreValidator.getGroupId(smartAcct.account);
-            ISemaphore.SemaphoreProof memory smProof =
-                member.identity.generateSempahoreProof(groupId, _getMemberCmts(1), txHash);
+        (UserOpData memory userOpData, bytes32 txHash) =
+            _setupInitiateTxSingleMember(txCallData, true);
 
-            // Composing the UserOpData
-            UserOpData memory userOpData = smartAcct.getExecOps({
-                target: address(semaphoreValidator),
-                value: value,
-                callData: abi.encodeCall(
-                    SemaphoreMSAValidator.initiateTx,
-                    (address(simpleContract), txCallData, smProof, true)
-                ),
-                txValidator: address(semaphoreValidator)
-            });
-
-            userOpData.userOp.signature = member.identity.signHash(userOpData.userOpHash);
-
-            // Expect ExecuteTxFailure error
-            smartAcct.expect4337Revert(SemaphoreMSAValidator.ExecuteTxFailure.selector);
-            userOpData.execUserOps();
-        }
+        // Expect ExecuteTxFailure error
+        smartAcct.expect4337Revert(SemaphoreMSAValidator.ExecuteTxFailure.selector);
+        userOpData.execUserOps();
     }
 
     function setup_initiateTxMultiMembers()
