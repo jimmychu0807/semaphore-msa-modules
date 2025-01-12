@@ -182,7 +182,13 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         emit AddedMembers(account, cmts.length);
     }
 
-    function removeMember(uint256 cmt) external moduleInstalled {
+    function removeMember(
+        uint256 cmt,
+        uint256[] calldata merkleProofSiblings
+    )
+        external
+        moduleInstalled
+    {
         address account = msg.sender;
 
         if (memberCount(account) == thresholds[account]) revert MemberCntReachesThreshold(account);
@@ -190,9 +196,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         uint256 groupId = groupMapping[account];
         if (!groups.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
 
-        //TODO: add the 3rd param: merkleProofSiblings. Now I set it to 0 to make it passes the
-        // compiler
-        semaphore.removeMember(groupId, cmt, new uint256[](0));
+        semaphore.removeMember(groupId, cmt, merkleProofSiblings);
 
         emit RemovedMember(account, cmt);
     }

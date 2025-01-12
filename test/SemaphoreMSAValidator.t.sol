@@ -246,6 +246,10 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         assertEq(validationData, VALIDATION_SUCCESS);
     }
 
+    function test_removeMember() public setupSmartAcctWithMembersThreshold(2, 1) {
+        revert("to be implemented");
+    }
+
     function _getSemaphoreValidatorUserOpData(
         Identity id,
         bytes memory callData,
