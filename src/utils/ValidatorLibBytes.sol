@@ -11,9 +11,7 @@ library ValidatorLibBytes {
 
         cmts = new uint256[](cmtNum);
         for (uint256 i = 0; i < cmtNum; i++) {
-            bytes memory oneCmtByte =
-                LibBytes.slice(cmtBytes, i * CMT_BYTELEN, (i + 1) * CMT_BYTELEN);
-            cmts[i] = abi.decode(oneCmtByte, (uint256));
+            cmts[i] = uint256(bytes32(cmtBytes[i * CMT_BYTELEN:(i + 1) * CMT_BYTELEN]));
         }
     }
 }

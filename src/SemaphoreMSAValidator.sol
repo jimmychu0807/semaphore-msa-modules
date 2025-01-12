@@ -9,7 +9,7 @@ import { LibSort, LibBytes } from "solady/Milady.sol";
 import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
 import { ValidatorLibBytes } from "./utils/ValidatorLibBytes.sol";
 import { Identity } from "./utils/Identity.sol";
-// import { console } from "forge-std/console.sol";
+import { console } from "forge-std/console.sol";
 
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     using LibSort for *;
@@ -35,7 +35,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     error InvalidCommitment();
     error InvalidThreshold();
     error MaxMemberReached();
-    error NotSortedAndUnique();
+    error CommitmentsNotUnique();
     error MemberNotExists(address account, uint256 cmt);
     error IsMemberAlready(address acount, uint256 cmt);
     error TxHasBeenInitiated(address account, bytes32 txHash);
@@ -119,11 +119,11 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         if (cmts.length > MAX_MEMBERS) revert MaxMemberReached();
         if (cmts.length < threshold) revert InvalidThreshold();
 
-        // Check if all commitments are valid
+        // Check no duplicate commitment and no `0`
+        cmts.insertionSort();
+        if (!cmts.isSortedAndUniquified()) revert CommitmentsNotUnique();
         (bool found,) = cmts.searchSorted(uint256(0));
         if (found) revert InvalidCommitment();
-
-        if (!cmts.isSortedAndUniquified()) revert NotSortedAndUnique();
 
         // Completed all checks by this point. Write to the storage.
         thresholds[account] = threshold;
@@ -183,19 +183,19 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         emit AddedMember(account, cmt);
     }
 
-    function removeMember(uint256 rmOwner) external moduleInstalled {
+    function removeMember(uint256 cmt) external moduleInstalled {
         address account = msg.sender;
 
         if (memberCount(account) == thresholds[account]) revert CannotRemoveOwner();
 
         uint256 groupId = groupMapping[account];
-        if (!groups.hasMember(groupId, rmOwner)) revert MemberNotExists(account, rmOwner);
+        if (!groups.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
 
         //TODO: add the 3rd param: merkleProofSiblings. Now I set it to 0 to make it passes the
         // compiler
-        semaphore.removeMember(groupId, rmOwner, new uint256[](0));
+        semaphore.removeMember(groupId, cmt, new uint256[](0));
 
-        emit RemovedMember(account, rmOwner);
+        emit RemovedMember(account, cmt);
     }
 
     function getNextSeqNum(address account) external view returns (uint256) {
@@ -271,16 +271,20 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         uint256 groupId = groupMapping[account];
 
         // Check if the txHash exist
-        ExtCallCount storage cdc = acctTxCount[account][txHash];
-        if (cdc.count == 0) revert TxHashNotFound(account, txHash);
+        ExtCallCount storage ecc = acctTxCount[account][txHash];
+        if (ecc.count == 0) revert TxHashNotFound(account, txHash);
 
-        semaphore.validateProof(groupId, proof);
+        try semaphore.validateProof(groupId, proof) {
+            ecc.count += 1;
+            emit SignedTx(account, txHash);
 
-        cdc.count += 1;
-        emit SignedTx(account, txHash);
-
-        // execute the transaction if condition allows
-        if (execute && cdc.count >= thresholds[account]) executeTx(txHash);
+            // execute the transaction if condition allows
+            if (execute && ecc.count >= thresholds[account]) executeTx(txHash);
+        } catch Error(string memory reason) {
+            revert InvalidSemaphoreProof(bytes(reason));
+        } catch (bytes memory reason) {
+            revert InvalidSemaphoreProof(reason);
+        }
     }
 
     function executeTx(bytes32 txHash) public moduleInstalled returns (bytes memory) {
@@ -289,13 +293,11 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         uint8 threshold = thresholds[account];
         ExtCallCount storage ecc = acctTxCount[account][txHash];
 
-        // console.log("executeTx");
         if (ecc.count == 0) revert TxHashNotFound(account, txHash);
         if (ecc.count < threshold) revert ThresholdNotReach(account, threshold, ecc.count);
 
-        // console.log("executeTx - check pass");
-        // REVIEW: Is there a better way to make external contract call given the target address,
-        // value, and call data.
+        // TODO: Review if there a better way to make external contract call given the
+        // target address, value, and call data.
         address payable targetAddr = payable(ecc.targetAddr);
         (bool success, bytes memory returnData) = targetAddr.call{ value: ecc.value }(ecc.callData);
         if (!success) revert ExecuteTxFailure(account, targetAddr, ecc.value, ecc.callData);
@@ -321,12 +323,6 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         override
         returns (ValidationData)
     {
-        // console.log("userOp sender: %s", userOp.sender);
-        // console.log("userOp callData:");
-        // console.logBytes(userOp.callData);
-        // console.log("userOpHash:");
-        // console.logBytes32(userOpHash);
-
         // you want to exclude initiateTx, signTx, executeTx from needing tx count.
         // you just need to ensure they are a valid proof from the semaphore group members
         address account = userOp.sender;
@@ -346,7 +342,6 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         // Verify if the identity commitment is one of the semaphore group members
         bytes memory pubKey = LibBytes.slice(userOp.signature, 0, 66);
         uint256 cmt = Identity.getCommitment(pubKey);
-
         if (!groups.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
 
         // We don't allow call to other contract.
@@ -356,12 +351,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         // For callData, the first 120 bytes are reserved by ERC-7579 use. Then 32 bytes of value,
         //   then the remaining as the callData passed in getExecOps
         bytes memory valAndCallData = userOp.callData[120:];
-        // (uint256 val) = abi.decode(LibBytes.slice(valAndCallData, 0, 32), (uint256));
         bytes4 funcSel = bytes4(LibBytes.slice(valAndCallData, 32, 36));
-
-        // console.log("val: %s", val);
-        // console.log("funcSel:");
-        // console.logBytes4(funcSel);
 
         // Allow only these few types on function calls to pass, and reject all other on-chain
         //   calls. They must be executed via `executeTx()` function.
