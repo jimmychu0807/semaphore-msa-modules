@@ -347,7 +347,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         uint256 cmt = Identity.getCommitment(pubKey);
         if (!groups.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
 
-        // We don't allow call to other contract.
+        // We don't allow call to other contracts.
         address targetAddr = address(bytes20(userOp.callData[100:120]));
         if (targetAddr != address(this)) revert NonValidatorCallBanned(targetAddr, address(this));
 
@@ -356,10 +356,9 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         bytes memory valAndCallData = userOp.callData[120:];
         bytes4 funcSel = bytes4(LibBytes.slice(valAndCallData, 32, 36));
 
-        // Allow only these few types on function calls to pass, and reject all other on-chain
-        //   calls. They must be executed via `executeTx()` function.
+        // We only allow calls to `initiateTx()`, `signTx()`, and `executeTx()` to pass,
+        //   and reject the rest.
         if (_isAllowedSelector(funcSel)) return VALIDATION_SUCCESS;
-
         revert NonAllowedSelector(account, funcSel);
     }
 

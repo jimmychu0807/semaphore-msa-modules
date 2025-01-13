@@ -236,8 +236,14 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         uint256[] memory newMembers = new uint256[](1);
         newMembers[0] = newCommitment;
 
-        vm.prank(smartAcct.account);
+        // Test: addMembers() is successfully executed
+        vm.startPrank(smartAcct.account);
+        vm.expectEmit(true, true, true, true, address(semaphoreValidator));
+        emit SemaphoreMSAValidator.AddedMembers(smartAcct.account, uint256(1));
         semaphoreValidator.addMembers(newMembers);
+        vm.stopPrank();
+
+        assertEq(semaphoreValidator.memberCount(smartAcct.account), 2);
 
         // Test: the userOp should pass
         uint256 validationData = ERC7579ValidatorBase.ValidationData.unwrap(
@@ -246,7 +252,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         assertEq(validationData, VALIDATION_SUCCESS);
     }
 
-    function test_removeMember() public setupSmartAcctWithMembersThreshold(2, 1) {
+    function test_removeMember() public setupSmartAcctWithMembersThreshold(MEMBER_NUM, 1) {
         revert("to be implemented");
     }
 
