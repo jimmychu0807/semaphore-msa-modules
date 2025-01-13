@@ -14,9 +14,9 @@ importers:
       '@semaphore-protocol/contracts':
         specifier: github:jimmychu0807/semaphore#identity-cli&path:/packages/contracts/contracts
         version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/27c5443c73c3cc752f4c7d9b1b5b76ffcef8d595#path:/packages/contracts/contracts
-      '@semaphore-protocol/core':
-        specifier: github:jimmychu0807/semaphore#identity-cli&path:/packages/core
-        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/27c5443c73c3cc752f4c7d9b1b5b76ffcef8d595#path:/packages/core
+      '@semaphore-protocol/group':
+        specifier: github:jimmychu0807/semaphore#identity-cli&path:/packages/group
+        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/5bae27c7fe4280e37dc7a484320180492a461542#path:/packages/group
       '@semaphore-protocol/identity':
         specifier: github:jimmychu0807/semaphore#identity-cli&path:/packages/identity
         version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/823a4d0c94fba934073a6cda51da91144af35f76#path:/packages/identity
@@ -505,12 +505,13 @@ packages:
     resolution: {path: /packages/contracts/contracts, tarball: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/27c5443c73c3cc752f4c7d9b1b5b76ffcef8d595}
     version: 4.8.2
 
-  '@semaphore-protocol/core@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/27c5443c73c3cc752f4c7d9b1b5b76ffcef8d595#path:/packages/core':
-    resolution: {path: /packages/core, tarball: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/27c5443c73c3cc752f4c7d9b1b5b76ffcef8d595}
-    version: 4.8.2
-
   '@semaphore-protocol/group@4.8.2':
     resolution: {integrity: sha512-nhjcB3MP32lq47cBSyxVnOYE1P9p8a13rxUzJ51X2NVzqbjhpkM1FsPxPRe3bZRTJA3zG0u6Js0Ffydxa3lkng==}
+
+  '@semaphore-protocol/group@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/5bae27c7fe4280e37dc7a484320180492a461542#path:/packages/group':
+    resolution: {path: /packages/group, tarball: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/5bae27c7fe4280e37dc7a484320180492a461542}
+    version: 4.8.2
+    hasBin: true
 
   '@semaphore-protocol/identity@4.8.2':
     resolution: {integrity: sha512-hb6V20KiPdkIk7C0e2rWj+zuY5Z2Rerr2sbo+goKdX/vlgHoaw1y407ZGarR5eVNEhwkvPMixKZWLuLf/D/82g==}
@@ -519,13 +520,6 @@ packages:
     resolution: {path: /packages/identity, tarball: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/823a4d0c94fba934073a6cda51da91144af35f76}
     version: 4.8.2
     hasBin: true
-
-  '@semaphore-protocol/proof@4.8.2':
-    resolution: {integrity: sha512-MtYSIfsYlziKLJYCexst5suf5EQOdBZvlQg6W/oVa1VkDllc+agl310XFdU0a9PunjgPRzAX/PLncuUcR4fghg==}
-    version: 4.8.2
-    peerDependencies:
-      '@semaphore-protocol/group': 4.8.2
-      '@semaphore-protocol/identity': 4.8.2
 
   '@semaphore-protocol/proof@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/5e809a5215b152d80b2c457edbc21cb0a7b6e510#path:/packages/proof':
     resolution: {path: /packages/proof, tarball: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/5e809a5215b152d80b2c457edbc21cb0a7b6e510}
@@ -2107,9 +2101,9 @@ packages:
   solady@0.0.287:
     resolution: {integrity: sha512-Cti/U83eqIB0e3UNxZvmkwrFrQCT9YLY1vhVguaWnOVLKzv/OU5tQbKLGpamUzMtcLSxaBjBdhaTlmiciGfhHg==}
 
-  solady@https://codeload.github.com/vectorized/solady/tar.gz/de9aee59648862bb98affd578248d1e75c7073ad:
-    resolution: {tarball: https://codeload.github.com/vectorized/solady/tar.gz/de9aee59648862bb98affd578248d1e75c7073ad}
-    version: 0.0.288
+  solady@https://codeload.github.com/vectorized/solady/tar.gz/908472a02139e04e4c25280daca82e6c754204e8:
+    resolution: {tarball: https://codeload.github.com/vectorized/solady/tar.gz/908472a02139e04e4c25280daca82e6c754204e8}
+    version: 0.0.292
 
   solarray@https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684:
     resolution: {tarball: https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684}
@@ -2981,7 +2975,7 @@ snapshots:
       ds-test: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0
       forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/8a225d81aa8e2e013580564588c79abb65eacc9e
       prettier: 2.8.8
-      solady: https://codeload.github.com/vectorized/solady/tar.gz/de9aee59648862bb98affd578248d1e75c7073ad
+      solady: https://codeload.github.com/vectorized/solady/tar.gz/908472a02139e04e4c25280daca82e6c754204e8
     transitivePeerDependencies:
       - bufferutil
       - encoding
@@ -3002,7 +2996,7 @@ snapshots:
       ds-test: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0
       excessively-safe-call: '@nomad-xyz/excessively-safe-call@https://codeload.github.com/nomad-xyz/ExcessivelySafeCall/tar.gz/81cd99ce3e69117d665d7601c330ea03b97acce0'
       forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/726a6ee5fc8427a0013d6f624e486c9130c0e336
-      solady: https://codeload.github.com/vectorized/solady/tar.gz/de9aee59648862bb98affd578248d1e75c7073ad
+      solady: https://codeload.github.com/vectorized/solady/tar.gz/908472a02139e04e4c25280daca82e6c754204e8
       solarray: https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684
       solhint: 5.0.3(typescript@4.9.5)
     transitivePeerDependencies:
@@ -3048,19 +3042,17 @@ snapshots:
     dependencies:
       '@zk-kit/lean-imt.sol': 2.0.0
 
-  '@semaphore-protocol/core@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/27c5443c73c3cc752f4c7d9b1b5b76ffcef8d595#path:/packages/core':
-    dependencies:
-      '@semaphore-protocol/group': 4.8.2
-      '@semaphore-protocol/identity': 4.8.2
-      '@semaphore-protocol/proof': 4.8.2(@semaphore-protocol/group@4.8.2)(@semaphore-protocol/identity@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/823a4d0c94fba934073a6cda51da91144af35f76#path:/packages/identity)
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-
   '@semaphore-protocol/group@4.8.2':
     dependencies:
       '@zk-kit/lean-imt': 2.2.2
       '@zk-kit/utils': 1.2.1
+      poseidon-lite: 0.3.0
+
+  '@semaphore-protocol/group@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/5bae27c7fe4280e37dc7a484320180492a461542#path:/packages/group':
+    dependencies:
+      '@zk-kit/lean-imt': 2.2.2
+      '@zk-kit/utils': 1.2.1
+      commander: 12.1.0
       poseidon-lite: 0.3.0
 
   '@semaphore-protocol/identity@4.8.2':
@@ -3078,19 +3070,6 @@ snapshots:
       commander: 12.1.0
       poseidon-lite: 0.3.0
       tsx: 4.19.2
-
-  '@semaphore-protocol/proof@4.8.2(@semaphore-protocol/group@4.8.2)(@semaphore-protocol/identity@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/823a4d0c94fba934073a6cda51da91144af35f76#path:/packages/identity)':
-    dependencies:
-      '@semaphore-protocol/group': 4.8.2
-      '@semaphore-protocol/identity': https://codeload.github.com/jimmychu0807/semaphore/tar.gz/823a4d0c94fba934073a6cda51da91144af35f76#path:/packages/identity
-      '@semaphore-protocol/utils': 4.8.2
-      '@zk-kit/artifacts': 1.8.0
-      '@zk-kit/utils': 1.2.1
-      ethers: 6.13.4
-      snarkjs: 0.7.4
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
 
   '@semaphore-protocol/proof@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/5e809a5215b152d80b2c457edbc21cb0a7b6e510#path:/packages/proof':
     dependencies:
@@ -4946,7 +4925,7 @@ snapshots:
 
   solady@0.0.287: {}
 
-  solady@https://codeload.github.com/vectorized/solady/tar.gz/de9aee59648862bb98affd578248d1e75c7073ad: {}
+  solady@https://codeload.github.com/vectorized/solady/tar.gz/908472a02139e04e4c25280daca82e6c754204e8: {}
 
   solarray@https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684: {}
 

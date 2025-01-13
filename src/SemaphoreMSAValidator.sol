@@ -68,6 +68,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     ISemaphoreGroups public groups;
     mapping(address account => uint256 groupId) public groupMapping;
     mapping(address account => uint8 threshold) public thresholds;
+    mapping(address account => uint8 count) public memberCount;
 
     // smart account -> hash(call(params)) -> valid proof count
     mapping(address account => mapping(bytes32 txHash => ExtCallCount callDataCount)) public
@@ -133,6 +134,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
 
         // Add members to the group
         semaphore.addMembers(groupId, cmts);
+        memberCount[account] = uint8(cmts.length);
 
         emit ModuleInitialized(account);
     }
@@ -143,6 +145,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         delete thresholds[account];
         delete groupMapping[account];
         delete acctSeqNum[account];
+        delete memberCount[account];
 
         //TODO: what is a good way to delete entries associated with `acctTxCount[account]`,
         //   The following line will make the compiler fail.
@@ -151,15 +154,9 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         emit ModuleUninitialized(account);
     }
 
-    function memberCount(address account) public view returns (uint8 cnt) {
-        // account doesn't belong to a semaphore group. We return 0
-        if (thresholds[account] == 0) return 0;
-        cnt = uint8(groups.getMerkleTreeSize(groupMapping[account]));
-    }
-
     function setThreshold(uint8 newThreshold) external moduleInstalled {
         address account = msg.sender;
-        if (newThreshold == 0 || newThreshold > memberCount(account)) {
+        if (newThreshold == 0 || newThreshold > memberCount[account]) {
             revert InvalidThreshold(account);
         }
 
@@ -171,7 +168,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         address account = msg.sender;
         uint256 groupId = groupMapping[account];
 
-        if (memberCount(account) + cmts.length > MAX_MEMBERS) revert MaxMemberReached(account);
+        if (memberCount[account] + cmts.length > MAX_MEMBERS) revert MaxMemberReached(account);
 
         for (uint256 i = 0; i < cmts.length; ++i) {
             if (cmts[i] == uint256(0)) revert InvalidCommitment(account);
@@ -179,6 +176,8 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         }
 
         semaphore.addMembers(groupId, cmts);
+        memberCount[account] += uint8(cmts.length);
+
         emit AddedMembers(account, cmts.length);
     }
 
@@ -191,12 +190,13 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     {
         address account = msg.sender;
 
-        if (memberCount(account) == thresholds[account]) revert MemberCntReachesThreshold(account);
+        if (memberCount[account] == thresholds[account]) revert MemberCntReachesThreshold(account);
 
         uint256 groupId = groupMapping[account];
         if (!groups.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
 
         semaphore.removeMember(groupId, cmt, merkleProofSiblings);
+        memberCount[account] -= 1;
 
         emit RemovedMember(account, cmt);
     }

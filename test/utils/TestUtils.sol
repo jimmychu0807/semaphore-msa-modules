@@ -7,6 +7,10 @@ import { ISemaphore } from "../../src/utils/Semaphore.sol";
 // import { console } from "forge-std/console.sol";
 import { LibString } from "solady/Milady.sol";
 
+// https://github.com/foundry-rs/forge-std/blob/master/src/Base.sol#L9
+address constant VM_ADDRESS = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D;
+Vm constant vm = Vm(VM_ADDRESS);
+
 struct ValidationData {
     address aggregator;
     uint48 validAfter;
@@ -49,13 +53,47 @@ function getTestUserOpCallData(
     callData = bytes.concat(new bytes(100), bytes20(targetAddr), bytes32(value), txCallData);
 }
 
+function getGroupRmMerkleProof(
+    uint256[] memory members,
+    uint256 removal
+)
+    returns (uint256[] memory merkleProof, uint256 root)
+{
+    string[] memory cmd = new string[](5);
+    cmd[0] = "pnpm";
+    cmd[1] = "semaphore-group";
+    cmd[2] = "remove-member";
+    cmd[3] = _join(members);
+    cmd[4] = LibString.toString(removal);
+
+    bytes memory outBytes = vm.ffi(cmd);
+    string memory outStr = string(outBytes);
+    string[] memory retStr = LibString.split(outStr, " ");
+
+    merkleProof = _splitToUint(retStr[0]);
+    root = vm.parseUint(retStr[1]);
+}
+
+function _splitToUint(string memory str) pure returns (uint256[] memory retArr) {
+    string[] memory arr = LibString.split(str, ",");
+    retArr = new uint256[](arr.length);
+    for (uint256 i = 0; i < arr.length; i++) {
+        retArr[i] = vm.parseUint(arr[i]);
+    }
+}
+
+function _join(uint256[] memory members) pure returns (string memory retStr) {
+    for (uint256 i = 0; i < members.length; i++) {
+        retStr = string.concat(retStr, LibString.toString(members[i]));
+        if (i < members.length - 1) {
+            retStr = string.concat(retStr, ",");
+        }
+    }
+}
+
 type Identity is bytes32;
 
 library IdentityLib {
-    // https://github.com/foundry-rs/forge-std/blob/master/src/Base.sol#L9
-    address internal constant VM_ADDRESS = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D;
-    Vm internal constant vm = Vm(VM_ADDRESS);
-
     function genIdentity(uint256 seed) public view returns (Identity) {
         return Identity.wrap(keccak256(abi.encodePacked(seed, address(this))));
     }

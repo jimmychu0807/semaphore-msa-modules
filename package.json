@@ -18,9 +18,9 @@
   "devDependencies": {
     "@rhinestone/modulekit": "~0.5.4",
     "@semaphore-protocol/contracts": "github:jimmychu0807/semaphore#identity-cli&path:/packages/contracts/contracts",
-    "@semaphore-protocol/core": "github:jimmychu0807/semaphore#identity-cli&path:/packages/core",
     "@semaphore-protocol/identity": "github:jimmychu0807/semaphore#identity-cli&path:/packages/identity",
     "@semaphore-protocol/proof": "github:jimmychu0807/semaphore#identity-cli&path:/packages/proof",
+    "@semaphore-protocol/group": "github:jimmychu0807/semaphore#identity-cli&path:/packages/group",
     "poseidon-solidity": "github:chancehudson/poseidon-solidity#main",
     "rimraf": "^5.0.5",
     "solady": "^0.0.287"
@@ -47,7 +47,7 @@
     "prepack": "pnpm install && bash ./shell/prepare-artifacts.sh",
     "prettier:check": "prettier --no-error-on-unmatched-pattern -c \"{src,test,script}/**/*.{json,md,svg,yml}\"",
     "prettier:write": "prettier --no-error-on-unmatched-pattern -w \"{src,test,script}/**/*.{json,md,svg,yml}\"",
-    "test": "COMPLIANCE=true forge test --ffi",
+    "test": "forge test --ffi",
     "test:lite": "FOUNDRY_PROFILE=lite forge test",
     "test:optimized": "pnpm run build:optimized && FOUNDRY_PROFILE=test-optimized forge test"
   },
