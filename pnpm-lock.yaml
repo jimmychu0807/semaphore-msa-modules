@@ -23,9 +23,6 @@ importers:
       '@semaphore-protocol/proof':
         specifier: github:jimmychu0807/semaphore#identity-cli&path:/packages/proof
         version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/5e809a5215b152d80b2c457edbc21cb0a7b6e510#path:/packages/proof
-      baby-jubjub.solidity:
-        specifier: github:jimmychu0807/baby-jubjub.solidity#master
-        version: https://codeload.github.com/jimmychu0807/baby-jubjub.solidity/tar.gz/84617d69f8e2f0a3b6639c780be63295396859e2
       poseidon-solidity:
         specifier: github:chancehudson/poseidon-solidity#main
         version: https://codeload.github.com/chancehudson/poseidon-solidity/tar.gz/8205c97ec4a35a9adb854b70b2c9ba92668d1304
@@ -774,10 +771,6 @@ packages:
 
   b4a@1.6.7:
     resolution: {integrity: sha512-OnAYlL5b7LEkALw87fUVafQw5rVR9RjwGd4KUwNQ6DrrNmaVaUCgLipfVlzrPQ4tWOR9P0IXGNOx50jYCCdSJg==}
-
-  baby-jubjub.solidity@https://codeload.github.com/jimmychu0807/baby-jubjub.solidity/tar.gz/84617d69f8e2f0a3b6639c780be63295396859e2:
-    resolution: {tarball: https://codeload.github.com/jimmychu0807/baby-jubjub.solidity/tar.gz/84617d69f8e2f0a3b6639c780be63295396859e2}
-    version: 0.1.0
 
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
@@ -3407,8 +3400,6 @@ snapshots:
       - debug
 
   b4a@1.6.7: {}
-
-  baby-jubjub.solidity@https://codeload.github.com/jimmychu0807/baby-jubjub.solidity/tar.gz/84617d69f8e2f0a3b6639c780be63295396859e2: {}
 
   balanced-match@1.0.2: {}
 

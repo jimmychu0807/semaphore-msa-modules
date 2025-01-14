@@ -4,8 +4,9 @@ pragma solidity >=0.8.23 <=0.8.29;
 import { PoseidonT3 } from "poseidon-solidity/PoseidonT3.sol";
 import { PoseidonT6 } from "poseidon-solidity/PoseidonT6.sol";
 import { Vm } from "forge-std/Vm.sol";
+import { console } from "forge-std/console.sol";
 import { LibString } from "solady/Milady.sol";
-import { CurveBabyJubJub } from "baby-jubjub/CurveBabyJubJub.sol";
+import { CurveBabyJubJub } from "./CurveBabyJubJub.sol";
 
 library Identity {
     function getCommitment(bytes memory pubKey) public pure returns (uint256 cmt) {
@@ -18,6 +19,10 @@ library Identity {
             abi.decode(signature, (uint256, uint256, uint256, uint256, uint256));
 
         Vm vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
+
+        console.log("message:");
+        console.logBytes32(message);
+        console.logBytes(signature);
 
         string[] memory inputs = new string[](6);
         inputs[0] = "pnpm";

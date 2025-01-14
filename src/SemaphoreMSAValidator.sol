@@ -338,7 +338,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         }
 
         // Verify signature using the public key
-        if (!Identity.verifySignatureFFI(userOpHash, userOp.signature)) {
+        if (!Identity.verifySignature(userOpHash, userOp.signature)) {
             revert InvalidSignature(account, userOp.signature);
         }
 
