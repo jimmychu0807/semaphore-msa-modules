@@ -39,7 +39,7 @@ contract SemaphoreUnitTest is Test {
         $users.push(User({ sk: sk, addr: addr }));
     }
 
-    function test_SemaphoreDeployed() public {
+    function test_semaphoreDeployed() public {
         ISemaphoreGroups groups = ISemaphoreGroups(address(semaphore));
 
         User storage admin = $users[0];

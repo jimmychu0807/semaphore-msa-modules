@@ -322,7 +322,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         bytes32 userOpHash
     )
         external
-        view
+        // view
         override
         returns (ValidationData)
     {
@@ -338,7 +338,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         }
 
         // Verify signature using the public key
-        if (!Identity.verifySignature(userOpHash, userOp.signature)) {
+        if (!Identity.verifySignatureFFI(userOpHash, userOp.signature)) {
             revert InvalidSignature(account, userOp.signature);
         }
 
