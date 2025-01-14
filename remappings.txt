@@ -17,3 +17,4 @@ ExcessivelySafeCall/=node_modules/excessively-safe-call/src/
 
 semaphore/=node_modules/@semaphore-protocol/contracts/
 poseidon-solidity/=node_modules/poseidon-solidity/contracts/
+baby-jubjub/=node_modules/baby-jubjub.solidity/contracts/

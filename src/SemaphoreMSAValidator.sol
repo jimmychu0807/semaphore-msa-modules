@@ -322,7 +322,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         bytes32 userOpHash
     )
         external
-        // view
+        view
         override
         returns (ValidationData)
     {

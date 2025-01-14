@@ -18,9 +18,10 @@
   "devDependencies": {
     "@rhinestone/modulekit": "~0.5.4",
     "@semaphore-protocol/contracts": "github:jimmychu0807/semaphore#identity-cli&path:/packages/contracts/contracts",
+    "@semaphore-protocol/group": "github:jimmychu0807/semaphore#identity-cli&path:/packages/group",
     "@semaphore-protocol/identity": "github:jimmychu0807/semaphore#identity-cli&path:/packages/identity",
     "@semaphore-protocol/proof": "github:jimmychu0807/semaphore#identity-cli&path:/packages/proof",
-    "@semaphore-protocol/group": "github:jimmychu0807/semaphore#identity-cli&path:/packages/group",
+    "baby-jubjub.solidity": "github:jimmychu0807/baby-jubjub.solidity#master",
     "poseidon-solidity": "github:chancehudson/poseidon-solidity#main",
     "rimraf": "^5.0.5",
     "solady": "^0.0.287"
