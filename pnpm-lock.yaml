@@ -454,8 +454,8 @@ packages:
   '@openzeppelin/contracts@5.0.1':
     resolution: {integrity: sha512-yQJaT5HDp9hYOOp4jTYxMsR02gdFZFXhewX5HW9Jo4fsqSVqqyIO/xTHdWDaKX5a3pv1txmf076Lziz+sO7L1w==}
 
-  '@openzeppelin/contracts@5.1.0':
-    resolution: {integrity: sha512-p1ULhl7BXzjjbha5aqst+QMLY+4/LCWADXOCsmLHRM77AqiPjnd9vvUN9sosUfhL9JGKpZ0TjEGxgvnizmWGSA==}
+  '@openzeppelin/contracts@5.2.0':
+    resolution: {integrity: sha512-bxjNie5z89W1Ea0NZLZluFh8PrFNn9DH8DQlujEok2yjsOlraUPKID5p1Wk3qdNbf6XkQ1Os2RvfiHrrXLHWKA==}
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -611,8 +611,8 @@ packages:
   '@types/node@20.17.12':
     resolution: {integrity: sha512-vo/wmBgMIiEA23A/knMfn/cf37VnuF52nZh5ZoW0GWt4e4sxNquibrMRJ7UQsA06+MBx9r/H1jsI9grYjQCQlw==}
 
-  '@types/node@22.10.5':
-    resolution: {integrity: sha512-F8Q+SeGimwOo86fiovQh8qiXfFEh2/ocYv7tU5pJ3EXMSSxk1Joj5wefpFK2fHTf/N6HKGSxIDBT9f3gCxXPkQ==}
+  '@types/node@22.10.6':
+    resolution: {integrity: sha512-qNiuwC4ZDAUNcY47xgaSuS92cjf8JbSUoaKS77bmLG1rU7MlATVSiw/IlrjtIyyskXBZ8KkNfjK/P5na7rgXbQ==}
 
   '@types/node@22.7.5':
     resolution: {integrity: sha512-jML7s2NAzMWc//QSJ1a3prpk78cOPchGvXJsC3C6R6PSMoooztvRVQEz89gmBTBY1SPMaqo5teB4uNHPdetShQ==}
@@ -623,8 +623,8 @@ packages:
   '@types/prettier@2.7.3':
     resolution: {integrity: sha512-+68kP9yzs4LMp7VNh8gdzMSPZFL44MLGqiHWvttYJe+6qnuVr4Ek9wSBQoveqY/r+LwjCcU29kNVkidwim+kYA==}
 
-  '@types/qs@6.9.17':
-    resolution: {integrity: sha512-rX4/bPcfmvxHDv0XjfJELTTr+iB+tn032nPILqHm5wbthUUUuVtNGGqzhya9XUxjTP8Fpr0qYgSZZKxGY++svQ==}
+  '@types/qs@6.9.18':
+    resolution: {integrity: sha512-kK7dgTYDyGqS+e2Q4aK9X3D7q234CIZ1Bv0q/7Z5IwRDoADNU81xXJK/YVyLbLTZCoIwUoDoffFeF+p/eIklAA==}
 
   '@types/secp256k1@4.0.6':
     resolution: {integrity: sha512-hHxJU6PAEUn0TP4S/ZOzuTUvJWuZ6eIKeNKb5RBpODvSl6hp1Wrw4s7ATY50rklRCScUDpHzVA/DQdSjJ3UoYQ==}
@@ -1593,8 +1593,8 @@ packages:
   jsonpath@1.1.1:
     resolution: {integrity: sha512-l6Cg7jRpixfbgoWgkrl77dgEj8RPvND0wMH6TwQmi9Qs4TFfS9u5cUFnbeKTwj5ga5Y3BTGGNI28k117LJ009w==}
 
-  jsonschema@1.4.1:
-    resolution: {integrity: sha512-S6cATIPVv1z0IlxdN+zUk5EPjkGCdnhN4wVSBlvoUO1tOLJootbo9CquNJmbIh4yikWHiUedhRYrNPn1arpEmQ==}
+  jsonschema@1.5.0:
+    resolution: {integrity: sha512-K+A9hhqbn0f3pJX17Q/7H6yQfD/5OXgdrR5UE12gMXCiN9D5Xq2o5mddV2QEcX/bjla99ASsAAQUyMCCRWAEhw==}
 
   keccak@3.0.4:
     resolution: {integrity: sha512-3vKuW0jV8J3XNTzvfyicFR5qvxrSAGl7KIhvgOu5cmWwM7tZRj3fMbj/pfIf4be7aznbc+prBWGjywox/g2Y6Q==}
@@ -1939,9 +1939,9 @@ packages:
     resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
     engines: {node: '>=8.10.0'}
 
-  readdirp@4.0.2:
-    resolution: {integrity: sha512-yDMz9g+VaZkqBYS/ozoBJwaBhTbZo3UNYQHNRw1D3UFQB8oHB4uS/tAODO+ZLjGWmUbKnIlOWO+aaIiAxrUWHA==}
-    engines: {node: '>= 14.16.0'}
+  readdirp@4.1.1:
+    resolution: {integrity: sha512-h80JrZu/MHUZCyHu5ciuoI0+WxsCxzxJTILn6Fs8rxSnFPh+UVHYfeIxK1nVGugMqkfC4vJcBOYbkfkwYK0+gw==}
+    engines: {node: '>= 14.18.0'}
 
   rechoir@0.6.2:
     resolution: {integrity: sha512-HFM8rkZ+i3zrV+4LQjwQ0W+ez98pApMGM3HUrN04j3CqzPOzl9nmP15Y8YXNm8QHGv/eacOVEjqhmWpkRV0NAw==}
@@ -2101,8 +2101,8 @@ packages:
   solady@0.0.287:
     resolution: {integrity: sha512-Cti/U83eqIB0e3UNxZvmkwrFrQCT9YLY1vhVguaWnOVLKzv/OU5tQbKLGpamUzMtcLSxaBjBdhaTlmiciGfhHg==}
 
-  solady@https://codeload.github.com/vectorized/solady/tar.gz/908472a02139e04e4c25280daca82e6c754204e8:
-    resolution: {tarball: https://codeload.github.com/vectorized/solady/tar.gz/908472a02139e04e4c25280daca82e6c754204e8}
+  solady@https://codeload.github.com/vectorized/solady/tar.gz/a1e450fbd3a9db70ea63f14a53d2f320151b4265:
+    resolution: {tarball: https://codeload.github.com/vectorized/solady/tar.gz/a1e450fbd3a9db70ea63f14a53d2f320151b4265}
     version: 0.0.292
 
   solarray@https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684:
@@ -2948,7 +2948,7 @@ snapshots:
 
   '@openzeppelin/contracts@5.0.1': {}
 
-  '@openzeppelin/contracts@5.1.0': {}
+  '@openzeppelin/contracts@5.2.0': {}
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
@@ -2975,7 +2975,7 @@ snapshots:
       ds-test: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0
       forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/8a225d81aa8e2e013580564588c79abb65eacc9e
       prettier: 2.8.8
-      solady: https://codeload.github.com/vectorized/solady/tar.gz/908472a02139e04e4c25280daca82e6c754204e8
+      solady: https://codeload.github.com/vectorized/solady/tar.gz/a1e450fbd3a9db70ea63f14a53d2f320151b4265
     transitivePeerDependencies:
       - bufferutil
       - encoding
@@ -2996,7 +2996,7 @@ snapshots:
       ds-test: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0
       excessively-safe-call: '@nomad-xyz/excessively-safe-call@https://codeload.github.com/nomad-xyz/ExcessivelySafeCall/tar.gz/81cd99ce3e69117d665d7601c330ea03b97acce0'
       forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/726a6ee5fc8427a0013d6f624e486c9130c0e336
-      solady: https://codeload.github.com/vectorized/solady/tar.gz/908472a02139e04e4c25280daca82e6c754204e8
+      solady: https://codeload.github.com/vectorized/solady/tar.gz/a1e450fbd3a9db70ea63f14a53d2f320151b4265
       solarray: https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684
       solhint: 5.0.3(typescript@4.9.5)
     transitivePeerDependencies:
@@ -3169,11 +3169,11 @@ snapshots:
 
   '@types/bn.js@4.11.6':
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@types/bn.js@5.1.6':
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@types/debug@4.1.12':
     dependencies:
@@ -3182,7 +3182,7 @@ snapshots:
   '@types/glob@7.2.0':
     dependencies:
       '@types/minimatch': 5.1.2
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@types/http-cache-semantics@4.0.4': {}
 
@@ -3198,7 +3198,7 @@ snapshots:
     dependencies:
       undici-types: 6.19.8
 
-  '@types/node@22.10.5':
+  '@types/node@22.10.6':
     dependencies:
       undici-types: 6.20.0
 
@@ -3208,15 +3208,15 @@ snapshots:
 
   '@types/pbkdf2@3.1.2':
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@types/prettier@2.7.3': {}
 
-  '@types/qs@6.9.17': {}
+  '@types/qs@6.9.18': {}
 
   '@types/secp256k1@4.0.6':
     dependencies:
-      '@types/node': 22.10.5
+      '@types/node': 22.10.6
 
   '@zk-kit/artifacts@1.8.0': {}
 
@@ -3274,7 +3274,7 @@ snapshots:
   accountabstraction@https://codeload.github.com/kopy-kat/account-abstraction/tar.gz/c5887153fbfe3ed09b2637cac39873f96d676f38(ethers@5.7.2)(hardhat@2.22.17(typescript@4.9.5))(lodash@4.17.21)(typechain@5.2.0(typescript@4.9.5)):
     dependencies:
       '@nomiclabs/hardhat-etherscan': 2.1.8(hardhat@2.22.17(typescript@4.9.5))
-      '@openzeppelin/contracts': 5.1.0
+      '@openzeppelin/contracts': 5.2.0
       '@thehubbleproject/bls': 0.5.1
       '@typechain/hardhat': 2.3.1(hardhat@2.22.17(typescript@4.9.5))(lodash@4.17.21)(typechain@5.2.0(typescript@4.9.5))
       '@types/debug': 4.1.12
@@ -3554,7 +3554,7 @@ snapshots:
 
   chokidar@4.0.3:
     dependencies:
-      readdirp: 4.0.2
+      readdirp: 4.1.1
 
   ci-info@2.0.0: {}
 
@@ -4188,7 +4188,7 @@ snapshots:
       '@ethersproject/solidity': 5.7.0
       '@ethersproject/transactions': 5.7.0
       '@ethersproject/wallet': 5.7.0
-      '@types/qs': 6.9.17
+      '@types/qs': 6.9.18
       axios: 0.21.4(debug@4.4.0)
       chalk: 4.1.2
       chokidar: 3.6.0
@@ -4431,7 +4431,7 @@ snapshots:
       static-eval: 2.0.2
       underscore: 1.12.1
 
-  jsonschema@1.4.1: {}
+  jsonschema@1.5.0: {}
 
   keccak@3.0.4:
     dependencies:
@@ -4749,7 +4749,7 @@ snapshots:
     dependencies:
       picomatch: 2.3.1
 
-  readdirp@4.0.2: {}
+  readdirp@4.1.1: {}
 
   rechoir@0.6.2:
     dependencies:
@@ -4925,7 +4925,7 @@ snapshots:
 
   solady@0.0.287: {}
 
-  solady@https://codeload.github.com/vectorized/solady/tar.gz/908472a02139e04e4c25280daca82e6c754204e8: {}
+  solady@https://codeload.github.com/vectorized/solady/tar.gz/a1e450fbd3a9db70ea63f14a53d2f320151b4265: {}
 
   solarray@https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684: {}
 
@@ -4978,7 +4978,7 @@ snapshots:
       global-modules: 2.0.0
       globby: 10.0.2
       hardhat: 2.22.17(typescript@4.9.5)
-      jsonschema: 1.4.1
+      jsonschema: 1.5.0
       lodash: 4.17.21
       mocha: 10.8.2
       node-emoji: 1.11.0
