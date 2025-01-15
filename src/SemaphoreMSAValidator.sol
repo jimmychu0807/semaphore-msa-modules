@@ -322,7 +322,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         bytes32 userOpHash
     )
         external
-        // view
+        virtual
         override
         returns (ValidationData)
     {
@@ -376,24 +376,53 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         return EIP1271_SUCCESS;
     }
 
+    // For [ERC-7780](https://eips.ethereum.org/EIPS/eip-7780)
+    //  stateless validator
+    /**
+     * Validates a signature given some data
+     *
+     * @param hash The data that was signed over
+     * @param signature The signature to verify
+     * @param data The data to validate the verified signature agains
+     *
+     * MUST validate that the signature is a valid signature of the hash
+     * MUST compare the validated signature against the data provided
+     * MUST return true if the signature is valid and false otherwise
+     */
     function validateSignatureWithData(
-        bytes32,
-        bytes calldata,
-        bytes calldata
+        bytes32 hash,
+        bytes calldata signature,
+        bytes calldata data
     )
         external
         view
         virtual
-        returns (bool validSig)
+        returns (bool)
     {
         return true;
     }
+
+    /*//////////////////////////////////////////////////////////////////////////
+                                INTERNAL FUNCTIONS
+    //////////////////////////////////////////////////////////////////////////*/
 
     function _isAllowedSelector(bytes4 sel) internal view returns (bool allowed) {
         for (uint256 i = 0; i < ALLOWED_SELECTORS.length; ++i) {
             if (sel == ALLOWED_SELECTORS[i]) return true;
         }
         return false;
+    }
+
+    function _validateSignatureWithConfig(
+        address account,
+        bytes32 hash,
+        bytes calldata data
+    )
+        internal
+        view
+        returns (bool)
+    {
+        return true;
     }
 
     /*//////////////////////////////////////////////////////////////////////////
@@ -426,6 +455,6 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
      * @return true if the module is of the given type, false otherwise
      */
     function isModuleType(uint256 typeID) external pure override returns (bool) {
-        return typeID == TYPE_VALIDATOR;
+        return typeID == TYPE_VALIDATOR || typeID == TYPE_STATELESS_VALIDATOR;
     }
 }

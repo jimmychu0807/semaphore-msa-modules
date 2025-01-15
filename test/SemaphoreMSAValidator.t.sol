@@ -304,11 +304,11 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
             txValidator: address(semaphoreValidator)
         });
 
-        // TODO: We need to increase the accountGasLimits, default 2e6 is not enough to verify
-        //    signature, for all those elliptic curve computation.
-        // userOpData.userOp.accountGasLimits = bytes32(uint256(2e7));
-        // userOpData.userOpHash = smartAcct.aux.entrypoint.getUserOpHash(userOpData.userOp);
-
+        // We need to increase the accountGasLimits, default 2e6 is not enough to verify
+        // signature, for all those elliptic curve computation.
+        // Encoding two fields here, validation and execution gas
+        userOpData.userOp.accountGasLimits = bytes32(abi.encodePacked(uint128(2e7), uint128(2e7)));
+        userOpData.userOpHash = smartAcct.aux.entrypoint.getUserOpHash(userOpData.userOp);
         userOpData.userOp.signature = id.signHash(userOpData.userOpHash);
     }
 
@@ -486,6 +486,8 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
             callData: abi.encodeCall(SimpleContract.setVal, (testVal)),
             txValidator: address(semaphoreValidator)
         });
+        userOpData.userOp.accountGasLimits = bytes32(abi.encodePacked(uint128(2e7), uint128(2e7)));
+        userOpData.userOpHash = smartAcct.aux.entrypoint.getUserOpHash(userOpData.userOp);
         userOpData.userOp.signature = member.identity.signHash(userOpData.userOpHash);
 
         smartAcct.expect4337Revert(SemaphoreMSAValidator.NonValidatorCallBanned.selector);
