@@ -303,6 +303,12 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
             callData: callData,
             txValidator: address(semaphoreValidator)
         });
+
+        // TODO: We need to increase the accountGasLimits, default 2e6 is not enough to verify
+        //    signature, for all those elliptic curve computation.
+        // userOpData.userOp.accountGasLimits = bytes32(uint256(2e7));
+        // userOpData.userOpHash = smartAcct.aux.entrypoint.getUserOpHash(userOpData.userOp);
+
         userOpData.userOp.signature = id.signHash(userOpData.userOpHash);
     }
 

@@ -1,22 +1,26 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.23 <=0.8.29;
 
+// ref: https://github.com/yondonfu/sol-baby-jubjub
+//   with: https://github.com/yondonfu/sol-baby-jubjub/pull/1
+
 library CurveBabyJubJub {
     // Curve parameters
     // E: 168700x^2 + y^2 = 1 + 168696x^2y^2
     // A = 168700
     uint256 public constant A = 0x292FC;
-    // D = 168696 
+    // D = 168696
     uint256 public constant D = 0x292F8;
-    // Prime Q = 21888242871839275222246405745257275088548364400416034343698204186575808495617
-    uint256 public constant Q = 0x30644E72E131A029B85045B68181585D2833E84879B9709143E1F593F0000001;
-
+    // curve order
+    uint256 public constant Q =
+        21_888_242_871_839_275_222_246_405_745_257_275_088_548_364_400_416_034_343_698_204_186_575_808_495_617;
     // Base8 point
-    //   ref: https://github.com/privacy-scaling-explorations/zk-kit/blob/31c83b644857ed30983120baeff912f69a11f2e9/packages/baby-jubjub/src/baby-jubjub.ts#L19-L22
+    //   ref:
+    // https://github.com/privacy-scaling-explorations/zk-kit/blob/31c83b644857ed30983120baeff912f69a11f2e9/packages/baby-jubjub/src/baby-jubjub.ts#L19-L22
     uint256 public constant Base8x =
-        5299619240641551281634865583518297030282874472190772894086521144482721001553;
+        5_299_619_240_641_551_281_634_865_583_518_297_030_282_874_472_190_772_894_086_521_144_482_721_001_553;
     uint256 public constant Base8y =
-        16950150798460657717958625567821834550301663161624707787222815936182638968203;
+        16_950_150_798_460_657_717_958_625_567_821_834_550_301_663_161_624_707_787_222_815_936_182_638_968_203;
 
     /**
      * @dev Add 2 points on baby jubjub curve
@@ -24,7 +28,16 @@ library CurveBabyJubJub {
      * x3 = (x1y2 + y1x2) / (1 + dx1x2y1y2)
      * y3 = (y1y2 - ax1x2) / (1 - dx1x2y1y2)
      */
-    function pointAdd(uint256 _x1, uint256 _y1, uint256 _x2, uint256 _y2) internal view returns (uint256 x3, uint256 y3) {
+    function pointAdd(
+        uint256 _x1,
+        uint256 _y1,
+        uint256 _x2,
+        uint256 _y2
+    )
+        internal
+        view
+        returns (uint256 x3, uint256 y3)
+    {
         if (_x1 == 0 && _y1 == 1) {
             return (_x2, _y2);
         }
@@ -55,13 +68,22 @@ library CurveBabyJubJub {
      * @dev Multiply a point on baby jubjub curve by a scalar
      * Use the double and add algorithm
      */
-    function pointMul(uint256 _x1, uint256 _y1, uint256 _d) internal view returns (uint256 x2, uint256 y2) {
+    function pointMul(
+        uint256 _x1,
+        uint256 _y1,
+        uint256 _d
+    )
+        internal
+        view
+        returns (uint256 x2, uint256 y2)
+    {
         uint256 remaining = _d;
 
         uint256 px = _x1;
         uint256 py = _y1;
         // Initialize (ax,ay) to the identity element
-        // Reference: https://github.com/privacy-scaling-explorations/zk-kit/blob/689e6871344c19e7f78df064b62d2bf7697ae3b8/packages/baby-jubjub/src/baby-jubjub.ts#L73
+        // Reference:
+        // https://github.com/privacy-scaling-explorations/zk-kit/blob/689e6871344c19e7f78df064b62d2bf7697ae3b8/packages/baby-jubjub/src/baby-jubjub.ts#L73
         uint256 ax = 0;
         uint256 ay = 1;
 
@@ -70,9 +92,7 @@ library CurveBabyJubJub {
                 // Binary digit is 1 so add
                 (ax, ay) = pointAdd(ax, ay, px, py);
             }
-
             (px, py) = pointDouble(px, py);
-
             remaining = remaining / 2;
         }
 
@@ -130,11 +150,8 @@ library CurveBabyJubJub {
             // The bigModExp precompile is at 0x05
             let success := staticcall(gas(), 0x05, memPtr, 0xc0, memPtr, 0x20)
             switch success
-            case 0 {
-                revert(0x0, 0x0)
-            } default {
-                o := mload(memPtr)
-            }
+            case 0 { revert(0x0, 0x0) }
+            default { o := mload(memPtr) }
         }
     }
 }
