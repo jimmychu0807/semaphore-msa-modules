@@ -32,7 +32,9 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase, IStatelessValidator {
         uint8 count;
     }
 
-    // Errors
+    /**
+     * Errors
+     */
     error MemberCntReachesThreshold(address account);
     error InvalidCommitment(address account);
     error InvalidThreshold(address account);
@@ -52,7 +54,9 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase, IStatelessValidator {
     error InitiateTxWithNullCallDataAndNullValue(address account, address targetAddr);
     error ExecuteTxFailure(address account, address targetAddr, uint256 value, bytes callData);
 
-    // Events
+    /**
+     * Events
+     */
     event ModuleInitialized(address indexed account);
     event ModuleUninitialized(address indexed account);
     event AddedMembers(address indexed, uint256 indexed length);

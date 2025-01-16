@@ -1,45 +1,55 @@
-## Semaphore Modular Smart Contract (MSA) Validator Module
+# Semaphore Modular Smart Contract (MSA) Validator Module
 
-[Development Notes](./docs/development.md)
+## Overview
 
-The module aims to adhere with **ERC-7579** standard ([introduction](https://erc7579.com/), [eip](https://eips.ethereum.org/EIPS/eip-7579)) and is forked from [rhinestonewtf/module-template](https://github.com/rhinestonewtf/module-template).
+This module is a validator module adhere to [**ERC-7579**](https://eips.ethereum.org/EIPS/eip-7579) standard that uses [Semaphore](https://semaphore.pse.dev/) at the back to create a multi-signature owner validation. This means the smart account that incorporates this validator gains benefits:
 
-## Using the template
+- The smart account become a M-N multi-sig wallet controlled by members added to the [Semaphore group](https://docs.semaphore.pse.dev/guides/groups) of the smart account.
+- Semaphore feature preserve the privacy of who the members are of an account. One also cannot deduce who sign a signature for that smart account, while guaranteeing that a member cannot double-sign for an account.
 
-### Building modules
+Development of this project is part of the [PSE Acceleration Program (**FY24-1847**)](https://github.com/privacy-scaling-explorations/acceleration-program/issues/72).
+
+## Using the Module
+
+### Build and Test modules
 
 ```shell
 # Install dependencies
 pnpm install
 
-# Update ModuleKit
-pnpm update rhinestonewtf/modulekit
-
 # Build
-pnpm build
+pnpm run build
 
 # Test
-pnpm test
+pnpm run test
 ```
 
-### Deploying modules
+## ERC-4337 Lifecycle on Validation
 
-1. Import your modules into the `script/DeployModule.s.sol` file.
-2. Create a `.env` file in the root directory based on the `.env.example` file and fill in the variables.
-3. Run the following command:
+![ERC-4337 Lifecycle](docs/assets/4337-lifecycle.svg)
 
-```shell
-source .env && forge script script/DeployModule.s.sol:DeployModuleScript --rpc-url $DEPLOYMENT_RPC --broadcast --sender $DEPLOYMENT_SENDER --verify
-```
+- ERC-4337: [introduction](https://www.erc4337.io/), [eip](https://eips.ethereum.org/EIPS/eip-4337)
+- ERC-7579: [introduction](https://erc7579.com/), [eip](https://eips.ethereum.org/EIPS/eip-7579)
 
-Your module is now deployed to the blockchain and verified on Etherscan.
+### Data Structure
 
-If the verification fails, you can manually verify it on Etherscan using the following command:
+#### Smart Contract Storage
 
-```shell
-source .env && forge verify-contract --chain-id [YOUR_CHAIN_ID] --watch --etherscan-api-key $ETHERSCAN_API_KEY [YOUR_MODULE_ADDRESS] src/[PATH_TO_MODULE].sol:[MODULE_CONTRACT_NAME]
-```
+One key in understanding the logic of this module is to understand the key data structure it use. In terms of  the storage in the [**SemaphoreMSAValidator** contract](./src/SemaphoreMSAValidator.sol), there are:
 
-## Contributing
+- `groupMapping`: mapping from the smart account address to a Semaphore group
+- `thresholds`: the threshold number of signature the smart account needs to collect for a transaction to be executed.
+- `memberCount`: The member count of a Semaphore group. The actual member commitments are stored in the `smaphore` contract.
+- `acctTxCount`: stores the transaction call data and value that are waiting to be signed, and the signatures it has collected so far. This information is stored in the data structure of **`ExtCallCount`**.
+- `acctSeqNum`: The sequence number corresponding to the smart account. This value is used when generating a transaction signature to uniquely identify the corresponding transaction.
 
-For feature or change requests, feel free to open a PR, start a discussion or get in touch with us.
+#### Signature and Calldata
+
+
+
+### Development Approach
+
+
+## Contributions
+
+Thanks to the following folks on discussing about this project and helps along: [Saleel](https://github.com/saleel) on initiating this idea with [Semaphore Wallet](https://github.com/saleel/semaphore-wallet), [Cedoor](https://github.com/cedoor) & [Vivian](https://github.com/vplasencia) on Semaphore development and its opinion. [John Guilding](https://github.com/JohnGuilding) on the discussion and support of the project.
