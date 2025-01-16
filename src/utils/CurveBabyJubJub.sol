@@ -2,7 +2,7 @@
 pragma solidity >=0.8.23 <=0.8.29;
 
 // ref: https://github.com/yondonfu/sol-baby-jubjub
-//   with: https://github.com/yondonfu/sol-baby-jubjub/pull/1
+//   with PR#1: https://github.com/yondonfu/sol-baby-jubjub/pull/1
 
 library CurveBabyJubJub {
     // Curve parameters
@@ -138,6 +138,7 @@ library CurveBabyJubJub {
      * @dev Helper function to call the bigModExp precompile
      */
     function expmod(uint256 _b, uint256 _e, uint256 _m) internal view returns (uint256 o) {
+        // solhint-disable-next-line no-inline-assembly
         assembly {
             let memPtr := mload(0x40)
             mstore(memPtr, 0x20) // Length of base _b
