@@ -1,4 +1,4 @@
-# Semaphore Modular Smart Contract (MSA) Validator Module
+# Semaphore Modular Smart Account Validator Module
 
 ## Overview
 
