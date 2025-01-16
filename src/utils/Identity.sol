@@ -3,10 +3,10 @@ pragma solidity >=0.8.23 <=0.8.29;
 
 import { PoseidonT3 } from "poseidon-solidity/PoseidonT3.sol";
 import { PoseidonT6 } from "poseidon-solidity/PoseidonT6.sol";
-// import { Vm } from "forge-std/Vm.sol";
-// import { console } from "forge-std/console.sol";
 import { LibString } from "solady/Milady.sol";
 import { CurveBabyJubJub } from "./CurveBabyJubJub.sol";
+// import { Vm } from "forge-std/Vm.sol";
+// import { console } from "forge-std/console.sol";
 
 library Identity {
     uint256 internal constant base8x = CurveBabyJubJub.Base8x;

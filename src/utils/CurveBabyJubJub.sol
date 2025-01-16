@@ -2,7 +2,7 @@
 pragma solidity >=0.8.23 <=0.8.29;
 
 // ref: https://github.com/yondonfu/sol-baby-jubjub
-//   with: https://github.com/yondonfu/sol-baby-jubjub/pull/1
+//   with PR#1: https://github.com/yondonfu/sol-baby-jubjub/pull/1
 
 library CurveBabyJubJub {
     // Curve parameters
