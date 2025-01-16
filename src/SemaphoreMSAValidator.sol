@@ -4,7 +4,7 @@ pragma solidity >=0.8.23 <=0.8.29;
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { VALIDATION_SUCCESS } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
-import { LibSort, LibBytes } from "solady/Milady.sol";
+import { LibSort } from "solady/Milady.sol";
 
 import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
 import { ValidatorLibBytes } from "./utils/ValidatorLibBytes.sol";
@@ -230,7 +230,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         //   1. targetAddr cannot be 0
         //   2. if txCallData is blank, then msg.value must be > 0, else revert
         if (targetAddr == address(0)) revert InitiateTxWithNullAddress(account);
-        if (LibBytes.cmp(txCallData, "") == 0 && msg.value == 0) {
+        if (txCallData.length == 0 && msg.value == 0) {
             revert InitiateTxWithNullCallDataAndNullValue(account, targetAddr);
         }
 
@@ -343,7 +343,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         }
 
         // Verify if the identity commitment is one of the semaphore group members
-        bytes memory pubKey = LibBytes.slice(userOp.signature, 0, 66);
+        bytes memory pubKey = userOp.signature[0:64];
         uint256 cmt = Identity.getCommitment(pubKey);
         if (!groups.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
 
@@ -353,8 +353,8 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
 
         // For callData, the first 120 bytes are reserved by ERC-7579 use. Then 32 bytes of value,
         //   then the remaining as the callData passed in getExecOps
-        bytes memory valAndCallData = userOp.callData[120:];
-        bytes4 funcSel = bytes4(LibBytes.slice(valAndCallData, 32, 36));
+        bytes calldata valAndCallData = userOp.callData[120:];
+        bytes4 funcSel = bytes4(valAndCallData[32:36]);
 
         // We only allow calls to `initiateTx()`, `signTx()`, and `executeTx()` to pass,
         //   and reject the rest.
