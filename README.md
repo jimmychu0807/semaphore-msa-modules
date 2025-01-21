@@ -1,13 +1,16 @@
-# Semaphore Modular Smart Account Validator Module
+# Semaphore Modular Smart Account Validator
 
 ## Overview
 
-This module is a [validator module](https://eips.ethereum.org/EIPS/eip-7579#validators) adheres to [**ERC-7579**](https://eips.ethereum.org/EIPS/eip-7579) standard that uses [Semaphore](https://semaphore.pse.dev/) to create a multi-signature owner validation. This means the smart account that incorporates this validator gains the following benefits:
+This project is a [validator module](https://eips.ethereum.org/EIPS/eip-7579#validators) adheres to [**ERC-7579**](https://eips.ethereum.org/EIPS/eip-7579) standard that uses [Semaphore](https://semaphore.pse.dev/) for proof validation. Smart accounts incorporate this validator gains the following benefits:
 
-- The smart account become a M-N multi-sig wallet controlled by members added to the [Semaphore group](https://docs.semaphore.pse.dev/guides/groups) of the smart account.
-- Semaphore feature such as preserving the privacy of which members are signing a transaction, while guaranteeing that members cannot double-sign for a particular transaction.
+- The smart account behaves like a **M-N multi-sig wallet** controlled by members of the [Semaphore group](https://docs.semaphore.pse.dev/guides/groups) of the smart account. Proofs sent by the members are used as signatures.
 
-Development of this project is part of the [PSE Acceleration Program (**FY24-1847**)](https://github.com/privacy-scaling-explorations/acceleration-program/issues/72).
+- The smart accout gains Semaphore property that members who send the proof (signature) are kept unknown while guaranteeing the proof comes from valid members that have not signed before.
+
+Development of this project supported by [PSE Acceleration Program](https://github.com/privacy-scaling-explorations/acceleration-program) (see [thread discussion](https://github.com/privacy-scaling-explorations/acceleration-program/issues/72)).
+
+Project Code: FY24-1847
 
 ## Using the Module
 
@@ -15,10 +18,10 @@ Development of this project is part of the [PSE Acceleration Program (**FY24-184
 # Install dependencies
 pnpm install
 
-# Build
+# Build the project
 pnpm run build
 
-# Test
+# Run unit tests and integration tests
 pnpm run test
 ```
 
@@ -34,7 +37,7 @@ pnpm run test
 - `acctTxCount`: This object stores the transaction call data and value that are waiting to be proved (signed), and the proofs it has collected so far. This information is stored in the **`ExtCallCount`** data structure.
 - `acctSeqNum`: The sequence number corresponding to a smart account. This value is used when generating a transaction signature to uniquely identify a particular transaction.
 
-### Development Approach
+### API
 
 After installing this validator, the smart account can only call three functions in this validator contract, **initiateTx()**, **signTx()**, and **executeTx()**. Calling other functions, either to other non-validator contract addresses or other funtions beyond the mentioned three, would be rejected in the **validateUserOp()** check.
 
@@ -90,7 +93,7 @@ The module is also compatible with:
 - [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271): Accepting signature from other smart contract by implementing `isValidSignatureWithSender()`.
 - [ERC-7780](https://eips.ethereum.org/EIPS/eip-7780), Being a **Stateless Validator** by implementing `validateSignatureWithData()`.
 
-#### Testing
+### Testing
 
 The testing code relies heavily on [Foundry FFI](https://book.getfoundry.sh/cheatcodes/ffi) to call Semaphore typescript API to generate zero-knowledge proof and EdDSA signature.
 
@@ -106,12 +109,11 @@ The testing code relies heavily on [Foundry FFI](https://book.getfoundry.sh/chea
 - [ERC-7579](https://eips.ethereum.org/EIPS/eip-7579): [overview](https://erc7579.com/)
 - [ERC-7780](https://eips.ethereum.org/EIPS/eip-7780)
 
-
 ## Contributions
 
 Thanks to the following folks on discussing about this project and helps along: 
 
-- [Saleel](https://github.com/saleel) on initiating this idea with [Semaphore Wallet](https://github.com/saleel/semaphore-wallet), showing me that the idea is feasible.
-- [Cedoor](https://github.com/cedoor) & [Vivian](https://github.com/vplasencia) on Semaphore development and their opinions. 
+- [Saleel P](https://github.com/saleel) on initiating this idea with [Semaphore Wallet](https://github.com/saleel/semaphore-wallet), showing me that the idea is feasible.
+- [Cedoor](https://github.com/cedoor) and [Vivian Plasencia](https://github.com/vplasencia) on Semaphore development and their opinions.
 - [John Guilding](https://github.com/JohnGuilding) on the discussion, support, and review of the project.
 - [Konrad Kopp](https://github.com/kopy-kat) on the support of using [ModuleKit](https://github.com/rhinestonewtf/modulekit) framework which this module is built upon, and answering my question on some details of ERC-4337 standard.
