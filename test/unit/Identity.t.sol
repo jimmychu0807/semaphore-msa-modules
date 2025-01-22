@@ -4,8 +4,8 @@ pragma solidity ^0.8.23;
 // forge
 import { Test } from "forge-std/Test.sol";
 
-import { Identity as IdentityT } from "../src/utils/Identity.sol";
-import { Identity, IdentityLib } from "./utils/TestUtils.sol";
+import { Identity as IdentityT } from "src/utils/Identity.sol";
+import { Identity, IdentityLib } from "test/utils/TestUtils.sol";
 
 contract IdentityTest is Test {
     using IdentityLib for Identity;
