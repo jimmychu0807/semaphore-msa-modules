@@ -5,9 +5,9 @@ pragma solidity >=0.8.23 <=0.8.29;
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { PackedUserOperation } from "modulekit/ModuleKit.sol";
 
-import { ISemaphoreGroups } from "./utils/Semaphore.sol";
-import { ISemaphoreMSAExecutor } from "./interfaces/ISemaphoreMSAExecutor.sol";
-import { Identity } from "./utils/Identity.sol";
+import { ISemaphoreGroups } from "src/interfaces/Semaphore.sol";
+import { ISemaphoreMSAExecutor } from "src/interfaces/ISemaphoreMSAExecutor.sol";
+import { Identity } from "src/utils/Identity.sol";
 // import { console } from "forge-std/console.sol";
 
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {

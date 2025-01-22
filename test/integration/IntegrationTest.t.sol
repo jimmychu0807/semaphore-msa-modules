@@ -20,9 +20,9 @@ import {
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 
 // Semaphore
-import {
-    Semaphore, ISemaphore, ISemaphoreVerifier, SemaphoreVerifier
-} from "src/utils/Semaphore.sol";
+import { ISemaphore, ISemaphoreVerifier } from "src/interfaces/Semaphore.sol";
+import { SemaphoreVerifier } from "semaphore/base/SemaphoreVerifier.sol";
+import { Semaphore } from "semaphore/Semaphore.sol";
 
 import { SemaphoreMSAValidator, ERC7579ValidatorBase } from "src/SemaphoreMSAValidator.sol";
 import { SemaphoreMSAExecutor, ERC7579ExecutorBase } from "src/SemaphoreMSAExecutor.sol";

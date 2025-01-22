@@ -8,7 +8,7 @@ import { ModeLib } from "modulekit/accounts/common/lib/ModeLib.sol";
 
 // import { console } from "forge-std/console.sol";
 import { LibSort } from "solady/Milady.sol";
-import { ISemaphore, ISemaphoreGroups } from "src/utils/Semaphore.sol";
+import { ISemaphore, ISemaphoreGroups } from "src/interfaces/Semaphore.sol";
 import { ISemaphoreMSAExecutor } from "src/interfaces/ISemaphoreMSAExecutor.sol";
 import { ValidatorLibBytes } from "src/utils/ValidatorLibBytes.sol";
 

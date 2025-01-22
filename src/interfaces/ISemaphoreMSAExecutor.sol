@@ -2,7 +2,7 @@
 pragma solidity >=0.8.23 <=0.8.29;
 
 import { IERC7579Executor } from "modulekit/Modules.sol";
-import { ISemaphore } from "../utils/Semaphore.sol";
+import { ISemaphore } from "src/interfaces/Semaphore.sol";
 
 interface ISemaphoreMSAExecutor is IERC7579Executor {
     function groupMapping(address account) external view returns (uint256);
