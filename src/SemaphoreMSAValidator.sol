@@ -2,18 +2,19 @@
 pragma solidity >=0.8.23 <=0.8.29;
 
 // Rhinestone module-kit
-import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
-import { IStatelessValidator } from "modulekit/module-bases/interfaces/IStatelessValidator.sol";
-import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
+import { IERC7579Account } from "modulekit/Accounts.sol";
+import { ERC7579ValidatorBase, ERC7579ExecutorBase } from "modulekit/Modules.sol";
+import { PackedUserOperation } from "modulekit/ModuleKit.sol";
+import { ModeLib } from "modulekit/accounts/common/lib/ModeLib.sol";
 
 import { LibSort } from "solady/Milady.sol";
 
 import { ISemaphore, ISemaphoreGroups } from "./utils/Semaphore.sol";
 import { ValidatorLibBytes } from "./utils/ValidatorLibBytes.sol";
 import { Identity } from "./utils/Identity.sol";
-// import { console } from "forge-std/console.sol";
+import { console } from "forge-std/console.sol";
 
-contract SemaphoreMSAValidator is ERC7579ValidatorBase, IStatelessValidator {
+contract SemaphoreMSAValidator is ERC7579ValidatorBase, ERC7579ExecutorBase {
     using LibSort for *;
     using ValidatorLibBytes for bytes;
 
@@ -206,7 +207,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase, IStatelessValidator {
         emit RemovedMember(account, cmt);
     }
 
-    function getNextSeqNum(address account) external view returns (uint256) {
+    function getAcctSeqNum(address account) external view returns (uint256) {
         return acctSeqNum[account];
     }
 
@@ -278,6 +279,9 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase, IStatelessValidator {
         address account = msg.sender;
         uint256 groupId = groupMapping[account];
 
+        console.log("signTx");
+        console.logBytes32(txHash);
+
         // Check if the txHash exist
         ExtCallCount storage ecc = acctTxCount[account][txHash];
         if (ecc.count == 0) revert TxHashNotFound(account, txHash);
@@ -295,7 +299,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase, IStatelessValidator {
         }
     }
 
-    function executeTx(bytes32 txHash) public moduleInstalled returns (bytes memory) {
+    function executeTx(bytes32 txHash) public moduleInstalled returns (bytes[] memory returnData) {
         // retrieve the group ID
         address account = msg.sender;
         uint8 threshold = thresholds[account];
@@ -306,16 +310,24 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase, IStatelessValidator {
 
         // TODO: Review if there a better way to make external contract call given the
         // target address, value, and call data.
-        address payable targetAddr = payable(ecc.targetAddr);
-        (bool success, bytes memory returnData) = targetAddr.call{ value: ecc.value }(ecc.callData);
-        if (!success) revert ExecuteTxFailure(account, targetAddr, ecc.value, ecc.callData);
+        //
+        // address payable targetAddr = payable(ecc.targetAddr);
+        // (bool success, bytes memory returnData) = targetAddr.call{ value: ecc.value }(ecc.callData);
+        // if (!success) revert ExecuteTxFailure(account, targetAddr, ecc.value, ecc.callData);
+
+        console.log("before executeTx");
+        console.logBytes32(txHash);
+
+        // Execute the transaction on the owned account
+        returnData = IERC7579Account(account).executeFromExecutor(
+            ModeLib.encodeSimpleSingle(),
+            abi.encodePacked(ecc.targetAddr, ecc.value, ecc.callData)
+        );
 
         emit ExecutedTx(account, txHash);
 
         // Clean up the storage
         delete acctTxCount[account][txHash];
-
-        return returnData;
     }
 
     /**
@@ -364,33 +376,6 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase, IStatelessValidator {
             return EIP1271_SUCCESS;
         }
         return EIP1271_FAILED;
-    }
-
-    /**
-     * Validates a signature given some data
-     * For [ERC-7780](https://eips.ethereum.org/EIPS/eip-7780) Stateless Validator
-     *
-     * @param hash The data that was signed over
-     * @param signature The signature to verify
-     * @param data The data to validate the verified signature agains
-     *
-     * MUST validate that the signature is a valid signature of the hash
-     * MUST compare the validated signature against the data provided
-     * MUST return true if the signature is valid and false otherwise
-     */
-    function validateSignatureWithData(
-        bytes32 hash,
-        bytes calldata signature,
-        bytes calldata data
-    )
-        external
-        view
-        virtual
-        returns (bool)
-    {
-        address account = address(bytes20(data[0:20]));
-        bytes calldata targetCallData = data[20:];
-        return _validateSignatureWithConfig(account, hash, signature, targetCallData);
     }
 
     /*//////////////////////////////////////////////////////////////////////////
@@ -478,6 +463,6 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase, IStatelessValidator {
      * @return true if the module is of the given type, false otherwise
      */
     function isModuleType(uint256 typeID) external pure override returns (bool) {
-        return typeID == TYPE_VALIDATOR || typeID == TYPE_STATELESS_VALIDATOR;
+        return typeID == TYPE_VALIDATOR || typeID == TYPE_EXECUTOR;
     }
 }
