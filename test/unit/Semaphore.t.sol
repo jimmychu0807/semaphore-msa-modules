@@ -11,7 +11,7 @@ import {
     ISemaphoreGroups,
     ISemaphoreVerifier,
     SemaphoreVerifier
-} from "../src/utils/Semaphore.sol";
+} from "src/utils/Semaphore.sol";
 
 struct User {
     uint256 sk;

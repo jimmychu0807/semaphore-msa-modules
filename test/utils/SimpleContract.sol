@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import { console } from "forge-std/console.sol";
+// import { console } from "forge-std/console.sol";
 
 contract SimpleContract {
     uint256 public val;
@@ -13,8 +13,7 @@ contract SimpleContract {
     }
 
     function setVal(uint256 newVal) external payable returns (uint256) {
-        console.log("SimpleContract setVal()");
-
+        // console.log("SimpleContract setVal()");
         val = newVal;
         emit ValueSet(msg.sender, msg.value, val);
         return val;
