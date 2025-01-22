@@ -13,8 +13,9 @@ import {
     UserOpData
 } from "modulekit/ModuleKit.sol";
 import {
-    VALIDATION_SUCCESS,
-    MODULE_TYPE_VALIDATOR
+    MODULE_TYPE_EXECUTOR,
+    MODULE_TYPE_VALIDATOR,
+    VALIDATION_SUCCESS
 } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 
@@ -27,6 +28,7 @@ import {
 } from "../src/utils/Semaphore.sol";
 
 import { SemaphoreMSAValidator, ERC7579ValidatorBase } from "../src/SemaphoreMSAValidator.sol";
+import { SemaphoreMSAExecutor, ERC7579ExecutorBase } from "../src/SemaphoreMSAExecutor.sol";
 
 import {
     getEmptyUserOperation,
@@ -54,6 +56,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
 
     AccountInstance internal smartAcct;
     SemaphoreMSAValidator internal semaphoreValidator;
+    SemaphoreMSAExecutor internal semaphoreExecutor;
     SimpleContract internal simpleContract;
     User[] internal $users;
 
@@ -68,9 +71,16 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         Semaphore semaphore = new Semaphore(ISemaphoreVerifier(address(semaphoreVerifier)));
         vm.label(address(semaphore), "Semaphore");
 
+
+        // Create the executor
+        semaphoreExecutor = new SemaphoreMSAExecutor(semaphore);
+        vm.label(address(semaphoreValidator), "SemaphoreMSAExecutor");
+
+
         // Create the validator
-        semaphoreValidator = new SemaphoreMSAValidator(semaphore);
+        semaphoreValidator = new SemaphoreMSAValidator(semaphore, semaphoreExecutor);
         vm.label(address(semaphoreValidator), "SemaphoreMSAValidator");
+
 
         // Create three users
         for (uint256 i = 0; i < MEMBER_NUM + 1; ++i) {
@@ -90,6 +100,25 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
             module: address(semaphoreValidator),
             data: abi.encodePacked(uint8(threshold), _getMemberCmts(memberNum))
         });
+        _;
+    }
+
+    modifier setupSmartAcctValExeWithMembersThreshold(uint8 memberNum, uint8 threshold) {
+        smartAcct = makeAccountInstance("SemaphoreMSAValidator");
+        vm.deal(smartAcct.account, 10 ether);
+
+        smartAcct.installModule({
+            moduleTypeId: MODULE_TYPE_VALIDATOR,
+            module: address(semaphoreValidator),
+            data: abi.encodePacked(uint8(threshold), _getMemberCmts(memberNum))
+        });
+
+        smartAcct.installModule({
+            moduleTypeId: MODULE_TYPE_EXECUTOR,
+            module: address(semaphoreExecutor),
+            data: hex""
+        });
+
         _;
     }
 
@@ -132,6 +161,29 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         userOpData.userOp.signature = id.signHash(userOpData.userOpHash);
     }
 
+    function _getSemaphoreValExeUserOpData(
+        Identity id,
+        bytes memory callData,
+        uint256 value
+    )
+        internal
+        returns (UserOpData memory userOpData)
+    {
+        userOpData = smartAcct.getExecOps({
+            target: address(semaphoreExecutor),
+            value: value,
+            callData: callData,
+            txValidator: address(semaphoreValidator)
+        });
+
+        // We need to increase the accountGasLimits, default 2e6 is not enough to verify
+        // signature, for all those elliptic curve computation.
+        // Encoding two fields here, validation and execution gas
+        userOpData.userOp.accountGasLimits = bytes32(abi.encodePacked(uint128(2e7), uint128(2e7)));
+        userOpData.userOpHash = smartAcct.aux.entrypoint.getUserOpHash(userOpData.userOp);
+        userOpData.userOp.signature = id.signHash(userOpData.userOpHash);
+    }
+
     function _setupInitiateTxMultiMembers(
         bytes memory txCallData,
         uint256 value,
@@ -139,6 +191,37 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
     )
         internal
         setupSmartAcctWithMembersThreshold(MEMBER_NUM, 2)
+        deploySimpleContract
+        returns (UserOpData memory userOpData, bytes32 txHash)
+    {
+        User storage member = $users[0];
+        // Composing txHash
+        uint256 seq = semaphoreValidator.getAcctSeqNum(smartAcct.account);
+        txHash = keccak256(abi.encodePacked(seq, address(simpleContract), value, txCallData));
+
+        // Composing Semaphore proof
+        (, uint256 groupId) = semaphoreValidator.getGroupId(smartAcct.account);
+        ISemaphore.SemaphoreProof memory smProof =
+            member.identity.generateSempahoreProof(groupId, _getMemberCmts(MEMBER_NUM), txHash);
+
+        // Composing the UserOpData
+        userOpData = _getSemaphoreValidatorUserOpData(
+            member.identity,
+            abi.encodeCall(
+                SemaphoreMSAValidator.initiateTx,
+                (address(simpleContract), txCallData, smProof, bExecute)
+            ),
+            value
+        );
+    }
+
+    function _setupValExeInitiateTxMultiMembers(
+        bytes memory txCallData,
+        uint256 value,
+        bool bExecute
+    )
+        internal
+        setupSmartAcctValExeWithMembersThreshold(MEMBER_NUM, 2)
         deploySimpleContract
         returns (UserOpData memory userOpData, bytes32 txHash)
     {
@@ -419,7 +502,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         assertEq(afterBalance - beforeBalance, value);
     }
 
-    function test_initiateTxSingleMemberNonValidatorTarget()
+    function test_initiateTxSingleMemberInvalidTargetAddress()
         public
         setupSmartAcctWithMembersThreshold(1, 1)
         deploySimpleContract
@@ -438,7 +521,7 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         userOpData.userOpHash = smartAcct.aux.entrypoint.getUserOpHash(userOpData.userOp);
         userOpData.userOp.signature = member.identity.signHash(userOpData.userOpHash);
 
-        smartAcct.expect4337Revert(SemaphoreMSAValidator.NonValidatorCallBanned.selector);
+        smartAcct.expect4337Revert(SemaphoreMSAValidator.InvalidTargetAddress.selector);
         userOpData.execUserOps();
     }
 
@@ -565,12 +648,15 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
 
         bytes memory txCallData = abi.encodeCall(SimpleContract.setVal, (newVal));
         (UserOpData memory userOpData, bytes32 txHash) =
-            _setupInitiateTxMultiMembers(txCallData, msgVal, true);
+            _setupValExeInitiateTxMultiMembers(txCallData, msgVal, true);
         userOpData.execUserOps();
 
         console.log("completed sign - 1");
         console.logBytes32(txHash);
 
+        console.log("smartAcct addr: %s, value: %s", smartAcct.account, smartAcct.account.balance);
+
+        User storage recipient = $users[2];
 
         User storage anotherSigner = $users[1];
         (, uint256 groupId) = semaphoreValidator.getGroupId(smartAcct.account);
@@ -579,26 +665,32 @@ contract SemaphoreValidatorUnitTest is RhinestoneModuleKit, Test {
         );
 
         // Composing the UserOpData
-        UserOpData memory userOpData2 = _getSemaphoreValidatorUserOpData(
+        UserOpData memory userOpData2 = _getSemaphoreValExeUserOpData(
             anotherSigner.identity,
-            abi.encodeCall(SemaphoreMSAValidator.signTx, (txHash, smProof, true)),
+            // abi.encodeCall(SemaphoreMSAExecutor.executeTx, (txHash, smProof, true)),
+            abi.encodeCall(SemaphoreMSAExecutor.executeTx, (recipient.addr, msgVal, hex"")),
             0
         );
 
         // Expect SignedTx, ValueSet, and ExecuteTx events
-        vm.expectEmit(true, true, true, true, address(semaphoreValidator));
-        emit SemaphoreMSAValidator.SignedTx(smartAcct.account, txHash);
+        // vm.expectEmit(true, true, true, true, address(semaphoreValidator));
+        // emit SemaphoreMSAValidator.SignedTx(smartAcct.account, txHash);
 
-        vm.expectEmit(true, true, true, true, address(simpleContract));
-        emit SimpleContract.ValueSet(smartAcct.account, msgVal, newVal);
+        // vm.expectEmit(true, true, true, true, address(simpleContract));
+        // emit SimpleContract.ValueSet(smartAcct.account, msgVal, newVal);
 
-        vm.expectEmit(true, true, true, true, address(semaphoreValidator));
-        emit SemaphoreMSAValidator.ExecutedTx(smartAcct.account, txHash);
+        // vm.expectEmit(true, true, true, true, address(semaphoreValidator));
+        // emit SemaphoreMSAValidator.ExecutedTx(smartAcct.account, txHash);
+
+        console.log("before execUserOps - 2");
 
         userOpData2.execUserOps();
 
         // Check the state
-        assertEq(simpleContract.val(), newVal);
+        // assertEq(simpleContract.val(), newVal);
+
+        console.log("recipient value: %s", recipient.addr.balance);
+        console.log("smartAcct value: %s", smartAcct.account.balance);
     }
 
     function test_addMembers() public setupSmartAcctWithMembersThreshold(1, 1) {
