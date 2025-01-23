@@ -42,14 +42,14 @@ function getEmptySemaphoreProof() pure returns (ISemaphore.SemaphoreProof memory
 }
 
 function getTestUserOpCallData(
+    address target,
     uint256 value,
-    address targetAddr,
     bytes memory txCallData
 )
     pure
     returns (bytes memory callData)
 {
-    callData = bytes.concat(new bytes(100), bytes20(targetAddr), bytes32(value), txCallData);
+    callData = bytes.concat(new bytes(100), bytes20(target), bytes32(value), txCallData);
 }
 
 function getGroupRmMerkleProof(

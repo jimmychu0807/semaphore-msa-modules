@@ -11,6 +11,7 @@ import { LibSort } from "solady/Milady.sol";
 import { ISemaphore, ISemaphoreGroups } from "src/interfaces/Semaphore.sol";
 import { ISemaphoreMSAExecutor } from "src/interfaces/ISemaphoreMSAExecutor.sol";
 import { ValidatorLibBytes } from "src/utils/ValidatorLibBytes.sol";
+import { CMT_BYTELEN, MAX_MEMBERS } from "src/utils/Constants.sol";
 
 struct ExtCallCount {
     address targetAddr;
@@ -22,12 +23,6 @@ struct ExtCallCount {
 contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
     using LibSort for *;
     using ValidatorLibBytes for bytes;
-
-    /**
-     * Constants
-     */
-    uint8 public constant MAX_MEMBERS = 32;
-    uint8 public constant CMT_BYTELEN = 32;
 
     /**
      * Errors
@@ -157,9 +152,16 @@ contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
     }
 
     function getGroupId(address account) external view returns (bool, uint256) {
+        if (thresholds[account] > 0) return (true, groupMapping[account]);
+
+        return (false, 0);
+    }
+
+    function accountHasMember(address account, uint256 cmt) external view returns (bool) {
+        if (thresholds[account] == 0) return false;
+
         uint256 groupId = groupMapping[account];
-        if (thresholds[account] == 0) return (false, 0);
-        return (true, groupId);
+        return groups.hasMember(groupId, cmt);
     }
 
     /**

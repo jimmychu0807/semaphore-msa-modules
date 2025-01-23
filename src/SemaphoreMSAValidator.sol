@@ -5,24 +5,19 @@ pragma solidity >=0.8.23 <=0.8.29;
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { PackedUserOperation } from "modulekit/ModuleKit.sol";
 
-import { ISemaphoreGroups } from "src/interfaces/Semaphore.sol";
 import { ISemaphoreMSAExecutor } from "src/interfaces/ISemaphoreMSAExecutor.sol";
 import { Identity } from "src/utils/Identity.sol";
+import { SIGNATURE_LEN } from "src/utils/Constants.sol";
 // import { console } from "forge-std/console.sol";
 
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     /**
-     * Constants
-     */
-    uint8 public constant SIGNATURE_LEN = 160;
-
-    /**
      * Errors
      */
-    error MemberNotExists(address account, uint256 cmt);
-    error InvalidSignatureLen(address account, uint256 len);
     error InvalidSignature(address account, bytes signature);
     error InvalidTargetAddress(address account, address target);
+    error MemberNotExists(address account, uint256 cmt);
+    error NoSemaphoreModuleInstalled(address account);
 
     /**
      * Events
@@ -33,7 +28,6 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     /**
      * Storage
      */
-    ISemaphoreGroups public groups;
     ISemaphoreMSAExecutor public semaphoreExecutor;
     mapping(address account => bool installed) public acctInstalled;
 
@@ -44,8 +38,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         semaphoreExecutor.executeTx.selector
     ];
 
-    constructor(ISemaphoreGroups _semaphoreGroup, ISemaphoreMSAExecutor _semaphoreExecutor) {
-        groups = _semaphoreGroup;
+    constructor(ISemaphoreMSAExecutor _semaphoreExecutor) {
         semaphoreExecutor = _semaphoreExecutor;
     }
 
@@ -170,30 +163,24 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     {
         // you want to exclude initiateTx, signTx, executeTx from needing tx count.
         // you just need to ensure they are a valid proof from the semaphore group members
-        uint256 groupId = semaphoreExecutor.groupMapping(account);
+        (bool found,) = semaphoreExecutor.getGroupId(account);
+        if (!found) revert NoSemaphoreModuleInstalled(account);
 
         // The userOp.signature is 160 bytes containing:
         //   (uint256 pubX (32 bytes), uint256 pubY (32 bytes), bytes[96] signature (96 bytes))
-        if (signature.length != SIGNATURE_LEN) {
-            revert InvalidSignatureLen(account, signature.length);
-        }
-
-        // Verify signature using the public key
-        if (!Identity.verifySignature(hash, signature)) {
+        if (signature.length != SIGNATURE_LEN || !Identity.verifySignature(hash, signature)) {
             revert InvalidSignature(account, signature);
         }
 
         // Verify if the identity commitment is one of the semaphore group members
         bytes memory pubKey = signature[0:64];
         uint256 cmt = Identity.getCommitment(pubKey);
-        if (!groups.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
+        if (!semaphoreExecutor.accountHasMember(account, cmt)) revert MemberNotExists(account, cmt);
 
         // We don't allow call to other contracts, other than msa-validator and msa-executor
         // quick hack here
         (address target,, bytes4 funcSel) = abi.decode(targetCallData, (address, uint256, bytes4));
-        if (target != address(semaphoreExecutor)) {
-            revert InvalidTargetAddress(account, target);
-        }
+        if (target != address(semaphoreExecutor)) revert InvalidTargetAddress(account, target);
 
         // We only allow calls to `initiateTx()`, `signTx()`, and `executeTx()` to pass,
         //   and reject the rest.

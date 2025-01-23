@@ -297,60 +297,6 @@ uint8 constant MEMBER_NUM = 3;
 //         assertEq(bExist, false);
 //     }
 
-//     function test_validateUserOpWithNonMember() public setupSmartAcctWithMembersThreshold(1, 1) {
-//         PackedUserOperation memory userOp = getEmptyUserOperation();
-//         userOp.sender = smartAcct.account;
-//         userOp.callData = getTestUserOpCallData(
-//             0,
-//             address(semaphoreValidator),
-//             abi.encodeCall(
-//                 SemaphoreMSAValidator.initiateTx, (address(0), "", getEmptySemaphoreProof(),
-// false)
-//             )
-//         );
-
-//         bytes32 userOpHash = bytes32(keccak256("userOpHash"));
-
-//         Identity nonMember = $users[2].identity;
-//         userOp.signature = nonMember.signHash(userOpHash);
-
-//         vm.expectRevert(
-//             abi.encodeWithSelector(
-//                 SemaphoreMSAValidator.MemberNotExists.selector,
-//                 smartAcct.account,
-//                 nonMember.commitment()
-//             )
-//         );
-
-//         ERC7579ValidatorBase.ValidationData.unwrap(
-//             semaphoreValidator.validateUserOp(userOp, userOpHash)
-//         );
-//     }
-
-//     function test_validateUserOpWithMember() public setupSmartAcctWithMembersThreshold(1, 1) {
-//         PackedUserOperation memory userOp = getEmptyUserOperation();
-//         userOp.sender = smartAcct.account;
-//         userOp.callData = getTestUserOpCallData(
-//             0,
-//             address(semaphoreValidator),
-//             abi.encodeCall(
-//                 SemaphoreMSAValidator.initiateTx, (address(0), "", getEmptySemaphoreProof(),
-// false)
-//             )
-//         );
-
-//         bytes32 userOpHash = bytes32(keccak256("userOpHash"));
-
-//         Identity id = $users[0].identity;
-//         userOp.signature = id.signHash(userOpHash);
-
-//         uint256 validationData = ERC7579ValidatorBase.ValidationData.unwrap(
-//             semaphoreValidator.validateUserOp(userOp, userOpHash)
-//         );
-
-//         assertEq(validationData, VALIDATION_SUCCESS);
-//     }
-
 //     function test_initiateTransferInvalidSignature()
 //         public
 //         setupSmartAcctWithMembersThreshold(1, 1)
