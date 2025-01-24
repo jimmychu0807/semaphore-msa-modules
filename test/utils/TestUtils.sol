@@ -10,12 +10,6 @@ import { LibString } from "solady/Milady.sol";
 address constant VM_ADDRESS = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D;
 Vm constant vm = Vm(VM_ADDRESS);
 
-struct ValidationData {
-    address aggregator;
-    uint48 validAfter;
-    uint48 validUntil;
-}
-
 function getEmptyUserOperation() pure returns (PackedUserOperation memory) {
     return PackedUserOperation({
         sender: address(0),
@@ -62,18 +56,18 @@ function getGroupRmMerkleProof(
     cmd[0] = "pnpm";
     cmd[1] = "semaphore-group";
     cmd[2] = "remove-member";
-    cmd[3] = _join(members);
+    cmd[3] = joinUint(members);
     cmd[4] = LibString.toString(removal);
 
     bytes memory outBytes = vm.ffi(cmd);
     string memory outStr = string(outBytes);
     string[] memory retStr = LibString.split(outStr, " ");
 
-    merkleProof = _splitToUint(retStr[0]);
+    merkleProof = splitToUint(retStr[0]);
     root = vm.parseUint(retStr[1]);
 }
 
-function _splitToUint(string memory str) pure returns (uint256[] memory retArr) {
+function splitToUint(string memory str) pure returns (uint256[] memory retArr) {
     string[] memory arr = LibString.split(str, ",");
     retArr = new uint256[](arr.length);
     for (uint256 i = 0; i < arr.length; i++) {
@@ -81,7 +75,7 @@ function _splitToUint(string memory str) pure returns (uint256[] memory retArr) 
     }
 }
 
-function _join(uint256[] memory members) pure returns (string memory retStr) {
+function joinUint(uint256[] memory members) pure returns (string memory retStr) {
     for (uint256 i = 0; i < members.length; i++) {
         retStr = string.concat(retStr, LibString.toString(members[i]));
         if (i < members.length - 1) {
@@ -206,5 +200,25 @@ library IdentityLib {
         uint256 s1 = vm.parseUint(signs[1]);
         uint256 s2 = vm.parseUint(signs[2]);
         signature = abi.encodePacked(s0, s1, s2);
+    }
+}
+
+/*//////////////////////////////////////////////////////////////////////////
+                        Simple Test Contract
+//////////////////////////////////////////////////////////////////////////*/
+
+contract SimpleContract {
+    uint256 public val;
+
+    event ValueSet(address indexed account, uint256 indexed value, uint256 indexed newVal);
+
+    constructor(uint256 _val) {
+        val = _val;
+    }
+
+    function setVal(uint256 newVal) external payable returns (uint256) {
+        val = newVal;
+        emit ValueSet(msg.sender, msg.value, val);
+        return val;
     }
 }

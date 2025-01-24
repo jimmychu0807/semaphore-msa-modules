@@ -1,4 +1,4 @@
-# Semaphore Modular Smart Account Validator
+# Semaphore Modular Smart Account Modules
 
 ## Overview
 

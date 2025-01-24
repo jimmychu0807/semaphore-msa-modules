@@ -3,15 +3,22 @@ pragma solidity >=0.8.23 <=0.8.29;
 
 // Rhinestone module-kit
 import { IERC7579Account } from "modulekit/Accounts.sol";
-import { ERC7579ExecutorBase } from "modulekit/Modules.sol";
+import { ERC7579ExecutorBase, IERC7579Module } from "modulekit/Modules.sol";
 import { ModeLib } from "modulekit/accounts/common/lib/ModeLib.sol";
 
 // import { console } from "forge-std/console.sol";
-import { LibSort } from "solady/Milady.sol";
+import { LibBytes, LibSort } from "solady/Milady.sol";
 import { ISemaphore, ISemaphoreGroups } from "src/interfaces/Semaphore.sol";
-import { ISemaphoreMSAExecutor } from "src/interfaces/ISemaphoreMSAExecutor.sol";
+import { ISemaphoreValidator } from "src/interfaces/ISemaphoreValidator.sol";
+import { ISemaphoreExecutor } from "src/interfaces/ISemaphoreExecutor.sol";
 import { ValidatorLibBytes } from "src/utils/ValidatorLibBytes.sol";
-import { CMT_BYTELEN, MAX_MEMBERS, SEMAPHORE_MSA_EXECUTOR, VERSION } from "src/utils/Constants.sol";
+import {
+    CMT_BYTELEN,
+    MAX_MEMBERS,
+    SEMAPHORE_VALIDATOR,
+    SEMAPHORE_EXECUTOR,
+    VERSION
+} from "src/utils/Constants.sol";
 
 struct ExtCallCount {
     address targetAddr;
@@ -20,13 +27,15 @@ struct ExtCallCount {
     uint8 count;
 }
 
-contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
+contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     using LibSort for *;
     using ValidatorLibBytes for bytes;
 
     /**
      * Errors
      */
+    error SemaphoreValidatorSetAlready();
+    error InvalidSemaphoreValidator(address addr);
     error MemberCntReachesThreshold(address account);
     error InvalidThreshold(address account);
     error MaxMemberReached(address account);
@@ -43,14 +52,16 @@ contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
     error InitiateTxWithNullAddress(address account);
     error InitiateTxWithNullCallDataAndNullValue(address account, address targetAddr);
     error ExecuteTxFailure(address account, address targetAddr, uint256 value, bytes callData);
+    error SemaphoreValidatorIsInitialized(address account);
 
     /**
      * Events
      */
-    event SemaphoreMSAExecutorInitialized(address indexed account);
-    event SemaphoreMSAExecutorUninitialized(address indexed account);
+    event SemaphoreExecutorInitialized(address indexed account);
+    event SemaphoreExecutorUninitialized(address indexed account);
+    event SetSemaphoreValidator(address indexed target);
     event ExecutedTx(address indexed account, address indexed target, uint256 indexed value);
-    event AddedMembers(address indexed, uint256 indexed length);
+    event AddedMembers(address indexed, uint8 indexed length);
     event RemovedMember(address indexed, uint256 indexed commitment);
     event ThresholdSet(address indexed account, uint8 indexed threshold);
     event InitiatedTx(address indexed account, uint256 indexed seq, bytes32 indexed txHash);
@@ -62,6 +73,7 @@ contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
      */
     ISemaphore public semaphore;
     ISemaphoreGroups public groups;
+    address public semaphoreValidatorAddr;
 
     mapping(address account => uint256 groupId) public groupMapping;
     mapping(address account => uint8 threshold) public thresholds;
@@ -126,12 +138,19 @@ contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
         semaphore.addMembers(groupId, cmts);
         memberCount[account] = uint8(cmts.length);
 
-        emit SemaphoreMSAExecutorInitialized(account);
+        emit SemaphoreExecutorInitialized(account);
     }
 
     function onUninstall(bytes calldata) external override {
-        // remove from our data structure
         address account = msg.sender;
+
+        // Check that the validator has been removed before removing executor
+        ISemaphoreValidator semaphoreValidator = ISemaphoreValidator(semaphoreValidatorAddr);
+        if (semaphoreValidator.isInitialized(account)) {
+            revert SemaphoreValidatorIsInitialized(account);
+        }
+
+        // remove from our data structure
         delete thresholds[account];
         delete groupMapping[account];
         delete acctSeqNum[account];
@@ -141,7 +160,7 @@ contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
         //   The following line will make the compiler fail.
         // delete acctTxCount[account];
 
-        emit SemaphoreMSAExecutorUninitialized(account);
+        emit SemaphoreExecutorUninitialized(account);
     }
 
     /**
@@ -162,6 +181,24 @@ contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
 
         uint256 groupId = groupMapping[account];
         return groups.hasMember(groupId, cmt);
+    }
+
+    /**
+     * Set-once Functions
+     */
+    function setSemaphoreValidator(address target) external {
+        if (semaphoreValidatorAddr != address(0)) revert SemaphoreValidatorSetAlready();
+
+        ISemaphoreValidator val = ISemaphoreValidator(target);
+        if (
+            !LibBytes.eq(bytes(val.name()), bytes(SEMAPHORE_VALIDATOR))
+                || !val.isModuleType(TYPE_VALIDATOR)
+        ) {
+            revert InvalidSemaphoreValidator(target);
+        }
+
+        semaphoreValidatorAddr = target;
+        emit SetSemaphoreValidator(target);
     }
 
     /**
@@ -189,9 +226,9 @@ contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
         }
 
         semaphore.addMembers(groupId, cmts);
-        memberCount[account] += uint8(cmts.length);
-
-        emit AddedMembers(account, cmts.length);
+        uint8 cmtsLen = uint8(cmts.length);
+        memberCount[account] += cmtsLen;
+        emit AddedMembers(account, cmtsLen);
     }
 
     function removeMember(
@@ -326,7 +363,7 @@ contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
      * @return name The name of the module
      */
     function name() external pure returns (string memory) {
-        return SEMAPHORE_MSA_EXECUTOR;
+        return SEMAPHORE_EXECUTOR;
     }
 
     /**

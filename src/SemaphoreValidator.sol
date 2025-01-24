@@ -7,17 +7,17 @@ import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { PackedUserOperation } from "modulekit/ModuleKit.sol";
 import { LibBytes } from "solady/Milady.sol";
 
-import { ISemaphoreMSAExecutor } from "src/interfaces/ISemaphoreMSAExecutor.sol";
+import { ISemaphoreExecutor } from "src/interfaces/ISemaphoreExecutor.sol";
 import { Identity } from "src/utils/Identity.sol";
 import {
     SIGNATURE_LEN,
     MIN_TARGET_CALLDATA_LEN,
-    SEMAPHORE_MSA_EXECUTOR,
-    SEMAPHORE_MSA_VALIDATOR,
+    SEMAPHORE_EXECUTOR,
+    SEMAPHORE_VALIDATOR,
     VERSION
 } from "src/utils/Constants.sol";
 
-contract SemaphoreMSAValidator is ERC7579ValidatorBase {
+contract SemaphoreValidator is ERC7579ValidatorBase {
     /**
      * Errors
      */
@@ -26,19 +26,19 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     error InvalidTargetCallData(address account, bytes callData);
     error MemberNotExists(address account, bytes pubKey);
     error NoSemaphoreModuleInstalled(address account);
-    error NotValidSemaphoreMSAExecutor(address target);
-    error SemaphoreMSAExecutorNotInitialized(address account);
+    error NotValidSemaphoreExecutor(address target);
+    error SemaphoreExecutorNotInitialized(address account);
 
     /**
      * Events
      */
-    event SemaphoreMSAValidatorInitialized(address indexed account);
-    event SemaphoreMSAValidatorUninitialized(address indexed account);
+    event SemaphoreValidatorInitialized(address indexed account);
+    event SemaphoreValidatorUninitialized(address indexed account);
 
     /**
      * Storage
      */
-    ISemaphoreMSAExecutor public semaphoreExecutor;
+    ISemaphoreExecutor public semaphoreExecutor;
     mapping(address account => bool installed) public acctInstalled;
 
     // Ensure the following match with the 3 function calls.
@@ -48,12 +48,12 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         semaphoreExecutor.executeTx.selector
     ];
 
-    constructor(ISemaphoreMSAExecutor _semaphoreExecutor) {
+    constructor(ISemaphoreExecutor _semaphoreExecutor) {
         if (
-            !LibBytes.eq(bytes(_semaphoreExecutor.name()), bytes(SEMAPHORE_MSA_EXECUTOR))
+            !LibBytes.eq(bytes(_semaphoreExecutor.name()), bytes(SEMAPHORE_EXECUTOR))
                 || !_semaphoreExecutor.isModuleType(TYPE_EXECUTOR)
         ) {
-            revert NotValidSemaphoreMSAExecutor(address(_semaphoreExecutor));
+            revert NotValidSemaphoreExecutor(address(_semaphoreExecutor));
         }
         semaphoreExecutor = _semaphoreExecutor;
     }
@@ -62,19 +62,19 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
      * Config
      */
     function isInitialized(address account) external view override returns (bool) {
-        return acctInstalled[account];
+        return acctInstalled[account] && semaphoreExecutor.isInitialized(account);
     }
 
     function onInstall(bytes calldata) external override {
         address account = msg.sender;
-        if (acctInstalled[account]) revert ModuleAlreadyInitialized(account);
-
         if (!semaphoreExecutor.isInitialized(account)) {
-            revert SemaphoreMSAExecutorNotInitialized(account);
+            revert SemaphoreExecutorNotInitialized(account);
         }
 
+        if (acctInstalled[account]) revert ModuleAlreadyInitialized(account);
+
         acctInstalled[account] = true;
-        emit SemaphoreMSAValidatorInitialized(account);
+        emit SemaphoreValidatorInitialized(account);
     }
 
     function onUninstall(bytes calldata) external override {
@@ -83,7 +83,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         if (!acctInstalled[account]) revert NotInitialized(account);
 
         delete acctInstalled[account];
-        emit SemaphoreMSAValidatorUninitialized(account);
+        emit SemaphoreValidatorUninitialized(account);
     }
 
     /**
@@ -229,7 +229,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
      * @return name The name of the module
      */
     function name() external pure returns (string memory) {
-        return SEMAPHORE_MSA_VALIDATOR;
+        return SEMAPHORE_VALIDATOR;
     }
 
     /**
