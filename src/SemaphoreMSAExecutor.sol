@@ -94,7 +94,7 @@ contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
     function onInstall(bytes calldata data) external override {
         // Ensure the module isn't installed already for the smart account
         address account = msg.sender;
-        if (thresholds[account] > 0) revert AlreadyInitialized(account);
+        if (thresholds[account] > 0) revert ModuleAlreadyInitialized(account);
 
         uint256 dataLen = data.length;
 

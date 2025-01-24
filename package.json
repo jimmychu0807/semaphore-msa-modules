@@ -16,13 +16,13 @@
     "url": "https://github.com/jimmychu0807/semaphore-msa-validator/issues"
   },
   "devDependencies": {
-    "@rhinestone/modulekit": "~0.5.4",
+    "@rhinestone/modulekit": "^0.5.7",
     "@semaphore-protocol/contracts": "github:jimmychu0807/semaphore#identity-cli&path:/packages/contracts/contracts",
     "@semaphore-protocol/group": "github:jimmychu0807/semaphore#identity-cli&path:/packages/group",
     "@semaphore-protocol/identity": "github:jimmychu0807/semaphore#identity-cli&path:/packages/identity",
     "@semaphore-protocol/proof": "github:jimmychu0807/semaphore#identity-cli&path:/packages/proof",
     "poseidon-solidity": "github:chancehudson/poseidon-solidity#main",
-    "rimraf": "^5.0.5",
+    "rimraf": "^5.0.10",
     "solady": "^0.0.287"
   },
   "files": [
@@ -46,8 +46,8 @@
     "lint": "pnpm lint:sol && pnpm prettier:check",
     "prettier:check": "prettier --no-error-on-unmatched-pattern -c \"{src,test,script}/**/*.{json,md,svg,yml}\"",
     "prettier:write": "prettier --no-error-on-unmatched-pattern -w \"{src,test,script}/**/*.{json,md,svg,yml}\"",
-    "test": "COMPLIANCE=true forge test --ffi",
-    "test:coverage": "COMPLIANCE=true forge coverage --ffi"
+    "test": "forge test --ffi",
+    "test:coverage": "forge coverage --ffi"
   },
   "keywords": [
     "account abstraction",

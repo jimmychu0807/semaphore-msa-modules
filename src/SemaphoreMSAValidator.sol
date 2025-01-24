@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.23 <=0.8.29;
 
+// import { console } from "forge-std/console.sol";
 // Rhinestone module-kit
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { PackedUserOperation } from "modulekit/ModuleKit.sol";
@@ -15,7 +16,6 @@ import {
     SEMAPHORE_MSA_VALIDATOR,
     VERSION
 } from "src/utils/Constants.sol";
-// import { console } from "forge-std/console.sol";
 
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     /**
@@ -25,7 +25,6 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     error InvalidTargetAddress(address account, address target);
     error InvalidTargetCallData(address account, bytes callData);
     error MemberNotExists(address account, bytes pubKey);
-    error ModuleAlreadyInitialized(address account);
     error NoSemaphoreModuleInstalled(address account);
     error NotValidSemaphoreMSAExecutor(address target);
     error SemaphoreMSAExecutorNotInitialized(address account);

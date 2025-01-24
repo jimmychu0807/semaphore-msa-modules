@@ -6,38 +6,33 @@ import { Test } from "forge-std/Test.sol";
 // import { console } from "forge-std/console.sol";
 
 // Rhinestone Modulekit
-import {
-    RhinestoneModuleKit,
-    ModuleKitHelpers,
-    AccountInstance,
-    UserOpData
-} from "modulekit/ModuleKit.sol";
+import { RhinestoneModuleKit, ModuleKitHelpers, AccountInstance } from "modulekit/ModuleKit.sol";
+
 import {
     MODULE_TYPE_EXECUTOR,
     MODULE_TYPE_VALIDATOR,
     VALIDATION_SUCCESS,
     VALIDATION_FAILED
 } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
+
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 
 // Semaphore
-import { ISemaphore, ISemaphoreVerifier } from "src/interfaces/Semaphore.sol";
+import { ISemaphoreVerifier } from "src/interfaces/Semaphore.sol";
 import { SemaphoreVerifier } from "semaphore/base/SemaphoreVerifier.sol";
 import { Semaphore } from "semaphore/Semaphore.sol";
 
 import { SemaphoreMSAValidator, ERC7579ValidatorBase } from "src/SemaphoreMSAValidator.sol";
-import { SemaphoreMSAExecutor, ERC7579ExecutorBase } from "src/SemaphoreMSAExecutor.sol";
+import { SemaphoreMSAExecutor } from "src/SemaphoreMSAExecutor.sol";
 
-import { LibSort, LibString, LibBytes } from "solady/Milady.sol";
+import { LibSort, LibString } from "solady/Milady.sol";
 import {
     getEmptyUserOperation,
-    getEmptySemaphoreProof,
-    getGroupRmMerkleProof,
     getTestUserOpCallData,
     Identity,
     IdentityLib
 } from "test/utils/TestUtils.sol";
-import { NUM_MEMBERS, NUM_USERS } from "test/utils/Constants.sol";
+import { NUM_USERS } from "test/utils/Constants.sol";
 
 struct User {
     uint256 sk;
@@ -103,7 +98,7 @@ contract SemaphoreMSAValidatorTest is RhinestoneModuleKit, Test {
         smartAcct.installModule({
             moduleTypeId: MODULE_TYPE_VALIDATOR,
             module: address(semaphoreValidator),
-            data: hex""
+            data: ""
         });
 
         _;
@@ -134,7 +129,7 @@ contract SemaphoreMSAValidatorTest is RhinestoneModuleKit, Test {
         smartAcct.installModule({
             moduleTypeId: MODULE_TYPE_VALIDATOR,
             module: address(semaphoreValidator),
-            data: hex""
+            data: ""
         });
     }
 
@@ -148,7 +143,7 @@ contract SemaphoreMSAValidatorTest is RhinestoneModuleKit, Test {
         smartAcct.installModule({
             moduleTypeId: MODULE_TYPE_VALIDATOR,
             module: address(semaphoreValidator),
-            data: hex""
+            data: ""
         });
 
         assertEq(semaphoreValidator.acctInstalled(smartAcct.account), true, "test_onInstall_Pass");
@@ -164,22 +159,49 @@ contract SemaphoreMSAValidatorTest is RhinestoneModuleKit, Test {
         smartAcct.installModule({
             moduleTypeId: MODULE_TYPE_VALIDATOR,
             module: address(semaphoreValidator),
-            data: hex""
+            data: ""
         });
 
-        // Expecting the next call to fail with ModuleAlreadyInitialized error
         smartAcct.expect4337Revert();
         smartAcct.installModule({
             moduleTypeId: MODULE_TYPE_VALIDATOR,
             module: address(semaphoreValidator),
-            data: hex""
+            data: ""
+        });
+    }
+
+    function test_onUninstall_Pass() public setupSmartAcctWithMembersThreshold(1, 1) {
+        smartAcct.uninstallModule({
+            moduleTypeId: MODULE_TYPE_VALIDATOR,
+            module: address(semaphoreValidator),
+            data: ""
+        });
+
+        assertEq(semaphoreValidator.acctInstalled(smartAcct.account), false);
+    }
+
+    function test_onUninstall_DuplicateUninstallShouldRevert()
+        public
+        setupSmartAcctWithMembersThreshold(1, 1)
+    {
+        smartAcct.uninstallModule({
+            moduleTypeId: MODULE_TYPE_VALIDATOR,
+            module: address(semaphoreValidator),
+            data: ""
+        });
+
+        smartAcct.expect4337Revert();
+        smartAcct.uninstallModule({
+            moduleTypeId: MODULE_TYPE_VALIDATOR,
+            module: address(semaphoreValidator),
+            data: ""
         });
     }
 
     function test_validateUserOp_NoSemaphoreModuleInstalled() public {
         PackedUserOperation memory userOp = getEmptyUserOperation();
         userOp.sender = smartAcct.account;
-        userOp.callData = getTestUserOpCallData(address(semaphoreExecutor), 0, hex"");
+        userOp.callData = getTestUserOpCallData(address(semaphoreExecutor), 0, "");
         bytes32 userOpHash = bytes32(keccak256("userOpHash"));
 
         // Test error is thrown
@@ -198,7 +220,7 @@ contract SemaphoreMSAValidatorTest is RhinestoneModuleKit, Test {
     {
         PackedUserOperation memory userOp = getEmptyUserOperation();
         userOp.sender = smartAcct.account;
-        userOp.callData = getTestUserOpCallData(address(semaphoreExecutor), 0, hex"");
+        userOp.callData = getTestUserOpCallData(address(semaphoreExecutor), 0, "");
         bytes32 userOpHash = bytes32(keccak256("userOpHash"));
 
         // Forge a signature
@@ -221,7 +243,7 @@ contract SemaphoreMSAValidatorTest is RhinestoneModuleKit, Test {
     {
         PackedUserOperation memory userOp = getEmptyUserOperation();
         userOp.sender = smartAcct.account;
-        userOp.callData = getTestUserOpCallData(address(semaphoreExecutor), 0, hex"");
+        userOp.callData = getTestUserOpCallData(address(semaphoreExecutor), 0, "");
         bytes32 userOpHash = bytes32(keccak256("userOpHash"));
 
         Identity id = $users[1].identity;
@@ -245,7 +267,7 @@ contract SemaphoreMSAValidatorTest is RhinestoneModuleKit, Test {
     {
         PackedUserOperation memory userOp = getEmptyUserOperation();
         userOp.sender = smartAcct.account;
-        userOp.callData = getTestUserOpCallData(address(semaphoreValidator), 0, hex"");
+        userOp.callData = getTestUserOpCallData(address(semaphoreValidator), 0, "");
         bytes32 userOpHash = bytes32(keccak256("userOpHash"));
 
         Identity id = $users[0].identity;
@@ -306,7 +328,7 @@ contract SemaphoreMSAValidatorTest is RhinestoneModuleKit, Test {
         PackedUserOperation memory userOp = getEmptyUserOperation();
         userOp.sender = smartAcct.account;
         userOp.callData = getTestUserOpCallData(
-            address(semaphoreExecutor), 0, abi.encodeCall(semaphoreExecutor.executeTx, (hex""))
+            address(semaphoreExecutor), 0, abi.encodeCall(semaphoreExecutor.executeTx, (""))
         );
         bytes32 userOpHash = bytes32(keccak256("userOpHash"));
 
