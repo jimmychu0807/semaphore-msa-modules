@@ -16,7 +16,7 @@ import {
 
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 
-import { SemaphoreMSAValidator, ERC7579ValidatorBase } from "src/SemaphoreMSAValidator.sol";
+import { SemaphoreValidator, ERC7579ValidatorBase } from "src/SemaphoreValidator.sol";
 
 import {
     getEmptyUserOperation,
@@ -26,7 +26,7 @@ import {
 } from "test/utils/TestUtils.sol";
 import { SharedTestSetup } from "test/utils/SharedTestSetup.sol";
 
-contract SemaphoreMSAValidatorTest is SharedTestSetup {
+contract SemaphoreValidatorTest is SharedTestSetup {
     using ModuleKitHelpers for *;
     using IdentityLib for Identity;
 
@@ -34,10 +34,10 @@ contract SemaphoreMSAValidatorTest is SharedTestSetup {
      * Tests
      */
     function test_onInstall_NoExecutorShouldRevert() public {
-        // Expecting the next call to fail with SemaphoreMSAExecutorNotInitialized error
+        // Expecting the next call to fail with SemaphoreExecutorNotInitialized error
         smartAcct.expect4337Revert(
             abi.encodeWithSelector(
-                SemaphoreMSAValidator.SemaphoreMSAExecutorNotInitialized.selector, smartAcct.account
+                SemaphoreValidator.SemaphoreExecutorNotInitialized.selector, smartAcct.account
             )
         );
 
@@ -122,7 +122,7 @@ contract SemaphoreMSAValidatorTest is SharedTestSetup {
         // Test error is thrown
         // forgefmt: disable-next-item
         vm.expectRevert(abi.encodeWithSelector(
-            SemaphoreMSAValidator.NoSemaphoreModuleInstalled.selector, smartAcct.account
+            SemaphoreValidator.NoSemaphoreModuleInstalled.selector, smartAcct.account
         ));
         ERC7579ValidatorBase.ValidationData.unwrap(
             semaphoreValidator.validateUserOp(userOp, userOpHash)
@@ -145,7 +145,7 @@ contract SemaphoreMSAValidatorTest is SharedTestSetup {
         // Test error is thrown
         // forgefmt: disable-next-item
         vm.expectRevert(abi.encodeWithSelector(
-            SemaphoreMSAValidator.InvalidSignature.selector, smartAcct.account, forgedSig
+            SemaphoreValidator.InvalidSignature.selector, smartAcct.account, forgedSig
         ));
         ERC7579ValidatorBase.ValidationData.unwrap(
             semaphoreValidator.validateUserOp(userOp, userOpHash)
@@ -169,7 +169,7 @@ contract SemaphoreMSAValidatorTest is SharedTestSetup {
         // Test error is thrown
         // forgefmt: disable-next-item
         vm.expectRevert(abi.encodeWithSelector(
-            SemaphoreMSAValidator.MemberNotExists.selector, smartAcct.account, pk
+            SemaphoreValidator.MemberNotExists.selector, smartAcct.account, pk
         ));
         ERC7579ValidatorBase.ValidationData.unwrap(
             semaphoreValidator.validateUserOp(userOp, userOpHash)
@@ -189,7 +189,7 @@ contract SemaphoreMSAValidatorTest is SharedTestSetup {
         userOp.signature = id.signHash(userOpHash);
 
         // Test error is thrown
-        vm.expectPartialRevert(SemaphoreMSAValidator.InvalidTargetCallData.selector);
+        vm.expectPartialRevert(SemaphoreValidator.InvalidTargetCallData.selector);
         ERC7579ValidatorBase.ValidationData.unwrap(
             semaphoreValidator.validateUserOp(userOp, userOpHash)
         );
@@ -212,7 +212,7 @@ contract SemaphoreMSAValidatorTest is SharedTestSetup {
         // Test error is thrown
         // forgefmt: disable-next-item
         vm.expectRevert(abi.encodeWithSelector(
-            SemaphoreMSAValidator.InvalidTargetAddress.selector,
+            SemaphoreValidator.InvalidTargetAddress.selector,
             smartAcct.account,
             address(semaphoreValidator)
         ));

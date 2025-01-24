@@ -3,15 +3,15 @@ pragma solidity >=0.8.23 <=0.8.29;
 
 // Rhinestone module-kit
 import { IERC7579Account } from "modulekit/Accounts.sol";
-import { ERC7579ExecutorBase } from "modulekit/Modules.sol";
+import { ERC7579ExecutorBase, IERC7579Module } from "modulekit/Modules.sol";
 import { ModeLib } from "modulekit/accounts/common/lib/ModeLib.sol";
 
 // import { console } from "forge-std/console.sol";
 import { LibSort } from "solady/Milady.sol";
 import { ISemaphore, ISemaphoreGroups } from "src/interfaces/Semaphore.sol";
-import { ISemaphoreMSAExecutor } from "src/interfaces/ISemaphoreMSAExecutor.sol";
+import { ISemaphoreExecutor } from "src/interfaces/ISemaphoreExecutor.sol";
 import { ValidatorLibBytes } from "src/utils/ValidatorLibBytes.sol";
-import { CMT_BYTELEN, MAX_MEMBERS, SEMAPHORE_MSA_EXECUTOR, VERSION } from "src/utils/Constants.sol";
+import { CMT_BYTELEN, MAX_MEMBERS, SEMAPHORE_EXECUTOR, VERSION } from "src/utils/Constants.sol";
 
 struct ExtCallCount {
     address targetAddr;
@@ -20,7 +20,7 @@ struct ExtCallCount {
     uint8 count;
 }
 
-contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
+contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     using LibSort for *;
     using ValidatorLibBytes for bytes;
 
@@ -43,6 +43,7 @@ contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
     error InitiateTxWithNullAddress(address account);
     error InitiateTxWithNullCallDataAndNullValue(address account, address targetAddr);
     error ExecuteTxFailure(address account, address targetAddr, uint256 value, bytes callData);
+    error SemaphoreValidatorIsInitialized(address account);
 
     /**
      * Events
@@ -129,9 +130,14 @@ contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
         emit SemaphoreMSAExecutorInitialized(account);
     }
 
-    function onUninstall(bytes calldata) external override {
-        // remove from our data structure
+    function onUninstall(bytes calldata data) external override {
         address account = msg.sender;
+
+        // Check that the validator has been removed before removing executor
+        IERC7579Module semaphoreValidator = IERC7579Module(address(bytes20(data[0:20])));
+        if (semaphoreValidator.isInitialized(account)) revert SemaphoreValidatorIsInitialized(account);
+
+        // remove from our data structure
         delete thresholds[account];
         delete groupMapping[account];
         delete acctSeqNum[account];
@@ -326,7 +332,7 @@ contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
      * @return name The name of the module
      */
     function name() external pure returns (string memory) {
-        return SEMAPHORE_MSA_EXECUTOR;
+        return SEMAPHORE_EXECUTOR;
     }
 
     /**

@@ -13,8 +13,8 @@ import {
 
 import { LibSort, LibString } from "solady/Milady.sol";
 
-import { SemaphoreMSAExecutor } from "src/SemaphoreMSAExecutor.sol";
-import { SemaphoreMSAValidator } from "src/SemaphoreMSAValidator.sol";
+import { SemaphoreExecutor } from "src/SemaphoreExecutor.sol";
+import { SemaphoreValidator } from "src/SemaphoreValidator.sol";
 import { SemaphoreVerifier } from "semaphore/base/SemaphoreVerifier.sol";
 import { Semaphore, ISemaphoreVerifier } from "semaphore/Semaphore.sol";
 
@@ -33,8 +33,8 @@ abstract contract SharedTestSetup is RhinestoneModuleKit, Test {
     using IdentityLib for Identity;
 
     AccountInstance internal smartAcct;
-    SemaphoreMSAValidator internal semaphoreValidator;
-    SemaphoreMSAExecutor internal semaphoreExecutor;
+    SemaphoreValidator internal semaphoreValidator;
+    SemaphoreExecutor internal semaphoreExecutor;
     User[] internal $users;
 
     function setUp() public virtual {
@@ -48,15 +48,15 @@ abstract contract SharedTestSetup is RhinestoneModuleKit, Test {
         vm.label(address(semaphore), "Semaphore");
 
         // Create the executor
-        semaphoreExecutor = new SemaphoreMSAExecutor(semaphore);
-        vm.label(address(semaphoreValidator), "SemaphoreMSAExecutor");
+        semaphoreExecutor = new SemaphoreExecutor(semaphore);
+        vm.label(address(semaphoreValidator), "SemaphoreExecutor");
 
         // Create the validator
-        semaphoreValidator = new SemaphoreMSAValidator(semaphoreExecutor);
-        vm.label(address(semaphoreValidator), "SemaphoreMSAValidator");
+        semaphoreValidator = new SemaphoreValidator(semaphoreExecutor);
+        vm.label(address(semaphoreValidator), "SemaphoreValidator");
 
         // Create the smart account
-        smartAcct = makeAccountInstance("SemaphoreMSAValidator");
+        smartAcct = makeAccountInstance("SmartAccount");
         vm.deal(smartAcct.account, 10 ether);
         vm.label(smartAcct.account, "SmartAccount");
 
