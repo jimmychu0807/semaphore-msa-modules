@@ -5,8 +5,12 @@ pragma solidity >=0.8.23 <=0.8.29;
 import { Test } from "forge-std/Test.sol";
 
 // Rhinestone Modulekit
-import { RhinestoneModuleKit, ModuleKitHelpers, AccountInstance, UserOpData
- } from "modulekit/ModuleKit.sol";
+import {
+    RhinestoneModuleKit,
+    ModuleKitHelpers,
+    AccountInstance,
+    UserOpData
+} from "modulekit/ModuleKit.sol";
 import {
     MODULE_TYPE_EXECUTOR,
     MODULE_TYPE_VALIDATOR
@@ -128,9 +132,7 @@ abstract contract SharedTestSetup is RhinestoneModuleKit, Test {
         // We need to increase the accountGasLimits, default 2e6 is not enough to verify
         // signature, for all those elliptic curve computation.
         // Encoding two fields here, validation and execution gas
-        userOpData.userOp.accountGasLimits = bytes32(
-            abi.encodePacked(uint128(2e7), uint128(2e7))
-        );
+        userOpData.userOp.accountGasLimits = bytes32(abi.encodePacked(uint128(2e7), uint128(2e7)));
         userOpData.userOpHash = smartAcct.aux.entrypoint.getUserOpHash(userOpData.userOp);
         userOpData.userOp.signature = id.signHash(userOpData.userOpHash);
     }
@@ -159,10 +161,7 @@ abstract contract SharedTestSetup is RhinestoneModuleKit, Test {
         userOpData = _getSemaphoreUserOpData(
             member.identity,
             value,
-            abi.encodeCall(
-                SemaphoreExecutor.initiateTx,
-                (target, txCallData, smProof, bExecute)
-            )
+            abi.encodeCall(SemaphoreExecutor.initiateTx, (target, txCallData, smProof, bExecute))
         );
     }
 
