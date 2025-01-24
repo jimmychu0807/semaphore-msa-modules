@@ -4,10 +4,17 @@ pragma solidity >=0.8.23 <=0.8.29;
 // Rhinestone module-kit
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { PackedUserOperation } from "modulekit/ModuleKit.sol";
+import { LibBytes } from "solady/Milady.sol";
 
 import { ISemaphoreMSAExecutor } from "src/interfaces/ISemaphoreMSAExecutor.sol";
 import { Identity } from "src/utils/Identity.sol";
-import { SIGNATURE_LEN } from "src/utils/Constants.sol";
+import {
+    SIGNATURE_LEN,
+    MIN_TARGET_CALLDATA_LEN,
+    SEMAPHORE_MSA_EXECUTOR,
+    SEMAPHORE_MSA_VALIDATOR,
+    VERSION
+} from "src/utils/Constants.sol";
 // import { console } from "forge-std/console.sol";
 
 contract SemaphoreMSAValidator is ERC7579ValidatorBase {
@@ -16,8 +23,12 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
      */
     error InvalidSignature(address account, bytes signature);
     error InvalidTargetAddress(address account, address target);
-    error MemberNotExists(address account, uint256 cmt);
+    error InvalidTargetCallData(address account, bytes callData);
+    error MemberNotExists(address account, bytes pubKey);
+    error ModuleAlreadyInitialized(address account);
     error NoSemaphoreModuleInstalled(address account);
+    error NotValidSemaphoreMSAExecutor(address target);
+    error SemaphoreMSAExecutorNotInitialized(address account);
 
     /**
      * Events
@@ -39,12 +50,13 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
     ];
 
     constructor(ISemaphoreMSAExecutor _semaphoreExecutor) {
+        if (
+            !LibBytes.eq(bytes(_semaphoreExecutor.name()), bytes(SEMAPHORE_MSA_EXECUTOR))
+                || !_semaphoreExecutor.isModuleType(TYPE_EXECUTOR)
+        ) {
+            revert NotValidSemaphoreMSAExecutor(address(_semaphoreExecutor));
+        }
         semaphoreExecutor = _semaphoreExecutor;
-    }
-
-    modifier moduleInstalled() {
-        if (!acctInstalled[msg.sender]) revert NotInitialized(msg.sender);
-        _;
     }
 
     /**
@@ -56,16 +68,22 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
 
     function onInstall(bytes calldata) external override {
         address account = msg.sender;
-        acctInstalled[account] = true;
+        if (acctInstalled[account]) revert ModuleAlreadyInitialized(account);
 
+        if (!semaphoreExecutor.isInitialized(account)) {
+            revert SemaphoreMSAExecutorNotInitialized(account);
+        }
+
+        acctInstalled[account] = true;
         emit SemaphoreMSAValidatorInitialized(account);
     }
 
-    function onUninstall(bytes calldata) external override moduleInstalled {
+    function onUninstall(bytes calldata) external override {
         // remove from our data structure
         address account = msg.sender;
-        delete acctInstalled[account];
+        if (!acctInstalled[account]) revert NotInitialized(account);
 
+        delete acctInstalled[account];
         emit SemaphoreMSAValidatorUninitialized(account);
     }
 
@@ -175,11 +193,19 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
         // Verify if the identity commitment is one of the semaphore group members
         bytes memory pubKey = signature[0:64];
         uint256 cmt = Identity.getCommitment(pubKey);
-        if (!semaphoreExecutor.accountHasMember(account, cmt)) revert MemberNotExists(account, cmt);
+        if (!semaphoreExecutor.accountHasMember(account, cmt)) {
+            revert MemberNotExists(account, pubKey);
+        }
+
+        if (targetCallData.length < MIN_TARGET_CALLDATA_LEN) {
+            revert InvalidTargetCallData(account, targetCallData);
+        }
 
         // We don't allow call to other contracts, other than msa-validator and msa-executor
         // quick hack here
-        (address target,, bytes4 funcSel) = abi.decode(targetCallData, (address, uint256, bytes4));
+        address target = address(bytes20(targetCallData[0:20]));
+        bytes4 funcSel = bytes4(targetCallData[52:56]);
+
         if (target != address(semaphoreExecutor)) revert InvalidTargetAddress(account, target);
 
         // We only allow calls to `initiateTx()`, `signTx()`, and `executeTx()` to pass,
@@ -204,7 +230,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
      * @return name The name of the module
      */
     function name() external pure returns (string memory) {
-        return "SemaphoreMSAValidator";
+        return SEMAPHORE_MSA_VALIDATOR;
     }
 
     /**
@@ -213,7 +239,7 @@ contract SemaphoreMSAValidator is ERC7579ValidatorBase {
      * @return version The version of the module
      */
     function version() external pure returns (string memory) {
-        return "0.1.0";
+        return VERSION;
     }
 
     /**

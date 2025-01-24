@@ -11,7 +11,7 @@ import { LibSort } from "solady/Milady.sol";
 import { ISemaphore, ISemaphoreGroups } from "src/interfaces/Semaphore.sol";
 import { ISemaphoreMSAExecutor } from "src/interfaces/ISemaphoreMSAExecutor.sol";
 import { ValidatorLibBytes } from "src/utils/ValidatorLibBytes.sol";
-import { CMT_BYTELEN, MAX_MEMBERS } from "src/utils/Constants.sol";
+import { CMT_BYTELEN, MAX_MEMBERS, SEMAPHORE_MSA_EXECUTOR, VERSION } from "src/utils/Constants.sol";
 
 struct ExtCallCount {
     address targetAddr;
@@ -326,7 +326,7 @@ contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
      * @return name The name of the module
      */
     function name() external pure returns (string memory) {
-        return "SemaphoreMSAExecutor";
+        return SEMAPHORE_MSA_EXECUTOR;
     }
 
     /**
@@ -335,7 +335,7 @@ contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
      * @return version The version of the module
      */
     function version() external pure returns (string memory) {
-        return "0.1.0";
+        return VERSION;
     }
 
     /**

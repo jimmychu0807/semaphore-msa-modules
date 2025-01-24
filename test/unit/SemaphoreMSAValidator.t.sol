@@ -15,7 +15,8 @@ import {
 import {
     MODULE_TYPE_EXECUTOR,
     MODULE_TYPE_VALIDATOR,
-    VALIDATION_SUCCESS
+    VALIDATION_SUCCESS,
+    VALIDATION_FAILED
 } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 
@@ -27,7 +28,7 @@ import { Semaphore } from "semaphore/Semaphore.sol";
 import { SemaphoreMSAValidator, ERC7579ValidatorBase } from "src/SemaphoreMSAValidator.sol";
 import { SemaphoreMSAExecutor, ERC7579ExecutorBase } from "src/SemaphoreMSAExecutor.sol";
 
-import { LibSort, LibString } from "solady/Milady.sol";
+import { LibSort, LibString, LibBytes } from "solady/Milady.sol";
 import {
     getEmptyUserOperation,
     getEmptySemaphoreProof,
@@ -122,49 +123,200 @@ contract SemaphoreMSAValidatorTest is RhinestoneModuleKit, Test {
     /**
      * Tests
      */
-    function test_validateUserOp_NoSemaphoreModuleInstalled() public {
-        PackedUserOperation memory userOp = getEmptyUserOperation();
-        userOp.sender = smartAcct.account;
-        userOp.callData = getTestUserOpCallData(address(semaphoreValidator), 0, hex"");
-
-        bytes32 userOpHash = bytes32(keccak256("userOpHash"));
-
-        Identity nonMember = $users[1].identity;
-        userOp.signature = nonMember.signHash(userOpHash);
-
-        vm.expectRevert(
+    function test_onInstall_NoExecutorShouldRevert() public {
+        // Expecting the next call to fail with SemaphoreMSAExecutorNotInitialized error
+        smartAcct.expect4337Revert(
             abi.encodeWithSelector(
-                SemaphoreMSAValidator.NoSemaphoreModuleInstalled.selector, smartAcct.account
+                SemaphoreMSAValidator.SemaphoreMSAExecutorNotInitialized.selector, smartAcct.account
             )
         );
 
+        smartAcct.installModule({
+            moduleTypeId: MODULE_TYPE_VALIDATOR,
+            module: address(semaphoreValidator),
+            data: hex""
+        });
+    }
+
+    function test_onInstall_Pass() public {
+        smartAcct.installModule({
+            moduleTypeId: MODULE_TYPE_EXECUTOR,
+            module: address(semaphoreExecutor),
+            data: abi.encodePacked(uint8(1), _getMemberCmts(1))
+        });
+
+        smartAcct.installModule({
+            moduleTypeId: MODULE_TYPE_VALIDATOR,
+            module: address(semaphoreValidator),
+            data: hex""
+        });
+
+        assertEq(semaphoreValidator.acctInstalled(smartAcct.account), true, "test_onInstall_Pass");
+    }
+
+    function test_onInstall_DuplicateInstallShouldRevert() public {
+        smartAcct.installModule({
+            moduleTypeId: MODULE_TYPE_EXECUTOR,
+            module: address(semaphoreExecutor),
+            data: abi.encodePacked(uint8(1), _getMemberCmts(1))
+        });
+
+        smartAcct.installModule({
+            moduleTypeId: MODULE_TYPE_VALIDATOR,
+            module: address(semaphoreValidator),
+            data: hex""
+        });
+
+        // Expecting the next call to fail with ModuleAlreadyInitialized error
+        smartAcct.expect4337Revert();
+        smartAcct.installModule({
+            moduleTypeId: MODULE_TYPE_VALIDATOR,
+            module: address(semaphoreValidator),
+            data: hex""
+        });
+    }
+
+    function test_validateUserOp_NoSemaphoreModuleInstalled() public {
+        PackedUserOperation memory userOp = getEmptyUserOperation();
+        userOp.sender = smartAcct.account;
+        userOp.callData = getTestUserOpCallData(address(semaphoreExecutor), 0, hex"");
+        bytes32 userOpHash = bytes32(keccak256("userOpHash"));
+
+        // Test error is thrown
+        // forgefmt: disable-next-item
+        vm.expectRevert(abi.encodeWithSelector(
+            SemaphoreMSAValidator.NoSemaphoreModuleInstalled.selector, smartAcct.account
+        ));
         ERC7579ValidatorBase.ValidationData.unwrap(
             semaphoreValidator.validateUserOp(userOp, userOpHash)
         );
     }
 
-    //     function test_validateUserOpWithMember() public setupSmartAcctWithMembersThreshold(1, 1)
-    // {
-    //         PackedUserOperation memory userOp = getEmptyUserOperation();
-    //         userOp.sender = smartAcct.account;
-    //         userOp.callData = getTestUserOpCallData(
-    //             0,
-    //             address(semaphoreValidator),
-    //             abi.encodeCall(
-    //                 SemaphoreMSAValidator.initiateTx, (address(0), "", getEmptySemaphoreProof(),
-    // false)
-    //             )
-    //         );
+    function test_validateUserOp_InvalidSignature()
+        public
+        setupSmartAcctWithMembersThreshold(1, 1)
+    {
+        PackedUserOperation memory userOp = getEmptyUserOperation();
+        userOp.sender = smartAcct.account;
+        userOp.callData = getTestUserOpCallData(address(semaphoreExecutor), 0, hex"");
+        bytes32 userOpHash = bytes32(keccak256("userOpHash"));
 
-    //         bytes32 userOpHash = bytes32(keccak256("userOpHash"));
+        // Forge a signature
+        bytes memory forgedSig = hex"ffff";
+        userOp.signature = forgedSig;
 
-    //         Identity id = $users[0].identity;
-    //         userOp.signature = id.signHash(userOpHash);
+        // Test error is thrown
+        // forgefmt: disable-next-item
+        vm.expectRevert(abi.encodeWithSelector(
+            SemaphoreMSAValidator.InvalidSignature.selector, smartAcct.account, forgedSig
+        ));
+        ERC7579ValidatorBase.ValidationData.unwrap(
+            semaphoreValidator.validateUserOp(userOp, userOpHash)
+        );
+    }
 
-    //         uint256 validationData = ERC7579ValidatorBase.ValidationData.unwrap(
-    //             semaphoreValidator.validateUserOp(userOp, userOpHash)
-    //         );
+    function test_validateUserOp_MemberNotExists()
+        public
+        setupSmartAcctWithMembersThreshold(1, 1)
+    {
+        PackedUserOperation memory userOp = getEmptyUserOperation();
+        userOp.sender = smartAcct.account;
+        userOp.callData = getTestUserOpCallData(address(semaphoreExecutor), 0, hex"");
+        bytes32 userOpHash = bytes32(keccak256("userOpHash"));
 
-    //         assertEq(validationData, VALIDATION_SUCCESS);
-    //     }
+        Identity id = $users[1].identity;
+        userOp.signature = id.signHash(userOpHash);
+        (uint256 pkX, uint256 pkY) = abi.decode(userOp.signature, (uint256, uint256));
+        bytes memory pk = abi.encodePacked(pkX, pkY);
+
+        // Test error is thrown
+        // forgefmt: disable-next-item
+        vm.expectRevert(abi.encodeWithSelector(
+            SemaphoreMSAValidator.MemberNotExists.selector, smartAcct.account, pk
+        ));
+        ERC7579ValidatorBase.ValidationData.unwrap(
+            semaphoreValidator.validateUserOp(userOp, userOpHash)
+        );
+    }
+
+    function test_validateUserOp_InvalidTargetCallData()
+        public
+        setupSmartAcctWithMembersThreshold(1, 1)
+    {
+        PackedUserOperation memory userOp = getEmptyUserOperation();
+        userOp.sender = smartAcct.account;
+        userOp.callData = getTestUserOpCallData(address(semaphoreValidator), 0, hex"");
+        bytes32 userOpHash = bytes32(keccak256("userOpHash"));
+
+        Identity id = $users[0].identity;
+        userOp.signature = id.signHash(userOpHash);
+
+        // Test error is thrown
+        vm.expectPartialRevert(SemaphoreMSAValidator.InvalidTargetCallData.selector);
+        ERC7579ValidatorBase.ValidationData.unwrap(
+            semaphoreValidator.validateUserOp(userOp, userOpHash)
+        );
+    }
+
+    function test_validateUserOp_InvalidTargetAddress()
+        public
+        setupSmartAcctWithMembersThreshold(1, 1)
+    {
+        PackedUserOperation memory userOp = getEmptyUserOperation();
+        userOp.sender = smartAcct.account;
+        userOp.callData = getTestUserOpCallData(
+            address(semaphoreValidator), 0, abi.encodeCall(semaphoreValidator.name, ())
+        );
+        bytes32 userOpHash = bytes32(keccak256("userOpHash"));
+
+        Identity id = $users[0].identity;
+        userOp.signature = id.signHash(userOpHash);
+
+        // Test error is thrown
+        // forgefmt: disable-next-item
+        vm.expectRevert(abi.encodeWithSelector(
+            SemaphoreMSAValidator.InvalidTargetAddress.selector,
+            smartAcct.account,
+            address(semaphoreValidator)
+        ));
+        ERC7579ValidatorBase.ValidationData.unwrap(
+            semaphoreValidator.validateUserOp(userOp, userOpHash)
+        );
+    }
+
+    function test_validateUserOp_InvalidFuncSel() public setupSmartAcctWithMembersThreshold(1, 1) {
+        PackedUserOperation memory userOp = getEmptyUserOperation();
+        userOp.sender = smartAcct.account;
+        userOp.callData = getTestUserOpCallData(
+            address(semaphoreExecutor), 0, abi.encodeCall(semaphoreExecutor.name, ())
+        );
+        bytes32 userOpHash = bytes32(keccak256("userOpHash"));
+
+        Identity id = $users[0].identity;
+        userOp.signature = id.signHash(userOpHash);
+
+        uint256 res = ERC7579ValidatorBase.ValidationData.unwrap(
+            semaphoreValidator.validateUserOp(userOp, userOpHash)
+        );
+
+        assertEq(res, VALIDATION_FAILED, "test_validateUserOp_InvalidFuncSel");
+    }
+
+    function test_validateUserOp_Pass() public setupSmartAcctWithMembersThreshold(1, 1) {
+        PackedUserOperation memory userOp = getEmptyUserOperation();
+        userOp.sender = smartAcct.account;
+        userOp.callData = getTestUserOpCallData(
+            address(semaphoreExecutor), 0, abi.encodeCall(semaphoreExecutor.executeTx, (hex""))
+        );
+        bytes32 userOpHash = bytes32(keccak256("userOpHash"));
+
+        Identity id = $users[0].identity;
+        userOp.signature = id.signHash(userOpHash);
+
+        uint256 res = ERC7579ValidatorBase.ValidationData.unwrap(
+            semaphoreValidator.validateUserOp(userOp, userOpHash)
+        );
+
+        assertEq(res, VALIDATION_SUCCESS, "test_validateUserOp_Pass");
+    }
 }

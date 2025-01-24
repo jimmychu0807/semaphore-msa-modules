@@ -46,8 +46,8 @@
     "lint": "pnpm lint:sol && pnpm prettier:check",
     "prettier:check": "prettier --no-error-on-unmatched-pattern -c \"{src,test,script}/**/*.{json,md,svg,yml}\"",
     "prettier:write": "prettier --no-error-on-unmatched-pattern -w \"{src,test,script}/**/*.{json,md,svg,yml}\"",
-    "test": "forge test --ffi",
-    "test:coverage": "forge coverage --ffi"
+    "test": "COMPLIANCE=true forge test --ffi",
+    "test:coverage": "COMPLIANCE=true forge coverage --ffi"
   },
   "keywords": [
     "account abstraction",
