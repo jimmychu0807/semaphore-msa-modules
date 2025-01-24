@@ -56,6 +56,9 @@ abstract contract SharedTestSetup is RhinestoneModuleKit, Test {
         semaphoreValidator = new SemaphoreValidator(semaphoreExecutor);
         vm.label(address(semaphoreValidator), "SemaphoreValidator");
 
+        // Set semaphoreValidator in the executor
+        semaphoreExecutor.setSemaphoreValidator(address(semaphoreValidator));
+
         // Create the smart account
         smartAcct = makeAccountInstance("SmartAccount");
         vm.deal(smartAcct.account, 10 ether);

@@ -26,7 +26,7 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
     error InvalidTargetCallData(address account, bytes callData);
     error MemberNotExists(address account, bytes pubKey);
     error NoSemaphoreModuleInstalled(address account);
-    error NotValidSemaphoreMSAExecutor(address target);
+    error NotValidSemaphoreExecutor(address target);
     error SemaphoreExecutorNotInitialized(address account);
 
     /**
@@ -53,7 +53,7 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
             !LibBytes.eq(bytes(_semaphoreExecutor.name()), bytes(SEMAPHORE_EXECUTOR))
                 || !_semaphoreExecutor.isModuleType(TYPE_EXECUTOR)
         ) {
-            revert NotValidSemaphoreMSAExecutor(address(_semaphoreExecutor));
+            revert NotValidSemaphoreExecutor(address(_semaphoreExecutor));
         }
         semaphoreExecutor = _semaphoreExecutor;
     }

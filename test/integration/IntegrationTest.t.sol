@@ -1,43 +1,45 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-// Rhinestone Modulekit
-// import {
-//     RhinestoneModuleKit,
-//     ModuleKitHelpers,
-//     AccountInstance,
-//     UserOpData
-// } from "modulekit/ModuleKit.sol";
-// import {
-//     MODULE_TYPE_EXECUTOR,
-//     MODULE_TYPE_VALIDATOR,
-//     VALIDATION_SUCCESS
-// } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
-// import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
+// forge-std
+import { Test } from "forge-std/Test.sol";
 
-// // Semaphore
-// import { ISemaphore, ISemaphoreVerifier } from "src/interfaces/Semaphore.sol";
-// import { SemaphoreVerifier } from "semaphore/base/SemaphoreVerifier.sol";
-// import { Semaphore } from "semaphore/Semaphore.sol";
+import {
+    RhinestoneModuleKit,
+    ModuleKitHelpers,
+    AccountInstance,
+    UserOpData
+} from "modulekit/ModuleKit.sol";
+import {
+    MODULE_TYPE_EXECUTOR,
+    MODULE_TYPE_VALIDATOR,
+    VALIDATION_SUCCESS
+} from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
+import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 
-// import { SemaphoreMSAValidator, ERC7579ValidatorBase } from "src/SemaphoreMSAValidator.sol";
-// import { SemaphoreMSAExecutor, ERC7579ExecutorBase } from "src/SemaphoreMSAExecutor.sol";
+// Semaphore
+import { ISemaphore, ISemaphoreVerifier } from "src/interfaces/Semaphore.sol";
+import { SemaphoreVerifier } from "semaphore/base/SemaphoreVerifier.sol";
+import { Semaphore } from "semaphore/Semaphore.sol";
 
-// import { LibSort, LibString } from "solady/Milady.sol";
-// import {
-//     getEmptyUserOperation,
-//     getEmptySemaphoreProof,
-//     getGroupRmMerkleProof,
-//     getTestUserOpCallData,
-//     Identity,
-//     IdentityLib
-// } from "test/utils/TestUtils.sol";
-// import { SimpleContract } from "test/utils/SimpleContract.sol";
+import { SemaphoreValidator, ERC7579ValidatorBase } from "src/SemaphoreValidator.sol";
+import { SemaphoreExecutor, ERC7579ExecutorBase } from "src/SemaphoreExecutor.sol";
 
-// contract IntegrationTest is RhinestoneModuleKit, Test {
-//     /**
-//      * Internal helper functions
-//      */
+import { LibSort, LibString } from "solady/Milady.sol";
+import {
+    getEmptyUserOperation,
+    getEmptySemaphoreProof,
+    getGroupRmMerkleProof,
+    getTestUserOpCallData,
+    Identity,
+    IdentityLib,
+    SimpleContract
+} from "test/utils/TestUtils.sol";
+
+contract IntegrationTest is RhinestoneModuleKit, Test {
+/**
+ * Internal helper functions
+ */
 
 //     function _getSemaphoreValidatorUserOpData(
 //         Identity id,
@@ -164,35 +166,6 @@ pragma solidity ^0.8.23;
 //             module: address(semaphoreValidator),
 //             data: abi.encodePacked(bytes16(hex"deadbeef"))
 //         });
-//     }
-
-//     function test_duplicateInstall() public setupSmartAcctWithMembersThreshold(1, 1) {
-//         // The modifier has already installed the validator in smartAcct
-//         uint256[] memory cmts = new uint256[](1);
-//         cmts[0] = $users[0].identity.commitment();
-
-//         // Test: should revert due to duplicate install
-//         smartAcct.expect4337Revert();
-//         smartAcct.installModule({
-//             moduleTypeId: MODULE_TYPE_VALIDATOR,
-//             module: address(semaphoreValidator),
-//             data: abi.encodePacked(uint8(1), cmts)
-//         });
-//     }
-
-//     function test_onUninstall() public setupSmartAcctWithMembersThreshold(1, 1) {
-//         smartAcct.uninstallModule({
-//             moduleTypeId: MODULE_TYPE_VALIDATOR,
-//             module: address(semaphoreValidator),
-//             data: ""
-//         });
-
-//         assertEq(semaphoreValidator.thresholds(smartAcct.account), 0);
-//         assertEq(semaphoreValidator.memberCount(smartAcct.account), 0);
-//         assertEq(semaphoreValidator.isInitialized(smartAcct.account), false);
-
-//         (bool bExist,) = semaphoreValidator.getGroupId(smartAcct.account);
-//         assertEq(bExist, false);
 //     }
 
 //     function test_initiateTransferInvalidSignature()
@@ -618,4 +591,4 @@ pragma solidity ^0.8.23;
 //         );
 //         semaphoreValidator.validateUserOp(userOp, userOpHash);
 //     }
-// }
+}

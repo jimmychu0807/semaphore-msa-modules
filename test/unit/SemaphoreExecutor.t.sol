@@ -66,4 +66,25 @@ contract SemaphoreExecutorTest is SharedTestSetup {
             true
         );
     }
+
+    function test_onUninstall_Pass() public setupSmartAcctWithMembersThreshold(1, 1) {
+        // Uninsstall the validator first
+        smartAcct.uninstallModule({
+            moduleTypeId: MODULE_TYPE_VALIDATOR,
+            module: address(semaphoreValidator),
+            data: ""
+        });
+
+        smartAcct.uninstallModule({
+            moduleTypeId: MODULE_TYPE_EXECUTOR,
+            module: address(semaphoreExecutor),
+            data: ""
+        });
+
+        assertEq(semaphoreExecutor.thresholds(smartAcct.account), 0);
+        (bool bExist,) = semaphoreExecutor.getGroupId(smartAcct.account);
+        assertEq(bExist, false);
+        assertEq(semaphoreExecutor.memberCount(smartAcct.account), 0);
+        assertEq(semaphoreExecutor.isInitialized(smartAcct.account), false);
+    }
 }

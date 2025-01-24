@@ -7,11 +7,18 @@ import { ERC7579ExecutorBase, IERC7579Module } from "modulekit/Modules.sol";
 import { ModeLib } from "modulekit/accounts/common/lib/ModeLib.sol";
 
 // import { console } from "forge-std/console.sol";
-import { LibSort } from "solady/Milady.sol";
+import { LibBytes, LibSort } from "solady/Milady.sol";
 import { ISemaphore, ISemaphoreGroups } from "src/interfaces/Semaphore.sol";
+import { ISemaphoreValidator } from "src/interfaces/ISemaphoreValidator.sol";
 import { ISemaphoreExecutor } from "src/interfaces/ISemaphoreExecutor.sol";
 import { ValidatorLibBytes } from "src/utils/ValidatorLibBytes.sol";
-import { CMT_BYTELEN, MAX_MEMBERS, SEMAPHORE_EXECUTOR, VERSION } from "src/utils/Constants.sol";
+import {
+    CMT_BYTELEN,
+    MAX_MEMBERS,
+    SEMAPHORE_VALIDATOR,
+    SEMAPHORE_EXECUTOR,
+    VERSION
+} from "src/utils/Constants.sol";
 
 struct ExtCallCount {
     address targetAddr;
@@ -27,6 +34,8 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     /**
      * Errors
      */
+    error SemaphoreValidatorSetAlready();
+    error InvalidSemaphoreValidator(address addr);
     error MemberCntReachesThreshold(address account);
     error InvalidThreshold(address account);
     error MaxMemberReached(address account);
@@ -48,8 +57,9 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     /**
      * Events
      */
-    event SemaphoreMSAExecutorInitialized(address indexed account);
-    event SemaphoreMSAExecutorUninitialized(address indexed account);
+    event SemaphoreExecutorInitialized(address indexed account);
+    event SemaphoreExecutorUninitialized(address indexed account);
+    event SetSemaphoreValidator(address indexed target);
     event ExecutedTx(address indexed account, address indexed target, uint256 indexed value);
     event AddedMembers(address indexed, uint256 indexed length);
     event RemovedMember(address indexed, uint256 indexed commitment);
@@ -63,6 +73,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
      */
     ISemaphore public semaphore;
     ISemaphoreGroups public groups;
+    address public semaphoreValidatorAddr;
 
     mapping(address account => uint256 groupId) public groupMapping;
     mapping(address account => uint8 threshold) public thresholds;
@@ -127,14 +138,14 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         semaphore.addMembers(groupId, cmts);
         memberCount[account] = uint8(cmts.length);
 
-        emit SemaphoreMSAExecutorInitialized(account);
+        emit SemaphoreExecutorInitialized(account);
     }
 
-    function onUninstall(bytes calldata data) external override {
+    function onUninstall(bytes calldata) external override {
         address account = msg.sender;
 
         // Check that the validator has been removed before removing executor
-        IERC7579Module semaphoreValidator = IERC7579Module(address(bytes20(data[0:20])));
+        ISemaphoreValidator semaphoreValidator = ISemaphoreValidator(semaphoreValidatorAddr);
         if (semaphoreValidator.isInitialized(account)) {
             revert SemaphoreValidatorIsInitialized(account);
         }
@@ -149,7 +160,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         //   The following line will make the compiler fail.
         // delete acctTxCount[account];
 
-        emit SemaphoreMSAExecutorUninitialized(account);
+        emit SemaphoreExecutorUninitialized(account);
     }
 
     /**
@@ -170,6 +181,24 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
 
         uint256 groupId = groupMapping[account];
         return groups.hasMember(groupId, cmt);
+    }
+
+    /**
+     * Set-once Functions
+     */
+    function setSemaphoreValidator(address target) external {
+        if (semaphoreValidatorAddr != address(0)) revert SemaphoreValidatorSetAlready();
+
+        ISemaphoreValidator val = ISemaphoreValidator(target);
+        if (
+            !LibBytes.eq(bytes(val.name()), bytes(SEMAPHORE_VALIDATOR))
+                || !val.isModuleType(TYPE_VALIDATOR)
+        ) {
+            revert InvalidSemaphoreValidator(target);
+        }
+
+        semaphoreValidatorAddr = target;
+        emit SetSemaphoreValidator(target);
     }
 
     /**
