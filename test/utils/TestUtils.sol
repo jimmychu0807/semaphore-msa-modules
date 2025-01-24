@@ -114,7 +114,7 @@ library IdentityLib {
         return abi.encodePacked(pub, hashSig);
     }
 
-    function generateSempahoreProof(
+    function getSempahoreProof(
         Identity self,
         uint256 groupId,
         uint256[] memory members,

@@ -1,12 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.23 <=0.8.29;
 
-// forge-std
-import { Test } from "forge-std/Test.sol";
-// import { console } from "forge-std/console.sol";
-
 // Rhinestone Modulekit
-import { RhinestoneModuleKit, ModuleKitHelpers, AccountInstance } from "modulekit/ModuleKit.sol";
+import { RhinestoneModuleKit, ModuleKitHelpers } from "modulekit/ModuleKit.sol";
 
 import {
     MODULE_TYPE_EXECUTOR,
@@ -16,11 +12,7 @@ import {
 
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 
-// Semaphore
-import { ISemaphoreVerifier } from "src/interfaces/Semaphore.sol";
-import { SemaphoreVerifier } from "semaphore/base/SemaphoreVerifier.sol";
-import { Semaphore } from "semaphore/Semaphore.sol";
-
+import { ISemaphore, ISemaphoreVerifier } from "src/interfaces/Semaphore.sol";
 import { SemaphoreValidator, ERC7579ValidatorBase } from "src/SemaphoreValidator.sol";
 import { SemaphoreExecutor } from "src/SemaphoreExecutor.sol";
 
@@ -29,13 +21,11 @@ import {
     getEmptyUserOperation,
     getTestUserOpCallData,
     getGroupRmMerkleProof,
-    getTestUserOpCallData,
     Identity,
     IdentityLib
 } from "test/utils/TestUtils.sol";
 
 import { SharedTestSetup, User } from "test/utils/SharedTestSetup.sol";
-
 import { NUM_USERS, NUM_MEMBERS } from "test/utils/Constants.sol";
 
 contract SemaphoreExecutorTest is SharedTestSetup {
@@ -180,4 +170,99 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         );
         semaphoreValidator.validateUserOp(userOp, userOpHash);
     }
+
+    function test_setThreshold_InvalidThreshold() public setupSmartAcctWithMembersThreshold(NUM_MEMBERS, NUM_MEMBERS) {
+        // Test: setThreshold() cannot set to be more than number of members
+        vm.startPrank(smartAcct.account);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                SemaphoreExecutor.InvalidThreshold.selector,
+                smartAcct.account
+            )
+        );
+        semaphoreExecutor.setThreshold(NUM_MEMBERS + 1);
+    }
+
+    function test_setThreshold_Pass() public setupSmartAcctWithMembersThreshold(NUM_MEMBERS, NUM_MEMBERS) {
+        uint8 newThreshold = 1;
+
+        vm.startPrank(smartAcct.account);
+        vm.expectEmit(true, true, true, true);
+        emit SemaphoreExecutor.ThresholdSet(smartAcct.account, newThreshold);
+        semaphoreExecutor.setThreshold(newThreshold);
+        vm.stopPrank();
+
+        assertEq(semaphoreExecutor.thresholds(smartAcct.account), newThreshold);
+    }
+
+    function test_initiateTx_NullTargetShouldRevert() public setupSmartAcctWithMembersThreshold(NUM_MEMBERS, 1) {
+        Identity selfIdentity = $users[0].identity;
+        address target = address(0);
+        uint256 value = 100;
+        bytes memory txCallData = "";
+        uint256 gId = 0;
+
+        // Compose txHash and semaphore proof
+        bytes32 txHash = keccak256(abi.encodePacked(uint256(0), target, value, txCallData));
+        ISemaphore.SemaphoreProof memory smProof =
+            selfIdentity.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
+
+        // Test: should fail as target is null
+        vm.startPrank(smartAcct.account);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                SemaphoreExecutor.InitiateTxWithNullAddress.selector,
+                smartAcct.account
+            )
+        );
+        semaphoreExecutor.initiateTx{value: value}(target, txCallData, smProof, true);
+    }
+
+    function test_initiateTx_NullCallDataValueShouldRevert() public setupSmartAcctWithMembersThreshold(NUM_MEMBERS, 1) {
+        Identity selfIdentity = $users[0].identity;
+        address target = $users[1].addr;
+        uint256 value = 0;
+        bytes memory txCallData = "";
+        uint256 gId = 0;
+
+        // Compose txHash and semaphore proof
+        bytes32 txHash = keccak256(abi.encodePacked(uint256(0), target, value, txCallData));
+        ISemaphore.SemaphoreProof memory smProof =
+            selfIdentity.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
+
+        // Test: should fail as calldata and value are null
+        vm.startPrank(smartAcct.account);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                SemaphoreExecutor.InitiateTxWithNullCallDataAndNullValue.selector,
+                smartAcct.account,
+                target
+            )
+        );
+        semaphoreExecutor.initiateTx{value: value}(target, txCallData, smProof, true);
+    }
+
+    function test_initiateTx_InvalidSemaphoreProof() public setupSmartAcctWithMembersThreshold(NUM_MEMBERS, 1) {
+        Identity selfIdentity = $users[0].identity;
+        address target = $users[1].addr;
+        uint256 value = 100;
+        bytes memory txCallData = "";
+        uint256 gId = 0;
+
+        // Compose txHash and semaphore proof. Then mess with the proof
+        bytes32 txHash = keccak256(abi.encodePacked(uint256(0), target, value, txCallData));
+        ISemaphore.SemaphoreProof memory smProof =
+            selfIdentity.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
+        smProof.points[0] = 1;
+
+        // Test: should fail as proof has been forged
+        vm.startPrank(smartAcct.account);
+        vm.expectPartialRevert(SemaphoreExecutor.InvalidSemaphoreProof.selector);
+        semaphoreExecutor.initiateTx{value: value}(target, txCallData, smProof, true);
+    }
+
+    function test_initiateTx_Pass() public {}
+
+    function test_initiateTx_AndExecutePass() public {}
+
 }

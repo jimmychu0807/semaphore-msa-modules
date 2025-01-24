@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.23 <=0.8.29;
 
-// forge-std
-// import { console } from "forge-std/console.sol";
-
 // Rhinestone Modulekit
 import { ModuleKitHelpers } from "modulekit/ModuleKit.sol";
 

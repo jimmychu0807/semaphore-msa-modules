@@ -202,7 +202,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     }
 
     /**
-     * Storage modifiers
+     * Main logics
      */
     function setThreshold(uint8 newThreshold) external moduleInstalled {
         address account = msg.sender;
