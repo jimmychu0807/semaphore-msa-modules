@@ -1,11 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-// // forge-std
-// import { Test } from "forge-std/Test.sol";
-// // import { console } from "forge-std/console.sol";
-
-// // Rhinestone Modulekit
+// Rhinestone Modulekit
 // import {
 //     RhinestoneModuleKit,
 //     ModuleKitHelpers,
@@ -38,99 +34,10 @@ pragma solidity ^0.8.23;
 // } from "test/utils/TestUtils.sol";
 // import { SimpleContract } from "test/utils/SimpleContract.sol";
 
-// struct User {
-//     uint256 sk;
-//     address addr;
-//     Identity identity; // user commitment
-// }
-
-// uint8 constant MEMBER_NUM = 3;
-
 // contract IntegrationTest is RhinestoneModuleKit, Test {
-//     using ModuleKitHelpers for *;
-//     using LibSort for *;
-//     using IdentityLib for Identity;
-
-//     AccountInstance internal smartAcct;
-//     SemaphoreMSAValidator internal semaphoreValidator;
-//     SemaphoreMSAExecutor internal semaphoreExecutor;
-//     SimpleContract internal simpleContract;
-//     User[] internal $users;
-
-//     function setUp() public virtual {
-//         // init() function comes from contract AuxiliaryFactory:
-//         //   https://github.com/rhinestonewtf/modulekit/blob/main/src/test/Auxiliary.sol
-//         super.init();
-
-//         // Deploy Semaphore
-//         SemaphoreVerifier semaphoreVerifier = new SemaphoreVerifier();
-//         vm.label(address(semaphoreVerifier), "SemaphoreVerifier");
-//         Semaphore semaphore = new Semaphore(ISemaphoreVerifier(address(semaphoreVerifier)));
-//         vm.label(address(semaphore), "Semaphore");
-
-//         // Create the executor
-//         semaphoreExecutor = new SemaphoreMSAExecutor(semaphore);
-//         vm.label(address(semaphoreValidator), "SemaphoreMSAExecutor");
-
-//         // Create the validator
-//         semaphoreValidator = new SemaphoreMSAValidator(semaphore, semaphoreExecutor);
-//         vm.label(address(semaphoreValidator), "SemaphoreMSAValidator");
-
-//         // Create three users
-//         for (uint256 i = 0; i < MEMBER_NUM + 1; ++i) {
-//             (address addr, uint256 sk) =
-//                 makeAddrAndKey(string.concat("user", LibString.toString(i + 1)));
-//             vm.deal(addr, 5 ether);
-//             $users.push(User({ sk: sk, addr: addr, identity: IdentityLib.genIdentity(i + 1) }));
-//         }
-//     }
-
-//     modifier setupSmartAcctWithMembersThreshold(uint8 memberNum, uint8 threshold) {
-//         smartAcct = makeAccountInstance("SemaphoreMSAValidator");
-//         vm.deal(smartAcct.account, 10 ether);
-
-//         smartAcct.installModule({
-//             moduleTypeId: MODULE_TYPE_VALIDATOR,
-//             module: address(semaphoreValidator),
-//             data: abi.encodePacked(uint8(threshold), _getMemberCmts(memberNum))
-//         });
-//         _;
-//     }
-
-//     modifier setupSmartAcctValExeWithMembersThreshold(uint8 memberNum, uint8 threshold) {
-//         smartAcct = makeAccountInstance("SemaphoreMSAValidator");
-//         vm.deal(smartAcct.account, 10 ether);
-
-//         smartAcct.installModule({
-//             moduleTypeId: MODULE_TYPE_VALIDATOR,
-//             module: address(semaphoreValidator),
-//             data: abi.encodePacked(uint8(threshold), _getMemberCmts(memberNum))
-//         });
-
-//         smartAcct.installModule({
-//             moduleTypeId: MODULE_TYPE_EXECUTOR,
-//             module: address(semaphoreExecutor),
-//             data: hex""
-//         });
-
-//         _;
-//     }
-
-//     modifier deploySimpleContract() {
-//         simpleContract = new SimpleContract(0);
-//         _;
-//     }
-
 //     /**
 //      * Internal helper functions
 //      */
-//     function _getMemberCmts(uint8 num) internal returns (uint256[] memory cmts) {
-//         cmts = new uint256[](num);
-//         for (uint8 i = 0; i < num; ++i) {
-//             cmts[i] = $users[i].identity.commitment();
-//         }
-//         cmts.insertionSort();
-//     }
 
 //     function _getSemaphoreValidatorUserOpData(
 //         Identity id,
@@ -245,15 +152,6 @@ pragma solidity ^0.8.23;
 //     /**
 //      * Tests
 //      */
-//     function test_onInstallWithOneMember() public setupSmartAcctWithMembersThreshold(1, 1) {
-//         assertEq(semaphoreValidator.thresholds(smartAcct.account), 1);
-//         assertEq(semaphoreValidator.memberCount(smartAcct.account), 1);
-//         assertEq(semaphoreValidator.isInitialized(smartAcct.account), true);
-
-//         (bool bExist, uint256 groupId) = semaphoreValidator.getGroupId(smartAcct.account);
-//         assertEq(bExist, true);
-//         assertEq(groupId, 0);
-//     }
 
 //     function test_onInstallWithInvalidData() public {
 //         smartAcct = makeAccountInstance("SemaphoreMSAValidator");

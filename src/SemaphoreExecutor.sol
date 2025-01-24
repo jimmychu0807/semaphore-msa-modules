@@ -135,7 +135,9 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
 
         // Check that the validator has been removed before removing executor
         IERC7579Module semaphoreValidator = IERC7579Module(address(bytes20(data[0:20])));
-        if (semaphoreValidator.isInitialized(account)) revert SemaphoreValidatorIsInitialized(account);
+        if (semaphoreValidator.isInitialized(account)) {
+            revert SemaphoreValidatorIsInitialized(account);
+        }
 
         // remove from our data structure
         delete thresholds[account];

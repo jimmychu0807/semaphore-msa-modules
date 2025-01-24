@@ -18,13 +18,13 @@ import { SemaphoreValidator } from "src/SemaphoreValidator.sol";
 import { SemaphoreVerifier } from "semaphore/base/SemaphoreVerifier.sol";
 import { Semaphore, ISemaphoreVerifier } from "semaphore/Semaphore.sol";
 
-import { Identity, IdentityLib } from "test/utils/TestUtils.sol";
+import { Identity, IdentityLib, SimpleContract } from "test/utils/TestUtils.sol";
 import { NUM_USERS } from "test/utils/Constants.sol";
 
 struct User {
     uint256 sk;
     address addr;
-    Identity identity; // user commitment
+    Identity identity;
 }
 
 abstract contract SharedTestSetup is RhinestoneModuleKit, Test {
@@ -35,6 +35,7 @@ abstract contract SharedTestSetup is RhinestoneModuleKit, Test {
     AccountInstance internal smartAcct;
     SemaphoreValidator internal semaphoreValidator;
     SemaphoreExecutor internal semaphoreExecutor;
+    SimpleContract internal simpleContract;
     User[] internal $users;
 
     function setUp() public virtual {
@@ -86,6 +87,11 @@ abstract contract SharedTestSetup is RhinestoneModuleKit, Test {
             data: ""
         });
 
+        _;
+    }
+
+    modifier deploySimpleContract() {
+        simpleContract = new SimpleContract(0);
         _;
     }
 

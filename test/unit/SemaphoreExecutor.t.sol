@@ -3,16 +3,14 @@ pragma solidity >=0.8.23 <=0.8.29;
 
 // forge-std
 import { Test } from "forge-std/Test.sol";
-// import { console } from "forge-std/console.sol";
+import { console } from "forge-std/console.sol";
 
 // Rhinestone Modulekit
 import { RhinestoneModuleKit, ModuleKitHelpers, AccountInstance } from "modulekit/ModuleKit.sol";
 
 import {
     MODULE_TYPE_EXECUTOR,
-    MODULE_TYPE_VALIDATOR,
-    VALIDATION_SUCCESS,
-    VALIDATION_FAILED
+    MODULE_TYPE_VALIDATOR
 } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
 
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
@@ -29,13 +27,15 @@ import { LibSort, LibString } from "solady/Milady.sol";
 import {
     getEmptyUserOperation,
     getTestUserOpCallData,
+    getGroupRmMerkleProof,
+    getTestUserOpCallData,
     Identity,
     IdentityLib
 } from "test/utils/TestUtils.sol";
 
-import { SharedTestSetup } from "test/utils/SharedTestSetup.sol";
+import { SharedTestSetup, User } from "test/utils/SharedTestSetup.sol";
 
-import { NUM_USERS } from "test/utils/Constants.sol";
+import { NUM_USERS, NUM_MEMBERS } from "test/utils/Constants.sol";
 
 contract SemaphoreExecutorTest is SharedTestSetup {
     using ModuleKitHelpers for *;
@@ -44,5 +44,26 @@ contract SemaphoreExecutorTest is SharedTestSetup {
     /**
      * Tests
      */
+    function test_onInstall_Pass() public {
+        smartAcct.installModule({
+            moduleTypeId: MODULE_TYPE_EXECUTOR,
+            module: address(semaphoreExecutor),
+            data: abi.encodePacked(uint8(1), _getMemberCmts(1))
+        });
 
+        User memory member = $users[0];
+
+        assertEq(semaphoreExecutor.thresholds(smartAcct.account), 1);
+        assertEq(semaphoreExecutor.memberCount(smartAcct.account), 1);
+        assertEq(semaphoreExecutor.isInitialized(smartAcct.account), true);
+
+        (bool bExist, uint256 groupId) = semaphoreExecutor.getGroupId(smartAcct.account);
+        assertEq(bExist, true);
+
+        assertEq(groupId, 0);
+        assertEq(
+            semaphoreExecutor.accountHasMember(smartAcct.account, member.identity.commitment()),
+            true
+        );
+    }
 }
