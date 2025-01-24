@@ -8,9 +8,10 @@ import { ModeLib } from "modulekit/accounts/common/lib/ModeLib.sol";
 
 // import { console } from "forge-std/console.sol";
 import { LibSort } from "solady/Milady.sol";
-import { ISemaphore, ISemaphoreGroups } from "src/utils/Semaphore.sol";
+import { ISemaphore, ISemaphoreGroups } from "src/interfaces/Semaphore.sol";
 import { ISemaphoreMSAExecutor } from "src/interfaces/ISemaphoreMSAExecutor.sol";
 import { ValidatorLibBytes } from "src/utils/ValidatorLibBytes.sol";
+import { CMT_BYTELEN, MAX_MEMBERS, SEMAPHORE_MSA_EXECUTOR, VERSION } from "src/utils/Constants.sol";
 
 struct ExtCallCount {
     address targetAddr;
@@ -22,12 +23,6 @@ struct ExtCallCount {
 contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
     using LibSort for *;
     using ValidatorLibBytes for bytes;
-
-    /**
-     * Constants
-     */
-    uint8 public constant MAX_MEMBERS = 32;
-    uint8 public constant CMT_BYTELEN = 32;
 
     /**
      * Errors
@@ -99,7 +94,7 @@ contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
     function onInstall(bytes calldata data) external override {
         // Ensure the module isn't installed already for the smart account
         address account = msg.sender;
-        if (thresholds[account] > 0) revert AlreadyInitialized(account);
+        if (thresholds[account] > 0) revert ModuleAlreadyInitialized(account);
 
         uint256 dataLen = data.length;
 
@@ -157,9 +152,16 @@ contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
     }
 
     function getGroupId(address account) external view returns (bool, uint256) {
+        if (thresholds[account] > 0) return (true, groupMapping[account]);
+
+        return (false, 0);
+    }
+
+    function accountHasMember(address account, uint256 cmt) external view returns (bool) {
+        if (thresholds[account] == 0) return false;
+
         uint256 groupId = groupMapping[account];
-        if (thresholds[account] == 0) return (false, 0);
-        return (true, groupId);
+        return groups.hasMember(groupId, cmt);
     }
 
     /**
@@ -324,7 +326,7 @@ contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
      * @return name The name of the module
      */
     function name() external pure returns (string memory) {
-        return "SemaphoreMSAExecutor";
+        return SEMAPHORE_MSA_EXECUTOR;
     }
 
     /**
@@ -333,7 +335,7 @@ contract SemaphoreMSAExecutor is ISemaphoreMSAExecutor, ERC7579ExecutorBase {
      * @return version The version of the module
      */
     function version() external pure returns (string memory) {
-        return "0.1.0";
+        return VERSION;
     }
 
     /**

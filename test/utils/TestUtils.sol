@@ -3,7 +3,7 @@ pragma solidity ^0.8.23;
 
 import { Vm } from "forge-std/Vm.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
-import { ISemaphore } from "src/utils/Semaphore.sol";
+import { ISemaphore } from "src/interfaces/Semaphore.sol";
 import { LibString } from "solady/Milady.sol";
 
 // https://github.com/foundry-rs/forge-std/blob/master/src/Base.sol#L9
@@ -42,14 +42,14 @@ function getEmptySemaphoreProof() pure returns (ISemaphore.SemaphoreProof memory
 }
 
 function getTestUserOpCallData(
+    address target,
     uint256 value,
-    address targetAddr,
     bytes memory txCallData
 )
     pure
     returns (bytes memory callData)
 {
-    callData = bytes.concat(new bytes(100), bytes20(targetAddr), bytes32(value), txCallData);
+    callData = bytes.concat(new bytes(100), bytes20(target), bytes32(value), txCallData);
 }
 
 function getGroupRmMerkleProof(
