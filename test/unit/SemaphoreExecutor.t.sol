@@ -10,7 +10,8 @@ import { RhinestoneModuleKit, ModuleKitHelpers, AccountInstance } from "moduleki
 
 import {
     MODULE_TYPE_EXECUTOR,
-    MODULE_TYPE_VALIDATOR
+    MODULE_TYPE_VALIDATOR,
+    VALIDATION_SUCCESS
 } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
 
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
@@ -23,7 +24,7 @@ import { Semaphore } from "semaphore/Semaphore.sol";
 import { SemaphoreValidator, ERC7579ValidatorBase } from "src/SemaphoreValidator.sol";
 import { SemaphoreExecutor } from "src/SemaphoreExecutor.sol";
 
-import { LibSort, LibString } from "solady/Milady.sol";
+import { LibBytes } from "solady/Milady.sol";
 import {
     getEmptyUserOperation,
     getTestUserOpCallData,
@@ -44,6 +45,16 @@ contract SemaphoreExecutorTest is SharedTestSetup {
     /**
      * Tests
      */
+    function test_onInstall_RevertWithInvalidData() public {
+        // Test: InvalidInstallData
+        smartAcct.expect4337Revert(SemaphoreExecutor.InvalidInstallData.selector);
+        smartAcct.installModule({
+            moduleTypeId: MODULE_TYPE_EXECUTOR,
+            module: address(semaphoreExecutor),
+            data: abi.encodePacked(bytes16(hex"deadbeef"))
+        });
+    }
+
     function test_onInstall_Pass() public {
         smartAcct.installModule({
             moduleTypeId: MODULE_TYPE_EXECUTOR,
@@ -86,5 +97,48 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         assertEq(bExist, false);
         assertEq(semaphoreExecutor.memberCount(smartAcct.account), 0);
         assertEq(semaphoreExecutor.isInitialized(smartAcct.account), false);
+    }
+
+    function test_addMembers_Pass() public setupSmartAcctWithMembersThreshold(1, 1) {
+        uint256[] memory newMembers = new uint256[](1);
+        Identity newIdentity = $users[1].identity;
+        newMembers[0] = newIdentity.commitment();
+
+        // Compose a userOp
+        PackedUserOperation memory userOp = getEmptyUserOperation();
+        userOp.sender = smartAcct.account;
+        userOp.callData = getTestUserOpCallData(
+            address(semaphoreExecutor),
+            0,
+            abi.encodeWithSelector(SemaphoreExecutor.initiateTx.selector)
+        );
+        bytes32 userOpHash = bytes32(keccak256("userOpHash"));
+        userOp.signature = newIdentity.signHash(userOpHash);
+
+        // Test: The userOp should fail, as $users[1].identity is not a member yet
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                SemaphoreValidator.MemberNotExists.selector,
+                smartAcct.account,
+                LibBytes.slice(userOp.signature, 0, 64)
+            )
+        );
+        semaphoreValidator.validateUserOp(userOp, userOpHash);
+
+        // Test: addMembers() is successfully executed
+        vm.startPrank(smartAcct.account);
+        vm.expectEmit(true, true, true, true, address(semaphoreExecutor));
+        emit SemaphoreExecutor.AddedMembers(smartAcct.account, uint8(1));
+        semaphoreExecutor.addMembers(newMembers);
+        vm.stopPrank();
+
+        assertEq(semaphoreExecutor.memberCount(smartAcct.account), 2);
+        assertEq(semaphoreExecutor.accountHasMember(smartAcct.account, newMembers[0]), true);
+
+        // Test: the userOp should pass now
+        uint256 validationData = ERC7579ValidatorBase.ValidationData.unwrap(
+            semaphoreValidator.validateUserOp(userOp, userOpHash)
+        );
+        assertEq(validationData, VALIDATION_SUCCESS);
     }
 }

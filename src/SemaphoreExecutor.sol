@@ -61,7 +61,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     event SemaphoreExecutorUninitialized(address indexed account);
     event SetSemaphoreValidator(address indexed target);
     event ExecutedTx(address indexed account, address indexed target, uint256 indexed value);
-    event AddedMembers(address indexed, uint256 indexed length);
+    event AddedMembers(address indexed, uint8 indexed length);
     event RemovedMember(address indexed, uint256 indexed commitment);
     event ThresholdSet(address indexed account, uint8 indexed threshold);
     event InitiatedTx(address indexed account, uint256 indexed seq, bytes32 indexed txHash);
@@ -226,9 +226,9 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         }
 
         semaphore.addMembers(groupId, cmts);
-        memberCount[account] += uint8(cmts.length);
-
-        emit AddedMembers(account, cmts.length);
+        uint8 cmtsLen = uint8(cmts.length);
+        memberCount[account] += cmtsLen;
+        emit AddedMembers(account, cmtsLen);
     }
 
     function removeMember(
