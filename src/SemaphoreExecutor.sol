@@ -6,7 +6,6 @@ import { IERC7579Account } from "modulekit/Accounts.sol";
 import { ERC7579ExecutorBase, IERC7579Module } from "modulekit/Modules.sol";
 import { ModeLib } from "modulekit/accounts/common/lib/ModeLib.sol";
 
-// import { console } from "forge-std/console.sol";
 import { LibBytes, LibSort } from "solady/Milady.sol";
 import { ISemaphore, ISemaphoreGroups } from "src/interfaces/Semaphore.sol";
 import { ISemaphoreValidator } from "src/interfaces/ISemaphoreValidator.sol";
