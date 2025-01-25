@@ -1,19 +1,19 @@
 {
-  "name": "semaphore-msa-validator",
+  "name": "semaphore-msa-modules",
   "version": "0.0.1",
-  "description": "Semaphore Modular Smart Account Validator",
+  "description": "Semaphore Modular Smart Account Modules",
   "license": "GPL-3.0",
   "author": {
     "name": "Jimmy Chu",
     "url": "https://jimmychu0807.hk"
   },
-  "homepage": "https://github.com/jimmychu0807/semaphore-msa-validator",
+  "homepage": "https://github.com/jimmychu0807/semaphore-msa-modules",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jimmychu0807/semaphore-msa-validator.git"
+    "url": "git+https://github.com/jimmychu0807/semaphore-msa-modules.git"
   },
   "bugs": {
-    "url": "https://github.com/jimmychu0807/semaphore-msa-validator/issues"
+    "url": "https://github.com/jimmychu0807/semaphore-msa-modules/issues"
   },
   "devDependencies": {
     "@rhinestone/modulekit": "^0.5.7",
