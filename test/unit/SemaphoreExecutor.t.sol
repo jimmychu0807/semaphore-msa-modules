@@ -306,11 +306,12 @@ contract SemaphoreExecutorTest is SharedTestSetup {
     {
         Identity self = $users[0].identity;
         address target = $users[1].addr;
-        uint256 value = 100;
-        bytes memory txCallData = hex"";
+        uint256 value = 1 ether;
+        bytes memory txCallData = "";
         uint256 gId = 0;
 
         uint256 receiverBefore = target.balance;
+        uint256 senderBefore = smartAcct.account.balance;
 
         // Compose txHash and semaphore proof.
         bytes32 txHash = keccak256(abi.encodePacked(uint256(0), target, value, txCallData));
@@ -324,14 +325,125 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         semaphoreExecutor.initiateTx{ value: value }(target, txCallData, smProof, true);
         vm.stopPrank();
 
-        // Check the internal state - ecc should have been deleted
+        // Check: the internal state ecc should have been deleted
         ExtCallCount memory ecc = semaphoreExecutor.getAcctTx(smartAcct.account, txHash);
         assertEq(ecc.targetAddr, address(0));
 
-        // Check balance of sender and receiver
+        // Check: balance of sender and receiver
         uint256 receiverAfter = target.balance;
-        assertEq(
-            receiverAfter - receiverBefore, value, "test_initiateTx_AndExecutePass_valuesMatch"
+        uint256 senderAfter = smartAcct.account.balance;
+        assertEq(receiverAfter - receiverBefore, value, "test_initiateTx_AndExecutePass_receiver");
+        assertGe(senderBefore - senderAfter, value, "test_initiateTx_AndExecutePass_sender");
+    }
+
+    function test_signTx_TxNotFound() public setupSmartAcctWithMembersThreshold(NUM_MEMBERS, 1) {
+        Identity self = $users[0].identity;
+        address target = $users[1].addr;
+        uint256 value = 100;
+        bytes memory txCallData = "";
+        uint256 gId = 0;
+
+        // Compose txHash and semaphore proof.
+        bytes32 txHash = keccak256(abi.encodePacked(uint256(0), target, value, txCallData));
+        ISemaphore.SemaphoreProof memory smProof =
+            self.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
+
+        // Test: expect the tx is reverted
+        vm.startPrank(smartAcct.account);
+        vm.expectRevert(
+            abi.encodeWithSelector(SemaphoreExecutor.TxNotFound.selector, smartAcct.account, txHash)
         );
+        semaphoreExecutor.signTx(txHash, smProof, true);
+        vm.stopPrank();
+    }
+
+    function test_signTx_Pass() public setupSmartAcctWithMembersThreshold(NUM_MEMBERS, 2) {
+        Identity user1 = $users[0].identity;
+        Identity user2 = $users[1].identity;
+        address target = $users[1].addr;
+        uint256 value = 100;
+        bytes memory txCallData = "";
+        uint256 gId = 0;
+        uint256 seq = 0;
+
+        // Compose txHash and semaphore proof.
+        bytes32 txHash = keccak256(abi.encodePacked(seq, target, value, txCallData));
+        ISemaphore.SemaphoreProof memory smProof1 =
+            user1.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
+        ISemaphore.SemaphoreProof memory smProof2 =
+            user2.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
+
+        vm.startPrank(smartAcct.account);
+        semaphoreExecutor.initiateTx{ value: value }(target, txCallData, smProof1, true);
+
+        vm.expectEmit(true, true, true, true);
+        emit SemaphoreExecutor.SignedTx(smartAcct.account, txHash);
+        semaphoreExecutor.signTx(txHash, smProof2, false);
+        vm.stopPrank();
+
+        // Check: the internal state ecc should have been deleted
+        ExtCallCount memory ecc = semaphoreExecutor.getAcctTx(smartAcct.account, txHash);
+        assertEq(ecc.count, 2, "test_signTx_Pass_count");
+    }
+
+    function test_executeTx_ThresholdNotReach()
+        public
+        setupSmartAcctWithMembersThreshold(NUM_MEMBERS, 2)
+    {
+        Identity user1 = $users[0].identity;
+        address target = $users[1].addr;
+        uint256 value = 100;
+        bytes memory txCallData = "";
+        uint256 gId = 0;
+        uint256 seq = 0;
+
+        // Compose txHash and semaphore proof.
+        bytes32 txHash = keccak256(abi.encodePacked(seq, target, value, txCallData));
+        ISemaphore.SemaphoreProof memory smProof1 =
+            user1.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
+
+        vm.startPrank(smartAcct.account);
+        semaphoreExecutor.initiateTx{ value: value }(target, txCallData, smProof1, true);
+
+        // Test: expect ThresholdNotReach error
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                SemaphoreExecutor.ThresholdNotReach.selector, smartAcct.account, 2, 1
+            )
+        );
+        semaphoreExecutor.executeTx(txHash);
+    }
+
+    function test_executeTx_Pass() public setupSmartAcctWithMembersThreshold(1, 1) {
+        Identity user1 = $users[0].identity;
+        address target = $users[1].addr;
+        uint256 value = 1 ether;
+        bytes memory txCallData = "";
+        uint256 gId = 0;
+        uint256 seq = 0;
+
+        uint256 receiverBefore = target.balance;
+
+        // Compose txHash and semaphore proof.
+        bytes32 txHash = keccak256(abi.encodePacked(seq, target, value, txCallData));
+        ISemaphore.SemaphoreProof memory smProof1 =
+            user1.getSempahoreProof(gId, _getMemberCmts(1), txHash);
+
+        vm.startPrank(smartAcct.account);
+        semaphoreExecutor.initiateTx{ value: value }(target, txCallData, smProof1, false);
+
+        vm.expectEmit(true, true, true, true);
+        emit SemaphoreExecutor.ExecutedTx(smartAcct.account, txHash);
+        semaphoreExecutor.executeTx(txHash);
+
+        vm.stopPrank();
+
+        // Test: state has changed
+        uint256 receiverAfter = target.balance;
+        assertEq(receiverAfter - receiverBefore, value, "test_executeTx_Pass_value");
+
+        // ecc should have been deleted
+        ExtCallCount memory ecc = semaphoreExecutor.getAcctTx(smartAcct.account, txHash);
+        assertEq(ecc.targetAddr, address(0), "test_executeTx_Pass_targetAddr");
     }
 }
