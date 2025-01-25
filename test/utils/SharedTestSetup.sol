@@ -24,7 +24,7 @@ import { SemaphoreVerifier } from "semaphore/base/SemaphoreVerifier.sol";
 import { ISemaphore, ISemaphoreVerifier, Semaphore } from "semaphore/Semaphore.sol";
 
 import { Identity, IdentityLib, SimpleContract } from "test/utils/TestUtils.sol";
-import { NUM_MEMBERS, NUM_USERS } from "test/utils/Constants.sol";
+import { NUM_USERS } from "test/utils/Constants.sol";
 
 struct User {
     uint256 sk;
@@ -138,7 +138,6 @@ abstract contract SharedTestSetup is RhinestoneModuleKit, Test {
     }
 
     function _setupInitiateTx(
-        uint8 numMembers,
         address target,
         uint256 value,
         bytes memory txCallData,
@@ -154,8 +153,9 @@ abstract contract SharedTestSetup is RhinestoneModuleKit, Test {
 
         // Compose Semaphore proof
         (, uint256 groupId) = semaphoreExecutor.getGroupId(smartAcct.account);
+        uint8 memberCnt = semaphoreExecutor.memberCount(smartAcct.account);
         ISemaphore.SemaphoreProof memory smProof =
-            member.identity.generateSempahoreProof(groupId, _getMemberCmts(numMembers), txHash);
+            member.identity.getSempahoreProof(groupId, _getMemberCmts(memberCnt), txHash);
 
         // Compose UserOpData
         userOpData = _getSemaphoreUserOpData(
@@ -163,31 +163,5 @@ abstract contract SharedTestSetup is RhinestoneModuleKit, Test {
             value,
             abi.encodeCall(SemaphoreExecutor.initiateTx, (target, txCallData, smProof, bExecute))
         );
-    }
-
-    function _setupInitiateTxSingleMember(
-        address target,
-        uint256 value,
-        bytes memory txCallData,
-        bool bExecute
-    )
-        internal
-        setupSmartAcctWithMembersThreshold(1, 1)
-        returns (UserOpData memory userOpData, bytes32 txHash)
-    {
-        return _setupInitiateTx(1, target, value, txCallData, bExecute);
-    }
-
-    function _setupInitiateTxMultiMembers(
-        address target,
-        uint256 value,
-        bytes memory txCallData,
-        bool bExecute
-    )
-        internal
-        setupSmartAcctWithMembersThreshold(NUM_MEMBERS, 2)
-        returns (UserOpData memory userOpData, bytes32 txHash)
-    {
-        return _setupInitiateTx(NUM_MEMBERS, target, value, txCallData, bExecute);
     }
 }

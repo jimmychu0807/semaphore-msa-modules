@@ -45,7 +45,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     error IsMemberAlready(address acount, uint256 cmt);
     error MemberNotExists(address account, uint256 cmt);
     error TxHasBeenInitiated(address account, bytes32 txHash);
-    error TxHashNotFound(address account, bytes32 txHash);
+    error TxNotFound(address account, bytes32 txHash);
     error ThresholdNotReach(address account, uint8 threshold, uint8 current);
     error InvalidInstallData();
     error InvalidSemaphoreProof(bytes reason);
@@ -176,6 +176,17 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         return (false, 0);
     }
 
+    function getAcctTx(
+        address account,
+        bytes32 txHash
+    )
+        external
+        view
+        returns (ExtCallCount memory ecc)
+    {
+        ecc = acctTxCount[account][txHash];
+    }
+
     function accountHasMember(address account, uint256 cmt) external view returns (bool) {
         if (thresholds[account] == 0) return false;
 
@@ -202,7 +213,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     }
 
     /**
-     * Storage modifiers
+     * Main logics
      */
     function setThreshold(uint8 newThreshold) external moduleInstalled {
         address account = msg.sender;
@@ -318,7 +329,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
 
         // Check if the txHash exist
         ExtCallCount storage ecc = acctTxCount[account][txHash];
-        if (ecc.count == 0) revert TxHashNotFound(account, txHash);
+        if (ecc.count == 0) revert TxNotFound(account, txHash);
 
         try semaphore.validateProof(groupId, proof) {
             ecc.count += 1;
@@ -339,7 +350,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         uint8 threshold = thresholds[account];
         ExtCallCount storage ecc = acctTxCount[account][txHash];
 
-        if (ecc.count == 0) revert TxHashNotFound(account, txHash);
+        if (ecc.count == 0) revert TxNotFound(account, txHash);
         if (ecc.count < threshold) revert ThresholdNotReach(account, threshold, ecc.count);
 
         // Execute the transaction on the owned account
