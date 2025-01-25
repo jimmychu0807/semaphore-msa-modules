@@ -24,7 +24,7 @@ import { SemaphoreVerifier } from "semaphore/base/SemaphoreVerifier.sol";
 import { ISemaphore, ISemaphoreVerifier, Semaphore } from "semaphore/Semaphore.sol";
 
 import { Identity, IdentityLib, SimpleContract } from "test/utils/TestUtils.sol";
-import { NUM_MEMBERS, NUM_USERS } from "test/utils/Constants.sol";
+import { NUM_USERS } from "test/utils/Constants.sol";
 
 struct User {
     uint256 sk;

@@ -176,6 +176,17 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         return (false, 0);
     }
 
+    function getAcctTx(
+        address account,
+        bytes32 txHash
+    )
+        external
+        view
+        returns (ExtCallCount memory ecc)
+    {
+        ecc = acctTxCount[account][txHash];
+    }
+
     function accountHasMember(address account, uint256 cmt) external view returns (bool) {
         if (thresholds[account] == 0) return false;
 
