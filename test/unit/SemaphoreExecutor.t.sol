@@ -3,13 +3,11 @@ pragma solidity >=0.8.23 <=0.8.29;
 
 // Rhinestone Modulekit
 import { ModuleKitHelpers } from "modulekit/ModuleKit.sol";
-
 import {
     MODULE_TYPE_EXECUTOR,
     MODULE_TYPE_VALIDATOR,
     VALIDATION_SUCCESS
 } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
-
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 
 import { ISemaphore } from "src/interfaces/Semaphore.sol";
@@ -220,34 +218,7 @@ contract SemaphoreExecutorTest is SharedTestSetup {
                 SemaphoreExecutor.InitiateTxWithNullAddress.selector, smartAcct.account
             )
         );
-        semaphoreExecutor.initiateTx{ value: value }(target, txCallData, smProof, true);
-    }
-
-    function test_initiateTx_NullCallDataValueShouldRevert()
-        public
-        setupSmartAcctWithMembersThreshold(NUM_MEMBERS, 1)
-    {
-        Identity self = $users[0].identity;
-        address target = $users[1].addr;
-        uint256 value = 0;
-        bytes memory txCallData = "";
-        uint256 gId = 0;
-
-        // Compose txHash and semaphore proof
-        bytes32 txHash = keccak256(abi.encodePacked(uint256(0), target, value, txCallData));
-        ISemaphore.SemaphoreProof memory smProof =
-            self.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
-
-        // Test: should fail as calldata and value are null
-        vm.startPrank(smartAcct.account);
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                SemaphoreExecutor.InitiateTxWithNullCallDataAndNullValue.selector,
-                smartAcct.account,
-                target
-            )
-        );
-        semaphoreExecutor.initiateTx{ value: value }(target, txCallData, smProof, true);
+        semaphoreExecutor.initiateTx(target, value, txCallData, smProof, true);
     }
 
     function test_initiateTx_InvalidSemaphoreProof()
@@ -269,7 +240,7 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         // Test: should fail as proof has been forged
         vm.startPrank(smartAcct.account);
         vm.expectPartialRevert(SemaphoreExecutor.InvalidSemaphoreProof.selector);
-        semaphoreExecutor.initiateTx{ value: value }(target, txCallData, smProof, true);
+        semaphoreExecutor.initiateTx(target, value, txCallData, smProof, true);
     }
 
     function test_initiateTx_Pass() public setupSmartAcctWithMembersThreshold(NUM_MEMBERS, 1) {
@@ -288,7 +259,7 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         // Test: InitiatedTx event is emitted
         vm.expectEmit(true, true, true, true);
         emit SemaphoreExecutor.InitiatedTx(smartAcct.account, uint256(0), txHash);
-        semaphoreExecutor.initiateTx{ value: value }(target, txCallData, smProof, false);
+        semaphoreExecutor.initiateTx(target, value, txCallData, smProof, false);
         vm.stopPrank();
 
         ExtCallCount memory ecc = semaphoreExecutor.getAcctTx(smartAcct.account, txHash);
@@ -322,7 +293,7 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         vm.startPrank(smartAcct.account);
         vm.expectEmit(true, true, true, true);
         emit SemaphoreExecutor.ExecutedTx(smartAcct.account, txHash);
-        semaphoreExecutor.initiateTx{ value: value }(target, txCallData, smProof, true);
+        semaphoreExecutor.initiateTx(target, value, txCallData, smProof, true);
         vm.stopPrank();
 
         // Check: the internal state ecc should have been deleted
@@ -376,7 +347,7 @@ contract SemaphoreExecutorTest is SharedTestSetup {
             user2.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
 
         vm.startPrank(smartAcct.account);
-        semaphoreExecutor.initiateTx{ value: value }(target, txCallData, smProof1, true);
+        semaphoreExecutor.initiateTx(target, value, txCallData, smProof1, true);
 
         vm.expectEmit(true, true, true, true);
         emit SemaphoreExecutor.SignedTx(smartAcct.account, txHash);
@@ -405,7 +376,7 @@ contract SemaphoreExecutorTest is SharedTestSetup {
             user1.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
 
         vm.startPrank(smartAcct.account);
-        semaphoreExecutor.initiateTx{ value: value }(target, txCallData, smProof1, true);
+        semaphoreExecutor.initiateTx(target, value, txCallData, smProof1, true);
 
         // Test: expect ThresholdNotReach error
         vm.expectRevert(
@@ -432,7 +403,7 @@ contract SemaphoreExecutorTest is SharedTestSetup {
             user1.getSempahoreProof(gId, _getMemberCmts(1), txHash);
 
         vm.startPrank(smartAcct.account);
-        semaphoreExecutor.initiateTx{ value: value }(target, txCallData, smProof1, false);
+        semaphoreExecutor.initiateTx(target, value, txCallData, smProof1, false);
 
         vm.expectEmit(true, true, true, true);
         emit SemaphoreExecutor.ExecutedTx(smartAcct.account, txHash);

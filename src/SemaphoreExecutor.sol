@@ -49,7 +49,6 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     error InvalidInstallData();
     error InvalidSemaphoreProof(bytes reason);
     error InitiateTxWithNullAddress(address account);
-    error InitiateTxWithNullCallDataAndNullValue(address account, address targetAddr);
     error ExecuteTxFailure(address account, address targetAddr, uint256 value, bytes callData);
     error SemaphoreValidatorIsInitialized(address account);
 
@@ -265,13 +264,14 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
      * Key logics
      */
     function initiateTx(
-        address targetAddr,
-        bytes calldata txCallData,
+        address target,
+        uint256 value,
+        bytes calldata callData,
         ISemaphore.SemaphoreProof calldata proof,
         bool execute
     )
         external
-        payable
+        virtual
         moduleInstalled
         returns (bytes32 txHash)
     {
@@ -279,18 +279,11 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         address account = msg.sender;
         uint256 groupId = groupMapping[account];
 
-        // Check:
-        //   1. targetAddr cannot be 0
-        //   2. if txCallData is blank, then msg.value must be > 0, else revert
-        if (targetAddr == address(0)) revert InitiateTxWithNullAddress(account);
-        if (txCallData.length == 0 && msg.value == 0) {
-            revert InitiateTxWithNullCallDataAndNullValue(account, targetAddr);
-        }
+        // Check target cannot be null
+        if (target == address(0)) revert InitiateTxWithNullAddress(account);
 
-        // By this point, txParams should be validated.
-        // combine the txParams with the account nonce and compute its hash
         uint256 seq = acctSeqNum[account];
-        txHash = keccak256(abi.encodePacked(seq, targetAddr, msg.value, txCallData));
+        txHash = keccak256(abi.encodePacked(seq, target, value, callData));
 
         ExtCallCount storage ecc = acctTxCount[account][txHash];
         if (ecc.count != 0) revert TxHasBeenInitiated(account, txHash);
@@ -299,9 +292,9 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         try semaphore.validateProof(groupId, proof) {
             // By this point, the proof also passed semaphore check. Start writing to the storage
             acctSeqNum[account] += 1;
-            ecc.targetAddr = targetAddr;
-            ecc.callData = txCallData;
-            ecc.value = msg.value;
+            ecc.targetAddr = target;
+            ecc.callData = callData;
+            ecc.value = value;
             ecc.count = 1;
 
             emit InitiatedTx(account, seq, txHash);
@@ -320,6 +313,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         bool execute
     )
         external
+        virtual
         moduleInstalled
     {
         // retrieve the group ID
@@ -343,7 +337,12 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         }
     }
 
-    function executeTx(bytes32 txHash) public moduleInstalled returns (bytes memory returnData) {
+    function executeTx(bytes32 txHash)
+        public
+        virtual
+        moduleInstalled
+        returns (bytes memory returnData)
+    {
         // retrieve the group ID
         address account = msg.sender;
         uint8 threshold = thresholds[account];

@@ -10,13 +10,13 @@ interface ISemaphoreExecutor is IERC7579Executor {
     function accountHasMember(address account, uint256 cmt) external view returns (bool);
 
     function initiateTx(
-        address targetAddr,
-        bytes calldata txCallData,
+        address target,
+        uint256 value,
+        bytes calldata callData,
         ISemaphore.SemaphoreProof calldata proof,
         bool execute
     )
         external
-        payable
         returns (bytes32 txHash);
 
     function signTx(
