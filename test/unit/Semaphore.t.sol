@@ -5,13 +5,9 @@ pragma solidity ^0.8.23;
 import { Test } from "forge-std/Test.sol";
 
 // Semaphore
-import {
-    Semaphore,
-    ISemaphore,
-    ISemaphoreGroups,
-    ISemaphoreVerifier,
-    SemaphoreVerifier
-} from "../src/utils/Semaphore.sol";
+import { ISemaphore, ISemaphoreGroups, ISemaphoreVerifier } from "src/interfaces/Semaphore.sol";
+import { SemaphoreVerifier } from "semaphore/base/SemaphoreVerifier.sol";
+import { Semaphore } from "semaphore/Semaphore.sol";
 
 struct User {
     uint256 sk;

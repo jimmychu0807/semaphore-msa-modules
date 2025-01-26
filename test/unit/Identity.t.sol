@@ -4,13 +4,13 @@ pragma solidity ^0.8.23;
 // forge
 import { Test } from "forge-std/Test.sol";
 
-import { Identity as IdentityT } from "../src/utils/Identity.sol";
-import { Identity, IdentityLib } from "./utils/TestUtils.sol";
+import { Identity as IdentityT } from "src/utils/Identity.sol";
+import { Identity, IdentityLib } from "test/utils/TestUtils.sol";
 
 contract IdentityTest is Test {
     using IdentityLib for Identity;
 
-    function test_verifySignatureAcceptCorrectSignature1() public {
+    function test_verifySignature_AcceptCorrectSignature_1() public {
         uint256 seed = 13;
         bytes32 hash = bytes32(keccak256("hello world"));
 
@@ -20,7 +20,7 @@ contract IdentityTest is Test {
         assertEq(true, IdentityT.verifySignature(hash, signature));
     }
 
-    function test_verifySignatureAcceptCorrectSignature2() public view {
+    function test_verifySignature_AcceptCorrectSignature_2() public view {
         bytes32 hash = hex"00b917632b69261f21d20e0cabdf9f3fa1255c6e500021997a16cf3a46d80297";
         bytes memory signature =
         // solhint-disable-next-line max-line-length
@@ -29,7 +29,7 @@ contract IdentityTest is Test {
         assertEq(true, IdentityT.verifySignature(hash, signature));
     }
 
-    function test_verifySignatureRejectIncorrectSignature() public {
+    function test_verifySignature_RejectIncorrectSignature() public {
         uint256 seed = 13;
         bytes32 hash = bytes32(keccak256("hello world"));
 
