@@ -8,7 +8,7 @@ This project is a [validator and executor module](https://eips.ethereum.org/EIPS
 
 - The smart accout gains Semaphore property members preserve their privacy that no one know who send the proof (signature) except they must belong to the group while guaranteeing they have not signed before.
 
-Development of this project supported by [PSE Acceleration Program](https://github.com/privacy-scaling-explorations/acceleration-program) (see [thread discussion](https://github.com/privacy-scaling-explorations/acceleration-program/issues/72)).
+Development of this project is supported by [PSE Acceleration Program](https://github.com/privacy-scaling-explorations/acceleration-program) (see [thread discussion](https://github.com/privacy-scaling-explorations/acceleration-program/issues/72)).
 
 Project Code: FY24-1847
 
@@ -27,9 +27,19 @@ pnpm run test
 
 ## Developer Documentation
 
+There are two ERC-7579 modules in this repo, namely [**SemaphoreValidator**](./src/SemaphoreValidator.sol) and [**SemaphoreExecutor**](./src/SemaphoreExecutor.sol). 
+
+**SemaphoreValidator** is responsible for validating the signature of the UserOp is indeed a valid EdDSA signature of the UserOp hash from the public key included in the signature. The validator module checks the commitment of the public key is indeed a member of the Sempahore group of the smart account. Note this module also restricts the smart account to be able to call **SempahoreExecutor** contract and its three APIs only.
+
+**SempahoreExecutor** has all the account states stored and provides three key APIs: **initiateTx()**, **signTx()**, and **executeTx()**. **initiateTx()** is responsible for Semaphore members of the smart account to initiate an external transaction. **signTx()** is for collecting enough proofs. The proofs could be seen as a "signature" from the members who approve the tx. Lastly, **executeTx()** is to actually trigger the execution of the transaction.
+
+Because **SemaphoreExecutor** is an [executor module](https://eips.ethereum.org/EIPS/eip-7579#executors), the called contract will see the smart account as the `msg.sender`, not the executor contract.
+
+There is a one-time set function **setSemaphoreValidator()** in the executor to set the associated validator. This is to ensure that a smart account uninstall the validator first before the executor. Otherwise it will render the smart account unusable.
+
 ### Smart Contract Storage
 
-[**SemaphoreMSAValidator** contract](./src/SemaphoreMSAValidator.sol) stores the following information on-chain.
+[**SemaphoreExecutor** contract](./src/SemaphoreExecutor.sol) stores the following information on-chain.
 
 - `groupMapping`: This object maps from the smart account address to a Semaphore group.
 - `thresholds`: The threshold number of proofs a particular smart account needs to collect for a transaction to be executed.
@@ -39,34 +49,35 @@ pnpm run test
 
 ### API
 
-After installing this validator, the smart account can only call three functions in this validator contract, **initiateTx()**, **signTx()**, and **executeTx()**. Calling other functions, either to other non-validator contract addresses or other funtions beyond the mentioned three, would be rejected in the **validateUserOp()** check.
+After installing the two modules, the smart account can only call three functions in the executor module, **initiateTx()**, **signTx()**, and **executeTx()**. Calling other functions would be rejected in the **validateUserOp()** check.
 
-1. [**initiateTx()**](https://github.com/jimmychu0807/semaphore-msa-validator/blob/4842f2a175d72e8bdd59baf8cdeb46fdefc3a8d5/src/SemaphoreMSAValidator.sol#L215): for the Semaphore member to initate a new transaction of the Smart account. This function checks the validity of the semaphore proof and corresponding parameters. It takes three paramters.
+1. **initiateTx()**: for the Semaphore member to initate a new transaction of the Smart account. This function checks the validity of the semaphore proof and corresponding parameters. It takes five paramters.
 
-   - `targetAddr`: The target address of the transaction. It can be an EOA for value transfer, or other smart contract address.
-   - `txcallData`: The call data to the target address. The first four bytes are the target function selector, and the rest function payload. For EOA value transfer, this value must be null (zero-length byte).
-   - `proof`: The zero-knowledge proof genereated off-chain to prove a member signed the transaction and value.
-   - `execute`: A boolean value to indicate if the transaction collects enough proof (namely 1 for initiateTx), it will also execute the transaction.
+   - `target`: The target address of the transaction.
+   - `value`: any balance to be used. It will be used as the `msg.value` in the actual external transaction.
+   - `callData`: The call data to the target address. The first four bytes are the target function selector, and the rest function payload. For EOA value transfer, this value should be null (zero-length byte).
+   - `proof`: The zero-knowledge Semaphore proof generated off-chain to prove a member signs the transaction.
+   - `execute`: Boolean value to indicate if the transaction reaches the proof collection threshold, whether to execute the transaction immediately.
 
-   `msg.value` is used as the **value** to be used for the transaction call. An [**ExtCallCount**](https://github.com/jimmychu0807/semaphore-msa-validator/blob/4842f2a175d72e8bdd59baf8cdeb46fdefc3a8d5/src/SemaphoreMSAValidator.sol#L28) object is created to store the user transaction call data.
+   An [**ExtCallCount**] object is created to store the user transaction call data.
 
-   A 32-byte hash **txHash** is returned, generated from `keccak256(abi.encodePacked(seq, targetAddr, msg.value, txCallData))`.
+   A 32-byte hash **txHash** is returned, generated from `keccak256(abi.encodePacked(seq, targetAddr, value, txCallData))`.
 
-2. [**signTx()**](https://github.com/jimmychu0807/semaphore-msa-validator/blob/4842f2a175d72e8bdd59baf8cdeb46fdefc3a8d5/src/SemaphoreMSAValidator.sol#L265): for other Semaphore member to sign a previously initiated transaction. Again, it checks the Semaphore proof, if the hash and the proof are valid, the proof count is incremented.
+2. **signTx()**: for other Semaphore member to sign a previously initiated transaction. Again, it checks the Semaphore proof, if the hash and the proof are valid, the proof count is incremented.
 
-   - `txHash`: The hash value returned from `initiatedTx()`, to specify the transaction for signing
-   - `proof`: The zero-knowledge proof for the transaction `txHash` corresponding to.
+   - `txHash`: The hash value returned from `initiatedTx()` previously, to specify the proving transaction.
+   - `proof`: The zero-knowledge Semaphore proof that the transaction `txHash` corresponding to.
    - `execute`: Same as initiateTx().
 
-3. [**executeTx()**](https://github.com/jimmychu0807/semaphore-msa-validator/blob/4842f2a175d72e8bdd59baf8cdeb46fdefc3a8d5/src/SemaphoreMSAValidator.sol#L294): call to execute the transaction specified by `txHash`. If the transaction hasn't collected enough proofs, it would revert.
+3.**executeTx()**: call to execute the transaction specified by `txHash`. If the transaction hasn't collected enough proofs, it would revert.
 
    - `txHash`: Same as initiateTx().
 
 ### Signature and Calldata
 
-Transactions from ERC-4337 will go through **validateUserOp()** for validation, based on **userOp**, and **userOpHash**. In validation, the key logic is to check the userOp hash (`userOpHash`), the signature (`signature`), and the target call data (`targetCallData`).
+Transactions from ERC-4337 will go through **validateUserOp()** for validation, based on **userOp**, and **userOpHash**. In validation, the key logic is to check three objects: the userOp hash (`userOpHash`), the signature (`signature`), and the target call data (`targetCallData`).
 
-A proper userOp signature is a 160 bytes value signed by EdDSA signature scheme. The signature itself is 32 * 3 = 96 bytes, but we also prepend the identity public key in it to be used for validation.
+A proper userOp signature is a 160 bytes value signed by EdDSA signature scheme. The signature itself is 32 * 3 = 96 bytes, but we also prepend the identity public key uses for validation.
 
 <img src="./docs/assets/userop-signature.svg" alt="UserOp Signature" width="50%"/>
 
@@ -76,7 +87,7 @@ For the UserOp calldata passing to `getExecOps()` in testing, it is:
 
 <img src="./docs/assets/userop-calldata.svg" alt="UserOp Signature" width="70%"/>
 
-Now, when decoding the calldata from [**PackedUserOperation** object](https://github.com/jimmychu0807/semaphore-msa-validator/blob/4842f2a175d72e8bdd59baf8cdeb46fdefc3a8d5/src/SemaphoreMSAValidator.sol#L322) in **validateUserOp()**, the above calldata is combined with other information and what we are interested started from the 100th byte, as shown below.
+Now, when decoding the calldata from **PackedUserOperation** object in **validateUserOp()**, the above calldata is combined with other information and what we are interested started from the 100th byte, as shown below.
 
 ![calldata-packedUserOp](./docs/assets/calldata-packedUserOp.svg)
 
@@ -86,20 +97,16 @@ A Semaphore identity consists of an [EdDSA](https://en.wikipedia.org/wiki/EdDSA)
 
 We implement the identity verification logic [**Identity.verifySignature()**](https://github.com/jimmychu0807/semaphore-msa-validator/blob/4842f2a175d72e8bdd59baf8cdeb46fdefc3a8d5/src/utils/Identity.sol#L39) on-chain. We also have a **[Identity.verifySignatureFFI()](https://github.com/jimmychu0807/semaphore-msa-validator/blob/4842f2a175d72e8bdd59baf8cdeb46fdefc3a8d5/src/utils/Identity.sol#L20)** function for testing to compare the result with calling Semaphore typescript-based implementation. It relies on the Baby JubJub curve Solidity implementataion by [yondonfu](https://github.com/yondonfu/sol-baby-jubjub) with [a minor fix](https://github.com/jimmychu0807/semaphore-msa-validator/blob/4842f2a175d72e8bdd59baf8cdeb46fdefc3a8d5/src/utils/CurveBabyJubJub.sol#L4-L5).
 
-### ERC-1271
+### ERC-1271 and ERC-7780
 
 The module is also compatible with: 
 
 - [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271): Accepting signature from other smart contract by implementing `isValidSignatureWithSender()`.
+- [ERC-7780](https://eips.ethereum.org/EIPS/eip-7780), Being a **Stateless Validator** by implementing `validateSignatureWithData()`.
 
 ### Testing
 
 The testing code relies heavily on [Foundry FFI](https://book.getfoundry.sh/cheatcodes/ffi) to call Semaphore typescript API to generate zero-knowledge proof and EdDSA signature.
-
-### Other Notes
-
-- When a smart account is calling other payable functions or transfer native tokens, the tokens are transfer to this module at the point of `initiateTx()`, and finally send over to the target at `executeTx()`.
-
 
 ## Relevant Information
 

@@ -3,18 +3,15 @@ pragma solidity >=0.8.23 <=0.8.29;
 
 // Rhinestone Modulekit
 import { ModuleKitHelpers } from "modulekit/ModuleKit.sol";
-
 import {
     MODULE_TYPE_EXECUTOR,
     MODULE_TYPE_VALIDATOR,
     VALIDATION_SUCCESS,
     VALIDATION_FAILED
 } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
-
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 
 import { SemaphoreValidator, ERC7579ValidatorBase } from "src/SemaphoreValidator.sol";
-
 import {
     getEmptyUserOperation,
     getTestUserOpCallData,
