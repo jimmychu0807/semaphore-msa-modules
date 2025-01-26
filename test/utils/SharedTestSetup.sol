@@ -5,12 +5,7 @@ pragma solidity >=0.8.23 <=0.8.29;
 import { Test } from "forge-std/Test.sol";
 
 // Rhinestone Modulekit
-import {
-    RhinestoneModuleKit,
-    ModuleKitHelpers,
-    AccountInstance,
-    UserOpData
-} from "modulekit/ModuleKit.sol";
+import { AccountInstance, ModuleKitHelpers, RhinestoneModuleKit } from "modulekit/ModuleKit.sol";
 import {
     MODULE_TYPE_EXECUTOR,
     MODULE_TYPE_VALIDATOR
@@ -21,7 +16,7 @@ import { LibSort, LibString } from "solady/Milady.sol";
 import { SemaphoreExecutor } from "src/SemaphoreExecutor.sol";
 import { SemaphoreValidator } from "src/SemaphoreValidator.sol";
 import { SemaphoreVerifier } from "semaphore/base/SemaphoreVerifier.sol";
-import { ISemaphore, ISemaphoreVerifier, Semaphore } from "semaphore/Semaphore.sol";
+import { ISemaphoreVerifier, Semaphore } from "semaphore/Semaphore.sol";
 
 import { Identity, IdentityLib, SimpleContract } from "test/utils/TestUtils.sol";
 import { NUM_USERS } from "test/utils/Constants.sol";

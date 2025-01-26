@@ -1,40 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+pragma solidity >=0.8.23 <=0.8.29;
 
-import { console } from "forge-std/console.sol";
+import { ModuleKitHelpers, UserOpData } from "modulekit/ModuleKit.sol";
 
-import {
-    RhinestoneModuleKit,
-    ModuleKitHelpers,
-    AccountInstance,
-    UserOpData
-} from "modulekit/ModuleKit.sol";
-import {
-    MODULE_TYPE_EXECUTOR,
-    MODULE_TYPE_VALIDATOR,
-    VALIDATION_SUCCESS
-} from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
-import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
+import { ISemaphore } from "src/interfaces/Semaphore.sol";
+import { ExtCallCount, SemaphoreExecutor } from "src/SemaphoreExecutor.sol";
 
-// Semaphore
-import { ISemaphore, ISemaphoreVerifier } from "src/interfaces/Semaphore.sol";
-import { SemaphoreVerifier } from "semaphore/base/SemaphoreVerifier.sol";
-import { Semaphore } from "semaphore/Semaphore.sol";
-
-import { SemaphoreValidator, ERC7579ValidatorBase } from "src/SemaphoreValidator.sol";
-import { ExtCallCount, SemaphoreExecutor, ERC7579ExecutorBase } from "src/SemaphoreExecutor.sol";
-
-import { LibSort, LibString } from "solady/Milady.sol";
-import {
-    getEmptyUserOperation,
-    getEmptySemaphoreProof,
-    getGroupRmMerkleProof,
-    getTestUserOpCallData,
-    Identity,
-    IdentityLib,
-    SimpleContract
-} from "test/utils/TestUtils.sol";
-import { SharedTestSetup, User } from "test/utils/SharedTestSetup.sol";
+import { Identity, IdentityLib, SimpleContract } from "test/utils/TestUtils.sol";
+import { SharedTestSetup } from "test/utils/SharedTestSetup.sol";
 import { NUM_MEMBERS } from "test/utils/Constants.sol";
 
 contract IntegrationTest is SharedTestSetup {
@@ -98,7 +71,10 @@ contract IntegrationTest is SharedTestSetup {
     /**
      * Tests
      */
-    function test_balanceTransfer_SingleMember_InitiateTx() public setupSmartAcctWithMembersThreshold(1, 1) {
+    function test_balanceTransfer_SingleMember_InitiateTx()
+        public
+        setupSmartAcctWithMembersThreshold(1, 1)
+    {
         Identity signer = $users[0].identity;
         address receiver = $users[1].addr;
         uint256 value = 1 ether;
@@ -107,7 +83,8 @@ contract IntegrationTest is SharedTestSetup {
         uint256 senderBefore = smartAcct.account.balance;
         uint256 receiverBefore = receiver.balance;
 
-        (UserOpData memory userOpData, bytes32 txHash) = _setupInitiateTx(signer, receiver, value, "", true);
+        (UserOpData memory userOpData, bytes32 txHash) =
+            _setupInitiateTx(signer, receiver, value, "", true);
 
         // Test: expect to have call InitiateTx() and executeTx()
         vm.expectEmit(true, true, true, true);
@@ -121,17 +98,27 @@ contract IntegrationTest is SharedTestSetup {
         uint256 senderAfter = smartAcct.account.balance;
         uint256 receiverAfter = receiver.balance;
 
-        assertEq(receiverAfter - receiverBefore, value, "test_balanceTransfer_SingleMember_InitiateTx_receiverBalance");
-        // TODO: why sender balance is deducted twice? How to catch this
-        assertApproxEqRel(senderBefore - senderAfter, value, 0.001e18, "test_balanceTransfer_SingleMember_InitiateTx_senderBalance");
+        assertEq(
+            receiverAfter - receiverBefore,
+            value,
+            "test_balanceTransfer_SingleMember_InitiateTx_receiverBalance"
+        );
+        assertApproxEqRel(
+            senderBefore - senderAfter,
+            value,
+            0.001e18,
+            "test_balanceTransfer_SingleMember_InitiateTx_senderBalance"
+        );
     }
 
-    function test_txCall_MultiMembers_InitiateTx_SignTx_ExecuteTx() public
+    function test_txCall_MultiMembers_InitiateTx_SignTx_ExecuteTx()
+        public
         setupSmartAcctWithMembersThreshold(NUM_MEMBERS, 2)
         deploySimpleContract
     {
         Identity signer1 = $users[0].identity;
         Identity signer2 = $users[1].identity;
+        Identity signer3 = $users[2].identity;
         uint256 value = 1 ether;
         uint256 newVal = 8964;
         uint256 gId = 0;
@@ -143,7 +130,8 @@ contract IntegrationTest is SharedTestSetup {
         /**
          *  Perform 1: initiate a transaction
          */
-        (UserOpData memory userOpData1, bytes32 txHash) = _setupInitiateTx(signer1, target, value, callData, false);
+        (UserOpData memory userOpData1, bytes32 txHash) =
+            _setupInitiateTx(signer1, target, value, callData, false);
 
         // Test: expected event emitted
         vm.expectEmit(true, true, true, true);
@@ -162,15 +150,13 @@ contract IntegrationTest is SharedTestSetup {
          *  Perform 2: Another signer signs the transaction
          */
 
-        // Compose Semaphore proof
+        // Compose a Semaphore proof
         ISemaphore.SemaphoreProof memory smProof2 =
             signer2.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
 
         // Compose UserOpData
         UserOpData memory userOpData2 = _getSemaphoreUserOpData(
-            signer2,
-            0,
-            abi.encodeCall(SemaphoreExecutor.signTx, (txHash, smProof2, false))
+            signer2, 0, abi.encodeCall(SemaphoreExecutor.signTx, (txHash, smProof2, false))
         );
 
         // Test: expected event emitted
@@ -182,5 +168,42 @@ contract IntegrationTest is SharedTestSetup {
         // Test: the internal state of SemaphoreExecutor
         ecc = semaphoreExecutor.getAcctTx(smartAcct.account, txHash);
         assertEq(ecc.count, 2);
+
+        /**
+         *  Perform 3: The 3rd user executes the transaction
+         */
+
+        // Compose UserOpData
+        UserOpData memory userOpData3 = _getSemaphoreUserOpData(
+            signer3, 0, abi.encodeCall(SemaphoreExecutor.executeTx, (txHash))
+        );
+
+        // Test: expected event emitted
+        vm.expectEmit(true, true, true, true);
+        emit SimpleContract.ValueSet(smartAcct.account, value, newVal);
+        vm.expectEmit(true, true, true, true);
+        emit SemaphoreExecutor.ExecutedTx(smartAcct.account, txHash);
+
+        userOpData3.execUserOps();
+
+        // Test: the internal state of SemaphoreExecutor
+        assertEq(
+            simpleContract.val(),
+            newVal,
+            "test_txCall_MultiMembers_InitiateTx_SignTx_ExecuteTx_newVal"
+        );
+        assertEq(
+            address(simpleContract).balance,
+            value,
+            "test_txCall_MultiMembers_InitiateTx_SignTx_ExecuteTx_receiverBalance"
+        );
+
+        uint256 senderAfter = smartAcct.account.balance;
+        assertApproxEqRel(
+            senderBefore - senderAfter,
+            value,
+            0.001e18,
+            "test_txCall_MultiMembers_InitiateTx_SignTx_ExecuteTx_senderBalance"
+        );
     }
 }

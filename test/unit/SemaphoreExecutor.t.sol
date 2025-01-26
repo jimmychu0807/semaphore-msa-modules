@@ -333,7 +333,9 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         uint256 receiverAfter = target.balance;
         uint256 senderAfter = smartAcct.account.balance;
         assertEq(receiverAfter - receiverBefore, value, "test_initiateTx_AndExecutePass_receiver");
-        assertApproxEqRel(senderBefore - senderAfter, value, 0.001e18, "test_initiateTx_AndExecutePass_sender");
+        assertApproxEqRel(
+            senderBefore - senderAfter, value, 0.001e18, "test_initiateTx_AndExecutePass_sender"
+        );
     }
 
     function test_signTx_TxNotFound() public setupSmartAcctWithMembersThreshold(NUM_MEMBERS, 1) {
