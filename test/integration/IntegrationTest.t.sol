@@ -63,15 +63,17 @@ contract IntegrationTest is SharedTestSetup {
         // Compose UserOpData
         userOpData = _getSemaphoreUserOpData(
             signer,
-            value,
-            abi.encodeCall(SemaphoreExecutor.initiateTx, (target, txCallData, smProof, bExecute))
+            0,
+            abi.encodeCall(
+                SemaphoreExecutor.initiateTx, (target, value, txCallData, smProof, bExecute)
+            )
         );
     }
 
     /**
      * Tests
      */
-    function test_balanceTransfer_SingleMember_InitiateTx()
+    function test_BalanceTransferSingleMemberInitiateTx()
         public
         setupSmartAcctWithMembersThreshold(1, 1)
     {
@@ -111,7 +113,7 @@ contract IntegrationTest is SharedTestSetup {
         );
     }
 
-    function test_txCall_MultiMembers_InitiateTx_SignTx_ExecuteTx()
+    function test_TxCallMultiMembersInitiateTxSignTxExecuteTx()
         public
         setupSmartAcctWithMembersThreshold(NUM_MEMBERS, 2)
         deploySimpleContract
