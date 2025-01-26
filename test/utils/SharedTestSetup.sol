@@ -5,12 +5,7 @@ pragma solidity >=0.8.23 <=0.8.29;
 import { Test } from "forge-std/Test.sol";
 
 // Rhinestone Modulekit
-import {
-    RhinestoneModuleKit,
-    ModuleKitHelpers,
-    AccountInstance,
-    UserOpData
-} from "modulekit/ModuleKit.sol";
+import { AccountInstance, ModuleKitHelpers, RhinestoneModuleKit } from "modulekit/ModuleKit.sol";
 import {
     MODULE_TYPE_EXECUTOR,
     MODULE_TYPE_VALIDATOR
@@ -21,7 +16,7 @@ import { LibSort, LibString } from "solady/Milady.sol";
 import { SemaphoreExecutor } from "src/SemaphoreExecutor.sol";
 import { SemaphoreValidator } from "src/SemaphoreValidator.sol";
 import { SemaphoreVerifier } from "semaphore/base/SemaphoreVerifier.sol";
-import { ISemaphore, ISemaphoreVerifier, Semaphore } from "semaphore/Semaphore.sol";
+import { ISemaphoreVerifier, Semaphore } from "semaphore/Semaphore.sol";
 
 import { Identity, IdentityLib, SimpleContract } from "test/utils/TestUtils.sol";
 import { NUM_USERS } from "test/utils/Constants.sol";
@@ -112,56 +107,5 @@ abstract contract SharedTestSetup is RhinestoneModuleKit, Test {
             cmts[i] = $users[i].identity.commitment();
         }
         cmts.insertionSort();
-    }
-
-    function _getSemaphoreUserOpData(
-        Identity id,
-        uint256 value,
-        bytes memory callData
-    )
-        internal
-        returns (UserOpData memory userOpData)
-    {
-        userOpData = smartAcct.getExecOps({
-            target: address(semaphoreExecutor),
-            value: value,
-            callData: callData,
-            txValidator: address(semaphoreValidator)
-        });
-
-        // We need to increase the accountGasLimits, default 2e6 is not enough to verify
-        // signature, for all those elliptic curve computation.
-        // Encoding two fields here, validation and execution gas
-        userOpData.userOp.accountGasLimits = bytes32(abi.encodePacked(uint128(2e7), uint128(2e7)));
-        userOpData.userOpHash = smartAcct.aux.entrypoint.getUserOpHash(userOpData.userOp);
-        userOpData.userOp.signature = id.signHash(userOpData.userOpHash);
-    }
-
-    function _setupInitiateTx(
-        address target,
-        uint256 value,
-        bytes memory txCallData,
-        bool bExecute
-    )
-        internal
-        returns (UserOpData memory userOpData, bytes32 txHash)
-    {
-        User storage member = $users[0];
-        // Compose txHash
-        uint256 seq = semaphoreExecutor.getAcctSeqNum(smartAcct.account);
-        txHash = keccak256(abi.encodePacked(seq, target, value, txCallData));
-
-        // Compose Semaphore proof
-        (, uint256 groupId) = semaphoreExecutor.getGroupId(smartAcct.account);
-        uint8 memberCnt = semaphoreExecutor.memberCount(smartAcct.account);
-        ISemaphore.SemaphoreProof memory smProof =
-            member.identity.getSempahoreProof(groupId, _getMemberCmts(memberCnt), txHash);
-
-        // Compose UserOpData
-        userOpData = _getSemaphoreUserOpData(
-            member.identity,
-            value,
-            abi.encodeCall(SemaphoreExecutor.initiateTx, (target, txCallData, smProof, bExecute))
-        );
     }
 }
