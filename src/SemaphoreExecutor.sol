@@ -3,14 +3,13 @@ pragma solidity >=0.8.23 <=0.8.29;
 
 // Rhinestone module-kit
 import { IERC7579Account } from "modulekit/Accounts.sol";
-import { ERC7579ExecutorBase, IERC7579Module } from "modulekit/Modules.sol";
+import { ERC7579ExecutorBase } from "modulekit/Modules.sol";
 import { ModeLib } from "modulekit/accounts/common/lib/ModeLib.sol";
 
 import { LibBytes, LibSort } from "solady/Milady.sol";
 import { ISemaphore, ISemaphoreGroups } from "src/interfaces/Semaphore.sol";
 import { ISemaphoreValidator } from "src/interfaces/ISemaphoreValidator.sol";
 import { ISemaphoreExecutor } from "src/interfaces/ISemaphoreExecutor.sol";
-import { ValidatorLibBytes } from "src/utils/ValidatorLibBytes.sol";
 import {
     CMT_BYTELEN,
     MAX_MEMBERS,
@@ -28,7 +27,6 @@ struct ExtCallCount {
 
 contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     using LibSort for *;
-    using ValidatorLibBytes for bytes;
 
     /**
      * Errors
@@ -113,8 +111,8 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         if (dataLen == 0 || (dataLen - 1) % CMT_BYTELEN != 0) revert InvalidInstallData();
 
         uint8 threshold = uint8(bytes1(data[:1]));
-        bytes memory cmtBytes = data[1:dataLen];
-        uint256[] memory cmts = cmtBytes.convertToCmts();
+        bytes calldata cmtBytes = data[1:dataLen];
+        uint256[] memory cmts = _convertToCmts(cmtBytes);
 
         // Check the relation between threshold and ownersLen are valid
         if (cmts.length > MAX_MEMBERS) revert MaxMemberReached(account);
@@ -360,6 +358,18 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
 
         // Clean up the storage
         delete acctTxCount[account][txHash];
+    }
+
+    /**
+     * Internal helper functions
+     */
+    function _convertToCmts(bytes calldata cmtBytes) internal pure returns (uint256[] memory cmts) {
+        uint256 cmtNum = cmtBytes.length / CMT_BYTELEN;
+
+        cmts = new uint256[](cmtNum);
+        for (uint256 i = 0; i < cmtNum; i++) {
+            cmts[i] = uint256(bytes32(cmtBytes[i * CMT_BYTELEN:(i + 1) * CMT_BYTELEN]));
+        }
     }
 
     /*//////////////////////////////////////////////////////////////////////////
