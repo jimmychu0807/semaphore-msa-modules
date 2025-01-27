@@ -20,8 +20,8 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
     /**
      * Errors
      */
+    error InvalidTargetAddress(address target);
     error InvalidSignature(address account, bytes signature);
-    error InvalidTargetAddress(address account, address target);
     error InvalidTargetCallData(address account, bytes callData);
     error MemberNotExists(address account, bytes pubKey);
     error NoSemaphoreModuleInstalled(address account);
@@ -92,7 +92,7 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
         PackedUserOperation calldata userOp,
         bytes32 userOpHash
     )
-        external
+        public
         virtual
         override
         returns (ValidationData)
@@ -204,7 +204,7 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
         address target = address(bytes20(targetCallData[0:20]));
         bytes4 funcSel = bytes4(targetCallData[52:56]);
 
-        if (target != address(semaphoreExecutor)) revert InvalidTargetAddress(account, target);
+        if (target != address(semaphoreExecutor)) revert InvalidTargetAddress(target);
 
         // We only allow calls to `initiateTx()`, `signTx()`, and `executeTx()` to pass,
         //   and reject the rest.

@@ -207,7 +207,6 @@ contract SemaphoreValidatorTest is SharedTestSetup {
         // forgefmt: disable-next-item
         vm.expectRevert(abi.encodeWithSelector(
             SemaphoreValidator.InvalidTargetAddress.selector,
-            smartAcct.account,
             address(semaphoreValidator)
         ));
         ERC7579ValidatorBase.ValidationData.unwrap(

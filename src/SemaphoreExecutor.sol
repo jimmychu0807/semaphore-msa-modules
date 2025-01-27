@@ -363,7 +363,11 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     /**
      * Internal helper functions
      */
-    function _convertToCmts(bytes calldata cmtBytes) internal pure returns (uint256[] memory cmts) {
+    function _convertToCmts(bytes calldata cmtBytes)
+        internal
+        pure
+        returns (uint256[] memory cmts)
+    {
         uint256 cmtNum = cmtBytes.length / CMT_BYTELEN;
 
         cmts = new uint256[](cmtNum);
