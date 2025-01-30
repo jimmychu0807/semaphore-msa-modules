@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.23 <=0.8.29;
 
+import { console } from "forge-std/Test.sol";
+
 import { ModuleKitHelpers, UserOpData } from "modulekit/ModuleKit.sol";
 
 import { ISemaphore } from "src/interfaces/Semaphore.sol";
@@ -31,6 +33,13 @@ contract IntegrationTest is SharedTestSetup {
             callData: callData,
             txValidator: address(semaphoreValidator)
         });
+
+        console.log("_getSemaphoreUserOpData");
+        console.log("  L src: %s", smartAcct.account);
+        console.log("  L target: %s", address(semaphoreExecutor));
+        console.log("  L txValidator: %s", address(semaphoreValidator));
+        console.log("  L value: %s", value);
+        console.logBytes(callData);
 
         // We need to increase the accountGasLimits, default 2e6 is not enough to verify
         // signature, for all those elliptic curve computation.
@@ -73,6 +82,30 @@ contract IntegrationTest is SharedTestSetup {
     /**
      * Tests
      */
+    function test_withSimulateUserOp()
+        public
+        setupSmartAcctWithMembersThreshold(1, 1)
+    {
+        smartAcct.simulateUserOp(true);
+
+        Identity signer = $users[0].identity;
+        address receiver = $users[1].addr;
+        uint256 value = 1 ether;
+        uint256 seq = 0;
+
+        uint256 senderBefore = smartAcct.account.balance;
+        uint256 receiverBefore = receiver.balance;
+
+        (UserOpData memory userOpData, bytes32 txHash) =
+            _setupInitiateTx(signer, receiver, value, "", true);
+
+        console.log("-- execUserOps starts --");
+
+        userOpData.execUserOps();
+
+        console.log("-- execUserOps ends --");
+    }
+
     function test_BalanceTransferSingleMemberInitiateTx()
         public
         setupSmartAcctWithMembersThreshold(1, 1)

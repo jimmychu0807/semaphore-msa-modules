@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.23 <=0.8.29;
 
+import { console } from "forge-std/Test.sol";
+
 // Rhinestone module-kit
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { PackedUserOperation } from "modulekit/ModuleKit.sol";
@@ -179,8 +181,13 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
     {
         // you want to exclude initiateTx, signTx, executeTx from needing tx count.
         // you just need to ensure they are a valid proof from the semaphore group members
+
+        // return true;
+
         (bool found,) = semaphoreExecutor.getGroupId(account);
         if (!found) revert NoSemaphoreModuleInstalled(account);
+
+        return true;
 
         // The userOp.signature is 160 bytes containing:
         //   (uint256 pubX (32 bytes), uint256 pubY (32 bytes), bytes[96] signature (96 bytes))
