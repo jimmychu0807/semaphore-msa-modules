@@ -191,7 +191,7 @@ contract IntegrationTest is SharedTestSetup {
 
         // Note: we return here at erc4337 simulation because continuing simulate the third
         //   userOp will make the VM memory blow up and kill the test.
-        if (simulate) { return; }
+        if (simulate) return;
 
         /**
          *  Perform 3: The 3rd user executes the transaction
