@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.23 <=0.8.29;
 
-import { console } from "forge-std/Test.sol";
+// import { console } from "forge-std/Test.sol";
 
 import { ModuleKitHelpers, UserOpData } from "modulekit/ModuleKit.sol";
 
@@ -34,12 +34,6 @@ contract IntegrationTest is SharedTestSetup {
             txValidator: address(semaphoreValidator)
         });
 
-        // console.log("_getSemaphoreUserOpData");
-        // console.log("  L src: %s", smartAcct.account);
-        // console.log("  L target: %s", address(semaphoreExecutor));
-        // console.log("  L txValidator: %s", address(semaphoreValidator));
-        // console.log("  L value: %s", value);
-
         // We need to increase the accountGasLimits, default 2e6 is not enough to verify
         // signature, for all those elliptic curve computation.
         // Encoding two fields here, validation and execution gas
@@ -64,7 +58,7 @@ contract IntegrationTest is SharedTestSetup {
 
         // Compose Semaphore proof
         (, uint256 groupId) = semaphoreExecutor.getGroupId(smartAcct.account);
-        uint8 memberCnt = semaphoreExecutor.memberCount(smartAcct.account);
+        uint8 memberCnt = semaphoreExecutor.accountMemberCount(smartAcct.account);
         ISemaphore.SemaphoreProof memory smProof =
             signer.getSempahoreProof(groupId, _getMemberCmts(memberCnt), txHash);
 
@@ -90,7 +84,6 @@ contract IntegrationTest is SharedTestSetup {
         Identity signer = $users[0].identity;
         address receiver = $users[1].addr;
         uint256 value = 1 ether;
-        uint256 seq = 0;
 
         uint256 senderBefore = smartAcct.account.balance;
         uint256 receiverBefore = receiver.balance;
@@ -103,7 +96,7 @@ contract IntegrationTest is SharedTestSetup {
         if (!simulate) {
             // Test: expect to have call InitiateTx() and executeTx()
             vm.expectEmit(true, true, true, true);
-            emit SemaphoreExecutor.InitiatedTx(smartAcct.account, seq, txHash);
+            emit SemaphoreExecutor.InitiatedTx(smartAcct.account, 0, txHash);
             vm.expectEmit(true, true, true, true);
             emit SemaphoreExecutor.ExecutedTx(smartAcct.account, txHash);
         }

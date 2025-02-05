@@ -47,6 +47,7 @@
     "prettier:check": "prettier --no-error-on-unmatched-pattern -c \"{src,test,script}/**/*.{json,md,svg,yml}\"",
     "prettier:write": "prettier --no-error-on-unmatched-pattern -w \"{src,test,script}/**/*.{json,md,svg,yml}\"",
     "test": "forge test --ffi",
+    "test:simulate": "SIMULATE=true forge test --ffi",
     "test:coverage": "forge coverage --ffi"
   },
   "keywords": [
