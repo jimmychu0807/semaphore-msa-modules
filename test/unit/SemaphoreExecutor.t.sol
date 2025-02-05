@@ -53,7 +53,7 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         User memory member = $users[0];
 
         assertEq(semaphoreExecutor.thresholds(smartAcct.account), 1);
-        assertEq(semaphoreExecutor.memberCount(smartAcct.account), 1);
+        assertEq(semaphoreExecutor.accountMemberCount(smartAcct.account), 1);
         assertEq(semaphoreExecutor.isInitialized(smartAcct.account), true);
 
         (bool bExist, uint256 groupId) = semaphoreExecutor.getGroupId(smartAcct.account);
@@ -83,7 +83,7 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         assertEq(semaphoreExecutor.thresholds(smartAcct.account), 0);
         (bool bExist,) = semaphoreExecutor.getGroupId(smartAcct.account);
         assertEq(bExist, false);
-        assertEq(semaphoreExecutor.memberCount(smartAcct.account), 0);
+        assertEq(semaphoreExecutor.accountMemberCount(smartAcct.account), 0);
         assertEq(semaphoreExecutor.isInitialized(smartAcct.account), false);
     }
 
@@ -120,7 +120,7 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         semaphoreExecutor.addMembers(newMembers);
         vm.stopPrank();
 
-        assertEq(semaphoreExecutor.memberCount(smartAcct.account), 2);
+        assertEq(semaphoreExecutor.accountMemberCount(smartAcct.account), 2);
         assertEq(semaphoreExecutor.accountHasMember(smartAcct.account, newMembers[0]), true);
 
         // Test: the userOp should pass now
@@ -144,7 +144,7 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         semaphoreExecutor.removeMember(rmCmt, merkleProof);
         vm.stopPrank();
 
-        assertEq(semaphoreExecutor.memberCount(smartAcct.account), NUM_MEMBERS - 1);
+        assertEq(semaphoreExecutor.accountMemberCount(smartAcct.account), NUM_MEMBERS - 1);
         assertEq(semaphoreExecutor.accountHasMember(smartAcct.account, rmCmt), false);
 
         // Compose a UserOp

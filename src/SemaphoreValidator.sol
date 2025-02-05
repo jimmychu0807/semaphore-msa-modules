@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.23 <=0.8.29;
 
+// import { console } from "forge-std/Test.sol";
+
 // Rhinestone module-kit
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { PackedUserOperation } from "modulekit/ModuleKit.sol";
@@ -20,8 +22,8 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
     /**
      * Errors
      */
+    error InvalidTargetAddress(address target);
     error InvalidSignature(address account, bytes signature);
-    error InvalidTargetAddress(address account, address target);
     error InvalidTargetCallData(address account, bytes callData);
     error MemberNotExists(address account, bytes pubKey);
     error NoSemaphoreModuleInstalled(address account);
@@ -37,15 +39,13 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
     /**
      * Storage
      */
-    ISemaphoreExecutor public semaphoreExecutor;
+    ISemaphoreExecutor public immutable semaphoreExecutor;
     mapping(address account => bool installed) public acctInstalled;
 
     // Ensure the following match with the 3 function calls.
-    bytes4[3] public ALLOWED_SELECTORS = [
-        semaphoreExecutor.initiateTx.selector,
-        semaphoreExecutor.signTx.selector,
-        semaphoreExecutor.executeTx.selector
-    ];
+    bytes4 public constant INITIATETX_SEL = ISemaphoreExecutor.initiateTx.selector;
+    bytes4 public constant SIGNTX_SEL = ISemaphoreExecutor.signTx.selector;
+    bytes4 public constant EXECUTETX_SEL = ISemaphoreExecutor.executeTx.selector;
 
     constructor(ISemaphoreExecutor _semaphoreExecutor) {
         if (
@@ -92,7 +92,7 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
         PackedUserOperation calldata userOp,
         bytes32 userOpHash
     )
-        external
+        public
         virtual
         override
         returns (ValidationData)
@@ -204,18 +204,15 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
         address target = address(bytes20(targetCallData[0:20]));
         bytes4 funcSel = bytes4(targetCallData[52:56]);
 
-        if (target != address(semaphoreExecutor)) revert InvalidTargetAddress(account, target);
+        if (target != address(semaphoreExecutor)) revert InvalidTargetAddress(target);
 
         // We only allow calls to `initiateTx()`, `signTx()`, and `executeTx()` to pass,
         //   and reject the rest.
         return _isAllowedSelector(funcSel);
     }
 
-    function _isAllowedSelector(bytes4 sel) internal view returns (bool allowed) {
-        for (uint256 i = 0; i < ALLOWED_SELECTORS.length; ++i) {
-            if (sel == ALLOWED_SELECTORS[i]) return true;
-        }
-        return false;
+    function _isAllowedSelector(bytes4 sel) internal pure returns (bool) {
+        return sel == INITIATETX_SEL || sel == SIGNTX_SEL || sel == EXECUTETX_SEL;
     }
 
     /*//////////////////////////////////////////////////////////////////////////

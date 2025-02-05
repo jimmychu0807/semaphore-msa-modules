@@ -3,14 +3,13 @@ pragma solidity >=0.8.23 <=0.8.29;
 
 // Rhinestone module-kit
 import { IERC7579Account } from "modulekit/Accounts.sol";
-import { ERC7579ExecutorBase, IERC7579Module } from "modulekit/Modules.sol";
+import { ERC7579ExecutorBase } from "modulekit/Modules.sol";
 import { ModeLib } from "modulekit/accounts/common/lib/ModeLib.sol";
 
 import { LibBytes, LibSort } from "solady/Milady.sol";
 import { ISemaphore, ISemaphoreGroups } from "src/interfaces/Semaphore.sol";
 import { ISemaphoreValidator } from "src/interfaces/ISemaphoreValidator.sol";
 import { ISemaphoreExecutor } from "src/interfaces/ISemaphoreExecutor.sol";
-import { ValidatorLibBytes } from "src/utils/ValidatorLibBytes.sol";
 import {
     CMT_BYTELEN,
     MAX_MEMBERS,
@@ -18,6 +17,7 @@ import {
     SEMAPHORE_EXECUTOR,
     VERSION
 } from "src/utils/Constants.sol";
+import { SentinelList4337Lib, SENTINEL } from "sentinellist/SentinelList4337.sol";
 
 struct ExtCallCount {
     address targetAddr;
@@ -28,7 +28,7 @@ struct ExtCallCount {
 
 contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     using LibSort for *;
-    using ValidatorLibBytes for bytes;
+    using SentinelList4337Lib for SentinelList4337Lib.SentinelList;
 
     /**
      * Errors
@@ -69,13 +69,13 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     /**
      * Storage
      */
-    ISemaphore public semaphore;
-    ISemaphoreGroups public groups;
+    ISemaphore public immutable semaphore;
+    ISemaphoreGroups public immutable groups;
     address public semaphoreValidatorAddr;
 
     mapping(address account => uint256 groupId) public groupMapping;
     mapping(address account => uint8 threshold) public thresholds;
-    mapping(address account => uint8 count) public memberCount;
+    SentinelList4337Lib.SentinelList private acctMembers;
 
     // smart account -> hash(call(params)) -> valid proof count
     mapping(address account => mapping(bytes32 txHash => ExtCallCount callDataCount)) public
@@ -113,8 +113,8 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         if (dataLen == 0 || (dataLen - 1) % CMT_BYTELEN != 0) revert InvalidInstallData();
 
         uint8 threshold = uint8(bytes1(data[:1]));
-        bytes memory cmtBytes = data[1:dataLen];
-        uint256[] memory cmts = cmtBytes.convertToCmts();
+        bytes calldata cmtBytes = data[1:dataLen];
+        uint256[] memory cmts = _convertToCmts(cmtBytes);
 
         // Check the relation between threshold and ownersLen are valid
         if (cmts.length > MAX_MEMBERS) revert MaxMemberReached(account);
@@ -134,7 +134,11 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
 
         // Add members to the group
         semaphore.addMembers(groupId, cmts);
-        memberCount[account] = uint8(cmts.length);
+        acctMembers.init(account);
+        for (uint256 i = 0; i < cmts.length; i++) {
+            // TODO: update this to uint256
+            acctMembers.push(account, address(uint160(cmts[i])));
+        }
 
         emit SemaphoreExecutorInitialized(account);
     }
@@ -152,7 +156,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         delete thresholds[account];
         delete groupMapping[account];
         delete acctSeqNum[account];
-        delete memberCount[account];
+        acctMembers.popAll(account);
 
         //TODO: what is a good way to delete entries associated with `acctTxCount[account]`,
         //   The following line will make the compiler fail.
@@ -185,11 +189,14 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         ecc = acctTxCount[account][txHash];
     }
 
-    function accountHasMember(address account, uint256 cmt) external view returns (bool) {
-        if (thresholds[account] == 0) return false;
+    function accountMemberCount(address account) public view returns (uint8) {
+        (address[] memory arr,) = acctMembers.getEntriesPaginated(account, SENTINEL, MAX_MEMBERS);
+        return uint8(arr.length);
+    }
 
-        uint256 groupId = groupMapping[account];
-        return groups.hasMember(groupId, cmt);
+    function accountHasMember(address account, uint256 cmt) external view returns (bool) {
+        // TODO: update this to uint256
+        return acctMembers.contains(account, address(uint160(cmt)));
     }
 
     /**
@@ -215,7 +222,9 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
      */
     function setThreshold(uint8 newThreshold) external moduleInstalled {
         address account = msg.sender;
-        if (newThreshold == 0 || newThreshold > memberCount[account]) {
+        uint8 memberCount = accountMemberCount(account);
+
+        if (newThreshold == 0 || newThreshold > memberCount) {
             revert InvalidThreshold(account);
         }
 
@@ -226,8 +235,9 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     function addMembers(uint256[] calldata cmts) external moduleInstalled {
         address account = msg.sender;
         uint256 groupId = groupMapping[account];
+        uint8 memberCount = accountMemberCount(account);
 
-        if (memberCount[account] + cmts.length > MAX_MEMBERS) revert MaxMemberReached(account);
+        if (memberCount + cmts.length > MAX_MEMBERS) revert MaxMemberReached(account);
 
         for (uint256 i = 0; i < cmts.length; ++i) {
             if (cmts[i] == uint256(0)) revert InvalidCommitment(account);
@@ -235,9 +245,12 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         }
 
         semaphore.addMembers(groupId, cmts);
-        uint8 cmtsLen = uint8(cmts.length);
-        memberCount[account] += cmtsLen;
-        emit AddedMembers(account, cmtsLen);
+        for (uint256 i = 0; i < cmts.length; i++) {
+            // TODO: update to uint256
+            acctMembers.push(account, address(uint160(cmts[i])));
+        }
+
+        emit AddedMembers(account, uint8(cmts.length));
     }
 
     function removeMember(
@@ -248,14 +261,15 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         moduleInstalled
     {
         address account = msg.sender;
+        uint8 memberCount = accountMemberCount(account);
 
-        if (memberCount[account] == thresholds[account]) revert MemberCntReachesThreshold(account);
+        if (memberCount == thresholds[account]) revert MemberCntReachesThreshold(account);
 
         uint256 groupId = groupMapping[account];
         if (!groups.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
 
         semaphore.removeMember(groupId, cmt, merkleProofSiblings);
-        memberCount[account] -= 1;
+        // TODO: remove the entry from acctMembers list
 
         emit RemovedMember(account, cmt);
     }
@@ -360,6 +374,22 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
 
         // Clean up the storage
         delete acctTxCount[account][txHash];
+    }
+
+    /**
+     * Internal helper functions
+     */
+    function _convertToCmts(bytes calldata cmtBytes)
+        internal
+        pure
+        returns (uint256[] memory cmts)
+    {
+        uint256 cmtNum = cmtBytes.length / CMT_BYTELEN;
+
+        cmts = new uint256[](cmtNum);
+        for (uint256 i = 0; i < cmtNum; i++) {
+            cmts[i] = uint256(bytes32(cmtBytes[i * CMT_BYTELEN:(i + 1) * CMT_BYTELEN]));
+        }
     }
 
     /*//////////////////////////////////////////////////////////////////////////
