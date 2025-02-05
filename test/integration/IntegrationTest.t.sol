@@ -34,12 +34,11 @@ contract IntegrationTest is SharedTestSetup {
             txValidator: address(semaphoreValidator)
         });
 
-        console.log("_getSemaphoreUserOpData");
-        console.log("  L src: %s", smartAcct.account);
-        console.log("  L target: %s", address(semaphoreExecutor));
-        console.log("  L txValidator: %s", address(semaphoreValidator));
-        console.log("  L value: %s", value);
-        console.logBytes(callData);
+        // console.log("_getSemaphoreUserOpData");
+        // console.log("  L src: %s", smartAcct.account);
+        // console.log("  L target: %s", address(semaphoreExecutor));
+        // console.log("  L txValidator: %s", address(semaphoreValidator));
+        // console.log("  L value: %s", value);
 
         // We need to increase the accountGasLimits, default 2e6 is not enough to verify
         // signature, for all those elliptic curve computation.
@@ -82,34 +81,12 @@ contract IntegrationTest is SharedTestSetup {
     /**
      * Tests
      */
-    function test_withSimulateUserOp()
-        public
-        setupSmartAcctWithMembersThreshold(1, 1)
-    {
-        smartAcct.simulateUserOp(true);
-
-        Identity signer = $users[0].identity;
-        address receiver = $users[1].addr;
-        uint256 value = 1 ether;
-        uint256 seq = 0;
-
-        uint256 senderBefore = smartAcct.account.balance;
-        uint256 receiverBefore = receiver.balance;
-
-        (UserOpData memory userOpData, bytes32 txHash) =
-            _setupInitiateTx(signer, receiver, value, "", true);
-
-        console.log("-- execUserOps starts --");
-
-        userOpData.execUserOps();
-
-        console.log("-- execUserOps ends --");
-    }
-
     function test_BalanceTransferSingleMemberInitiateTx()
         public
         setupSmartAcctWithMembersThreshold(1, 1)
     {
+        bool simulate = vm.envOr("SIMULATE", false);
+
         Identity signer = $users[0].identity;
         address receiver = $users[1].addr;
         uint256 value = 1 ether;
@@ -121,11 +98,15 @@ contract IntegrationTest is SharedTestSetup {
         (UserOpData memory userOpData, bytes32 txHash) =
             _setupInitiateTx(signer, receiver, value, "", true);
 
-        // Test: expect to have call InitiateTx() and executeTx()
-        vm.expectEmit(true, true, true, true);
-        emit SemaphoreExecutor.InitiatedTx(smartAcct.account, seq, txHash);
-        vm.expectEmit(true, true, true, true);
-        emit SemaphoreExecutor.ExecutedTx(smartAcct.account, txHash);
+        // Note: we only test emitted event if SIMUALTE is false. Otherwise, the erc-4337
+        // validation rule will kick in and conflict with the emit event test
+        if (!simulate) {
+            // Test: expect to have call InitiateTx() and executeTx()
+            vm.expectEmit(true, true, true, true);
+            emit SemaphoreExecutor.InitiatedTx(smartAcct.account, seq, txHash);
+            vm.expectEmit(true, true, true, true);
+            emit SemaphoreExecutor.ExecutedTx(smartAcct.account, txHash);
+        }
 
         userOpData.execUserOps();
 
@@ -151,13 +132,13 @@ contract IntegrationTest is SharedTestSetup {
         setupSmartAcctWithMembersThreshold(NUM_MEMBERS, 2)
         deploySimpleContract
     {
+        bool simulate = vm.envOr("SIMULATE", false);
+
         Identity signer1 = $users[0].identity;
         Identity signer2 = $users[1].identity;
         Identity signer3 = $users[2].identity;
         uint256 value = 1 ether;
         uint256 newVal = 8964;
-        uint256 gId = 0;
-        uint256 seq = 0;
         uint256 senderBefore = smartAcct.account.balance;
         address target = address(simpleContract);
         bytes memory callData = abi.encodeCall(SimpleContract.setVal, (newVal));
@@ -169,8 +150,10 @@ contract IntegrationTest is SharedTestSetup {
             _setupInitiateTx(signer1, target, value, callData, false);
 
         // Test: expected event emitted
-        vm.expectEmit(true, true, true, true);
-        emit SemaphoreExecutor.InitiatedTx(smartAcct.account, seq, txHash);
+        if (!simulate) {
+            vm.expectEmit(true, true, true, true);
+            emit SemaphoreExecutor.InitiatedTx(smartAcct.account, 0, txHash);
+        }
 
         userOpData1.execUserOps();
 
@@ -187,7 +170,7 @@ contract IntegrationTest is SharedTestSetup {
 
         // Compose a Semaphore proof
         ISemaphore.SemaphoreProof memory smProof2 =
-            signer2.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
+            signer2.getSempahoreProof(0, _getMemberCmts(NUM_MEMBERS), txHash);
 
         // Compose UserOpData
         UserOpData memory userOpData2 = _getSemaphoreUserOpData(
@@ -195,14 +178,20 @@ contract IntegrationTest is SharedTestSetup {
         );
 
         // Test: expected event emitted
-        vm.expectEmit(true, true, true, true);
-        emit SemaphoreExecutor.SignedTx(smartAcct.account, txHash);
+        if (!simulate) {
+            vm.expectEmit(true, true, true, true);
+            emit SemaphoreExecutor.SignedTx(smartAcct.account, txHash);
+        }
 
         userOpData2.execUserOps();
 
         // Test: the internal state of SemaphoreExecutor
         ecc = semaphoreExecutor.getAcctTx(smartAcct.account, txHash);
         assertEq(ecc.count, 2);
+
+        // Note: we return here at erc4337 simulation because continuing simulate the third
+        //   userOp will make the VM memory blow up and kill the test.
+        if (simulate) { return; }
 
         /**
          *  Perform 3: The 3rd user executes the transaction
@@ -214,10 +203,12 @@ contract IntegrationTest is SharedTestSetup {
         );
 
         // Test: expected event emitted
-        vm.expectEmit(true, true, true, true);
-        emit SimpleContract.ValueSet(smartAcct.account, value, newVal);
-        vm.expectEmit(true, true, true, true);
-        emit SemaphoreExecutor.ExecutedTx(smartAcct.account, txHash);
+        if (!simulate) {
+            vm.expectEmit(true, true, true, true);
+            emit SimpleContract.ValueSet(smartAcct.account, value, newVal);
+            vm.expectEmit(true, true, true, true);
+            emit SemaphoreExecutor.ExecutedTx(smartAcct.account, txHash);
+        }
 
         userOpData3.execUserOps();
 

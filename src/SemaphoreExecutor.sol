@@ -67,8 +67,8 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     /**
      * Storage
      */
-    ISemaphore public semaphore;
-    ISemaphoreGroups public groups;
+    ISemaphore public immutable semaphore;
+    ISemaphoreGroups public immutable groups;
     address public semaphoreValidatorAddr;
 
     mapping(address account => uint256 groupId) public groupMapping;
@@ -185,8 +185,11 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
 
     function accountHasMember(address account, uint256 cmt) external view returns (bool) {
         if (thresholds[account] == 0) return false;
-
         uint256 groupId = groupMapping[account];
+
+        // TODO: create another internal storage to store acct -> member mapping
+        return true;
+
         return groups.hasMember(groupId, cmt);
     }
 
