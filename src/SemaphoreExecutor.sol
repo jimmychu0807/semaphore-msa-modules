@@ -254,6 +254,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     }
 
     function removeMember(
+        uint256 prevCmt,
         uint256 cmt,
         uint256[] calldata merkleProofSiblings
     )
@@ -268,8 +269,9 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         uint256 groupId = groupMapping[account];
         if (!groups.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
 
+        // TODO: update acctMembers to support uint256
+        acctMembers.pop(account, address(uint160(prevCmt)), address(uint160(cmt)));
         semaphore.removeMember(groupId, cmt, merkleProofSiblings);
-        // TODO: remove the entry from acctMembers list
 
         emit RemovedMember(account, cmt);
     }

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.23 <=0.8.29;
 
-// import { console } from "forge-std/Test.sol";
-
 import { ModuleKitHelpers, UserOpData } from "modulekit/ModuleKit.sol";
 
 import { ISemaphore } from "src/interfaces/Semaphore.sol";
