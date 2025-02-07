@@ -1,0 +1,5 @@
+packages:
+  - 'packages/*'
+
+catalog:
+  rimraf: ^5.0.10
