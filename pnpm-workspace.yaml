@@ -3,3 +3,4 @@ packages:
 
 catalog:
   rimraf: ^5.0.10
+  wait-on: ^8.0.2

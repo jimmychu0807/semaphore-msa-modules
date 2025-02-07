@@ -24,7 +24,7 @@
     "rimraf": "catalog:"
   },
   "scripts": {
-    "dev": "pnpm -p --filter semaphore-msa-modules-web run dev",
+    "dev": "docker compose up & pnpm -r --stream --filter './packages/*' run dev",
     "contracts:build": "pnpm --filter semaphore-msa-modules-contracts build",
     "contracts:lint": "pnpm --filter semaphore-msa-modules-contracts lint",
     "contracts:test": "pnpm --filter semaphore-msa-modules-contracts test",
@@ -33,7 +33,7 @@
     "clean": "pnpm -r --filter './packages/*' clean && rimraf node_modules",
     "lint": "pnpm -r --filter './packages/*' lint",
     "test": "pnpm -r --filter './packages/*' test",
-    "ci-check": "pnpm build && pnpm test && pnpm lint"
+    "ci-check": "(pnpm build && pnpm test) & pnpm lint"
   },
   "publishConfig": {
     "access": "public"
