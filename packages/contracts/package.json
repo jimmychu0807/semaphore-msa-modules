@@ -1,0 +1,73 @@
+{
+  "name": "@jimmychu0807/semaphore-msa-modules-contracts",
+  "version": "0.0.1",
+  "description": "Semaphore Modular Smart Account Modules",
+  "license": "GPL-3.0",
+  "author": {
+    "name": "Jimmy Chu",
+    "url": "https://jimmychu0807.hk"
+  },
+  "homepage": "https://github.com/jimmychu0807/semaphore-msa-modules",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jimmychu0807/semaphore-msa-modules.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jimmychu0807/semaphore-msa-modules/issues"
+  },
+  "devDependencies": {
+    "@rhinestone/modulekit": "github:jimmychu0807/rhinestonewtf-modulekit#semaphore-msa-modules",
+    "@rhinestone/sentinellist": "github:rhinestonewtf/sentinellist",
+    "@rhinestone/erc4337-validation": "^0.0.5",
+    "@ERC4337/account-abstraction": "github:kopy-kat/account-abstraction#develop",
+    "@ERC4337/account-abstraction-v0.6": "github:eth-infinitism/account-abstraction#v0.6.0",
+    "@prb/math": "^4.1.0",
+    "ds-test": "github:dapphub/ds-test",
+    "excessively-safe-call": "github:nomad-xyz/ExcessivelySafeCall",
+    "solarray": "github:sablier-labs/solarray",
+    "@semaphore-protocol/contracts": "github:jimmychu0807/semaphore#identity-cli&path:/packages/contracts/contracts",
+    "@semaphore-protocol/group": "github:jimmychu0807/semaphore#identity-cli&path:/packages/group",
+    "@semaphore-protocol/identity": "github:jimmychu0807/semaphore#identity-cli&path:/packages/identity",
+    "@semaphore-protocol/proof": "github:jimmychu0807/semaphore#identity-cli&path:/packages/proof",
+    "@openzeppelin/contracts": "^5.2.0",
+    "poseidon-solidity": "github:chancehudson/poseidon-solidity",
+    "@zk-kit/lean-imt.sol": "^2.0.0",
+    "forge-std": "github:foundry-rs/forge-std#v1.9.5",
+    "rimraf": "catalog:",
+    "solady": "^0.0.287"
+  },
+  "files": [
+    "src",
+    "test",
+    "script",
+    "package.json",
+    "foundry.toml",
+    "remappings.txt"
+  ],
+  "scripts": {
+    "build": "forge build",
+    "build:optimized": "FOUNDRY_PROFILE=optimized forge build",
+    "build:smt": "FOUNDRY_PROFILE=smt forge build",
+    "clean": "rimraf artifacts broadcast cache docs out out-optimized out-svg node_modules",
+    "gas:report": "forge test --gas-report --mp \"./test/integration/**/*.sol\" --nmt \"test(Fuzz)?_RevertWhen_\\w{1,}?\"",
+    "gas:snapshot": "forge snapshot --mp \"./test/integration/**/*.sol\" --nmt \"test(Fuzz)?_RevertWhen_\\w{1,}?\"",
+    "gas:snapshot:optimized": "pnpm run build:optimized && FOUNDRY_PROFILE=test-optimized forge snapshot --mp \"./test/integration/**/*.sol\" --nmt \"test(Fork)?(Fuzz)?_RevertWhen_\\w{1,}?\"",
+    "lint:sol": "forge fmt --check && pnpm solhint \"{script,src,test}/**/*.sol\"",
+    "lint:write": "forge fmt && pnpm run prettier:write",
+    "lint": "pnpm lint:sol && pnpm prettier:check",
+    "prettier:check": "prettier --no-error-on-unmatched-pattern -c \"{src,test,script}/**/*.{json,md,svg,yml}\"",
+    "prettier:write": "prettier --no-error-on-unmatched-pattern -w \"{src,test,script}/**/*.{json,md,svg,yml}\"",
+    "test": "forge test --ffi",
+    "test:simulate": "SIMULATE=true forge test --ffi",
+    "test:coverage": "forge coverage --ffi"
+  },
+  "keywords": [
+    "account abstraction",
+    "smart account modules",
+    "semaphore"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "packageManager": "pnpm@9.13.2+sha512.88c9c3864450350e65a33587ab801acf946d7c814ed1134da4a924f6df5a2120fd36b46aab68f7cd1d413149112d53c7db3a4136624cfd00ff1846a0c6cef48a"
+}

@@ -15,5 +15,6 @@ solarray/=node_modules/solarray/src/
 @prb/math/=node_modules/@prb/math/src/
 ExcessivelySafeCall/=node_modules/excessively-safe-call/src/
 
+@zk-kit/lean-imt.sol/=node_modules/@zk-kit/lean-imt.sol
 semaphore/=node_modules/@semaphore-protocol/contracts/
 poseidon-solidity/=node_modules/poseidon-solidity/contracts/
