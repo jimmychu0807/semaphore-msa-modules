@@ -24,7 +24,9 @@
     "rimraf": "catalog:"
   },
   "scripts": {
-    "dev": "docker compose up & pnpm -r --stream --filter './packages/*' run dev",
+    "dev": "pnpm run containers:up && pnpm -r --stream --filter './packages/*' run dev",
+    "containers:up": "docker compose up -d",
+    "containers:down": "docker compose down",
     "contracts:build": "pnpm --filter semaphore-msa-modules-contracts build",
     "contracts:lint": "pnpm --filter semaphore-msa-modules-contracts lint",
     "contracts:test": "pnpm --filter semaphore-msa-modules-contracts test",

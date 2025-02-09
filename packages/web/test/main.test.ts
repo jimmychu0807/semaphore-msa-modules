@@ -1,4 +1,9 @@
+import { expect } from 'chai';
 import { ensureBundlerIsReady, ensurePaymasterIsReady } from "./health-check";
+import smartSessionsPermissionlessSafe from "./smart-sessions/permissionless-safe";
+import {
+  sepolia
+} from "viem/chains";
 
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -14,6 +19,13 @@ describe("Test erc7579 reference implementation", function () {
   });
 
   it("should test smart sessions with permissionless", async function () {
-    console.log("completed");
+    const receipt = await smartSessionsPermissionlessSafe({
+      bundlerUrl,
+      rpcUrl,
+      paymasterUrl,
+      chain: sepolia
+    });
+
+    expect(receipt.success).to.be.true;
   });
 });

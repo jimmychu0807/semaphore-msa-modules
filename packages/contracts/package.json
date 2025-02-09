@@ -15,6 +15,32 @@
   "bugs": {
     "url": "https://github.com/jimmychu0807/semaphore-msa-modules/issues"
   },
+  "files": [
+    "src",
+    "test",
+    "script",
+    "package.json",
+    "foundry.toml",
+    "remappings.txt"
+  ],
+  "scripts": {
+    "dev:deploy": "wait-on tcp:8545 && forge script script/DeploySemaphoreModules.s.sol --fork-url http://localhost:8545 --broadcast --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+    "build": "forge build",
+    "build:optimized": "FOUNDRY_PROFILE=optimized forge build",
+    "build:smt": "FOUNDRY_PROFILE=smt forge build",
+    "clean": "rimraf artifacts broadcast cache docs out out-optimized out-svg node_modules",
+    "gas:report": "forge test --gas-report --mp \"./test/integration/**/*.sol\" --nmt \"test(Fuzz)?_RevertWhen_\\w{1,}?\"",
+    "gas:snapshot": "forge snapshot --mp \"./test/integration/**/*.sol\" --nmt \"test(Fuzz)?_RevertWhen_\\w{1,}?\"",
+    "gas:snapshot:optimized": "pnpm run build:optimized && FOUNDRY_PROFILE=test-optimized forge snapshot --mp \"./test/integration/**/*.sol\" --nmt \"test(Fork)?(Fuzz)?_RevertWhen_\\w{1,}?\"",
+    "lint:sol": "forge fmt --check && pnpm solhint \"{script,src,test}/**/*.sol\"",
+    "lint:write": "forge fmt && pnpm run prettier:write",
+    "lint": "pnpm lint:sol && pnpm prettier:check",
+    "prettier:check": "prettier --no-error-on-unmatched-pattern -c \"{src,test,script}/**/*.{json,md,svg,yml}\"",
+    "prettier:write": "prettier --no-error-on-unmatched-pattern -w \"{src,test,script}/**/*.{json,md,svg,yml}\"",
+    "test": "forge test --ffi",
+    "test:simulate": "SIMULATE=true forge test --ffi",
+    "test:coverage": "forge coverage --ffi"
+  },
   "devDependencies": {
     "@rhinestone/modulekit": "github:jimmychu0807/rhinestonewtf-modulekit#semaphore-msa-modules",
     "@rhinestone/sentinellist": "github:rhinestonewtf/sentinellist",
@@ -36,32 +62,6 @@
     "rimraf": "catalog:",
     "wait-on": "catalog:",
     "solady": "^0.0.287"
-  },
-  "files": [
-    "src",
-    "test",
-    "script",
-    "package.json",
-    "foundry.toml",
-    "remappings.txt"
-  ],
-  "scripts": {
-    "dev": "wait-on tcp:8545 && sleep 3 && forge script script/DeploySemaphoreModules.s.sol --fork-url http://localhost:8545 --broadcast --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
-    "build": "forge build",
-    "build:optimized": "FOUNDRY_PROFILE=optimized forge build",
-    "build:smt": "FOUNDRY_PROFILE=smt forge build",
-    "clean": "rimraf artifacts broadcast cache docs out out-optimized out-svg node_modules",
-    "gas:report": "forge test --gas-report --mp \"./test/integration/**/*.sol\" --nmt \"test(Fuzz)?_RevertWhen_\\w{1,}?\"",
-    "gas:snapshot": "forge snapshot --mp \"./test/integration/**/*.sol\" --nmt \"test(Fuzz)?_RevertWhen_\\w{1,}?\"",
-    "gas:snapshot:optimized": "pnpm run build:optimized && FOUNDRY_PROFILE=test-optimized forge snapshot --mp \"./test/integration/**/*.sol\" --nmt \"test(Fork)?(Fuzz)?_RevertWhen_\\w{1,}?\"",
-    "lint:sol": "forge fmt --check && pnpm solhint \"{script,src,test}/**/*.sol\"",
-    "lint:write": "forge fmt && pnpm run prettier:write",
-    "lint": "pnpm lint:sol && pnpm prettier:check",
-    "prettier:check": "prettier --no-error-on-unmatched-pattern -c \"{src,test,script}/**/*.{json,md,svg,yml}\"",
-    "prettier:write": "prettier --no-error-on-unmatched-pattern -w \"{src,test,script}/**/*.{json,md,svg,yml}\"",
-    "test": "forge test --ffi",
-    "test:simulate": "SIMULATE=true forge test --ffi",
-    "test:coverage": "forge coverage --ffi"
   },
   "keywords": [
     "account abstraction",
