@@ -13,5 +13,4 @@ gas_calculations/
 
 node_modules
 
-# My files
-src/utils/semaphore-*
+*.log
