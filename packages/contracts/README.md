@@ -108,7 +108,7 @@ The testing code relies on [Foundry FFI](https://book.getfoundry.sh/cheatcodes/f
 - [ERC-7579](https://eips.ethereum.org/EIPS/eip-7579): [overview](https://erc7579.com/)
 - [ERC-7780](https://eips.ethereum.org/EIPS/eip-7780)
 
-## Contributions
+## Acknowledgement
 
 Thanks to the following folks on discussing about this project and helps along: 
 

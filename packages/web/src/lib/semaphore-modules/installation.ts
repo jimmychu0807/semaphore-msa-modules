@@ -27,6 +27,7 @@ export async function getSemaphoreExecutor({
       [threshold, semaphoreCommitments]
     ),
     deInitData: '0x',
-    additionalContext: '0x'
+    additionalContext: '0x',
+    hook: undefined
   };
 }
