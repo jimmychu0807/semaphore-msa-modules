@@ -24,34 +24,47 @@ contract DeploySemaphoreModules is Script, RegistryDeployer {
     function run() public {
         vm.startBroadcast();
 
-        // Deploy Semaphore
-        semaphoreVerifier = new SemaphoreVerifier{ salt: SALT }();
-        semaphore = new Semaphore{ salt: SALT }(ISemaphoreVerifier(address(semaphoreVerifier)));
+        address semaphoreAddress = vm.envOr("SEMAPHORE_ADDRESS", address(0));
+        if (semaphoreAddress == address(0)) {
+            // Deploy Semaphore
+            semaphoreVerifier = new SemaphoreVerifier{ salt: SALT }();
+            semaphore = new Semaphore{ salt: SALT }(ISemaphoreVerifier(address(semaphoreVerifier)));
+        } else {
+            semaphore = Semaphore(semaphoreAddress);
+        }
 
-        // Deploy the executor
-        semaphoreExecutor = new SemaphoreExecutor{ salt: SALT }(semaphore);
+        address executorAddress = vm.envOr("SEMAPHORE_EXECUTOR_ADDRESS", address(0));
+        if (executorAddress == address(0)) {
+            // Deploy the executor
+            semaphoreExecutor = new SemaphoreExecutor{ salt: SALT }(semaphore);
 
-        // Deploy the validator
-        semaphoreValidator = new SemaphoreValidator{ salt: SALT }(semaphoreExecutor);
+            // Register and mock the attestion - executor
+            _registerAndAttest({
+                moduleAddr: address(semaphoreExecutor),
+                moduleType: MODULE_TYPE_EXECUTOR,
+                metadata: bytes("Semaphore Executor v0.1"),
+                resolverContext: ""
+            });
+        } else {
+            semaphoreExecutor = SemaphoreExecutor(executorAddress);
+        }
 
-        // Set semaphoreValidator in the executor
-        semaphoreExecutor.setSemaphoreValidator(address(semaphoreValidator));
+        address validatorAddress = vm.envOr("SEMAPHORE_VALIDATOR_ADDRESS", address(0));
+        if (validatorAddress == address(0)) {
+            // Deploy the validator
+            semaphoreValidator = new SemaphoreValidator{ salt: SALT }(semaphoreExecutor);
+            semaphoreExecutor.setSemaphoreValidator(address(semaphoreValidator));
 
-        // Register and mock the attestion - executor
-        _registerAndAttest({
-            moduleAddr: address(semaphoreExecutor),
-            moduleType: MODULE_TYPE_EXECUTOR,
-            metadata: bytes("Semaphore Executor v0.1"),
-            resolverContext: ""
-        });
-
-        // Register and mock the attestion - validator
-        _registerAndAttest({
-            moduleAddr: address(semaphoreValidator),
-            moduleType: MODULE_TYPE_VALIDATOR,
-            metadata: bytes("Semaphore Validator v0.1"),
-            resolverContext: ""
-        });
+            // Register and mock the attestion - validator
+            _registerAndAttest({
+                moduleAddr: address(semaphoreValidator),
+                moduleType: MODULE_TYPE_VALIDATOR,
+                metadata: bytes("Semaphore Validator v0.1"),
+                resolverContext: ""
+            });
+        } else {
+            semaphoreValidator = SemaphoreValidator(validatorAddress);
+        }
 
         // solhint-disable no-console
         console.log("Semaphore contract: %s", address(semaphore));
