@@ -10,8 +10,9 @@ gas_calculations/
 
 # Dotenv file
 .env
+.env.*
+!.env.example
 
 node_modules
 
-# My files
-src/utils/semaphore-*
+*.log

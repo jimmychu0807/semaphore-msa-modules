@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project is a [validator and executor module](https://eips.ethereum.org/EIPS/eip-7579#validators) adheres to [**ERC-7579**](https://eips.ethereum.org/EIPS/eip-7579) standard that uses [Semaphore](https://semaphore.pse.dev/) for proof validation. Smart accounts incorporate this validator gains the following benefits:
+This project mainly consists of [a validator and an executor modules](https://eips.ethereum.org/EIPS/eip-7579#validators) adheres to [**ERC-7579**](https://eips.ethereum.org/EIPS/eip-7579) standard that uses [Semaphore](https://semaphore.pse.dev/) for proof validation. Smart accounts incorporate these modules gain the following benefits:
 
 - The smart account behaves like a **M-of-N multi-sig wallet** controlled by members of the [Semaphore group](https://docs.semaphore.pse.dev/guides/groups) of the smart account. Proofs sent by the members are used as signatures.
 
@@ -13,5 +13,5 @@ Development of this project is supported by [PSE Acceleration Program](https://g
 Project Code: FY24-1847
 
 Please refer to the project packages READMEs:
-- [packages/contracts](./packages/contracts)
-- [packages/web](./packages/web)
+- [packages/contracts](./packages/contracts): contains the key components of the validator and executor module.
+- [packages/web](./packages/web): contains the frontend serves as a demo to interact with a smart account and semaphore modules.
