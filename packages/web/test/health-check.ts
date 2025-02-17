@@ -4,9 +4,7 @@ import { debug } from "debug";
 
 const info = debug("test:health-check");
 
-export async function ensureBundlerIsReady(
-  { bundlerUrl, chain }: { bundlerUrl: string; chain: Chain; }
-) {
+export async function ensureBundlerIsReady({ bundlerUrl, chain }: { bundlerUrl: string; chain: Chain }) {
   info("Checking bundler...");
 
   const bundlerClient = createBundlerClient({
@@ -25,7 +23,7 @@ export async function ensureBundlerIsReady(
   }
 }
 
-export async function ensurePaymasterIsReady({ paymasterUrl }: {paymasterUrl: string }) {
+export async function ensurePaymasterIsReady({ paymasterUrl }: { paymasterUrl: string }) {
   info("Checking paymaster...");
 
   while (true) {

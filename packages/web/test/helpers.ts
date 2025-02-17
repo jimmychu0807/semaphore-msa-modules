@@ -17,12 +17,12 @@ import { User } from "./types";
 
 const info = debug("test:helpers");
 
-export async function transferTo(sk: string, address: string, ethBal: string, opt: { chain: Chain, rpcUrl: string }) {
+export async function transferTo(sk: string, address: string, ethBal: string, opt: { chain: Chain; rpcUrl: string }) {
   const account = privateKeyToAccount(sk as Hex);
   const client = createWalletClient({
     account,
     chain: opt.chain,
-    transport: http(opt.rpcUrl)
+    transport: http(opt.rpcUrl),
   });
 
   const parsedAddr = getAddress(address);
@@ -30,7 +30,7 @@ export async function transferTo(sk: string, address: string, ethBal: string, op
   const tx = {
     account,
     to: parsedAddr,
-    value: parseEther(ethBal)
+    value: parseEther(ethBal),
   };
 
   const hash = await client.sendTransaction(tx);
@@ -41,7 +41,7 @@ export function initUsers(userLen: number, firstSk: Hex): User[] {
   const users: User[] = [];
 
   for (let i = 0; i < userLen; i++) {
-    const sk = (i === 0 && firstSk !== '0x') ? firstSk : generatePrivateKey();
+    const sk = i === 0 && firstSk !== "0x" ? firstSk : generatePrivateKey();
     users.push({
       account: privateKeyToAccount(sk),
       identity: new Identity(`user-${i}`),
@@ -59,15 +59,9 @@ export function signMessage(user: User, hash: Hex) {
   const pk = user.identity.publicKey;
   const signature = user.identity.signMessage(hash);
 
-  return encodePacked(
-    ['uint256[2]', 'uint256[2]', 'uint256'],
-    [pk, signature.R8, signature.S]
-  );
+  return encodePacked(["uint256[2]", "uint256[2]", "uint256"], [pk, signature.R8, signature.S]);
 }
 
 export function getTxHash(seq: bigint, target: Address, value: bigint, callData: Hex) {
-  return keccak256(encodePacked(
-    ['uint256', 'address', 'uint256', 'bytes'],
-    [seq, target, value, callData]
-  ));
+  return keccak256(encodePacked(["uint256", "address", "uint256", "bytes"], [seq, target, value, callData]));
 }

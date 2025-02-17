@@ -8,16 +8,9 @@ import {
   http,
   parseEther,
 } from "viem";
-import {
-  createPaymasterClient,
-  entryPoint07Address,
-  getUserOperationHash,
-} from "viem/account-abstraction";
+import { createPaymasterClient, entryPoint07Address, getUserOperationHash } from "viem/account-abstraction";
 
-import {
-  type SmartAccountClient,
-  createSmartAccountClient
-} from "permissionless";
+import { type SmartAccountClient, createSmartAccountClient } from "permissionless";
 import { getAccountNonce } from "permissionless/actions";
 import { createPimlicoClient } from "permissionless/clients/pimlico";
 import { toSafeSmartAccount } from "permissionless/accounts";
@@ -43,13 +36,7 @@ import { generateProof } from "@semaphore-protocol/proof";
 import { debug } from "debug";
 
 import { type User } from "./types";
-import {
-  getTxHash,
-  getUserCommitmentsSorted,
-  initUsers,
-  signMessage,
-  transferTo
-} from "./helpers";
+import { getTxHash, getUserCommitmentsSorted, initUsers, signMessage, transferTo } from "./helpers";
 
 // const SAFE_ACCT_ADDR = "0x0A8905B6EF15f24901e5D74Cfa68118E69A8Cc63";
 const INIT_TRANSFER_AMT = undefined; // In ETH
@@ -70,7 +57,7 @@ export default async function main({
   bundlerUrl: string;
   rpcUrl: string;
   paymasterUrl: string;
-  chain: Chain
+  chain: Chain;
 }) {
   const users: User[] = initUsers(USER_LEN, deployerSk);
 
@@ -80,13 +67,13 @@ export default async function main({
   // viem public client
   const publicClient = createPublicClient({
     transport: http(rpcUrl),
-    chain
+    chain,
   });
 
   // paymaster client
   const paymasterClient = createPaymasterClient({
-    transport: http(paymasterUrl)
-  })
+    transport: http(paymasterUrl),
+  });
 
   // pimlico client
   const pimlicoClient = createPimlicoClient({
@@ -94,26 +81,26 @@ export default async function main({
     entryPoint: {
       address: entryPoint07Address,
       version: "0.7",
-    }
+    },
   });
 
   // Create Safe smart account
   const safeAccount = await toSafeSmartAccount({
-      client: publicClient,
-      owners: [owner.account],
-      version: "1.4.1",
-      entryPoint: {
-        address: entryPoint07Address,
-        version: "0.7",
-      },
-      safe4337ModuleAddress: "0x7579EE8307284F293B1927136486880611F20002",
-      erc7579LaunchpadAddress: "0x7579011aB74c46090561ea277Ba79D510c6C00ff",
-      attesters: [
-        RHINESTONE_ATTESTER_ADDRESS, // Rhinestone Attester
-        MOCK_ATTESTER_ADDRESS,
-      ],
-      attestersThreshold: 1,
-    });
+    client: publicClient,
+    owners: [owner.account],
+    version: "1.4.1",
+    entryPoint: {
+      address: entryPoint07Address,
+      version: "0.7",
+    },
+    safe4337ModuleAddress: "0x7579EE8307284F293B1927136486880611F20002",
+    erc7579LaunchpadAddress: "0x7579011aB74c46090561ea277Ba79D510c6C00ff",
+    attesters: [
+      RHINESTONE_ATTESTER_ADDRESS, // Rhinestone Attester
+      MOCK_ATTESTER_ADDRESS,
+    ],
+    attestersThreshold: 1,
+  });
 
   info("Safe account:", safeAccount.address);
 
@@ -124,8 +111,8 @@ export default async function main({
     bundlerTransport: http(bundlerUrl),
     paymaster: paymasterClient,
     userOperation: {
-      estimateFeesPerGas: async() => (await pimlicoClient.getUserOperationGasPrice()).fast,
-    }
+      estimateFeesPerGas: async () => (await pimlicoClient.getUserOperationGasPrice()).fast,
+    },
   }).extend(erc7579Actions());
 
   // transfer ETH to the Safe account for further ops
@@ -139,7 +126,7 @@ export default async function main({
       threshold: THRESHOLD,
       account: safeAccount,
       publicClient,
-      bundlerClient
+      bundlerClient,
     });
   } catch (err) {
     console.error("safe account install module failed:", err);
@@ -166,27 +153,27 @@ export default async function main({
   const data = encodeFunctionData({
     functionName: "initiateTx",
     abi: semaphoreExecutorABI,
-    args: [target.address, TEST_TRANSFER_AMT, "0x", proof, false]
-  })
+    args: [target.address, TEST_TRANSFER_AMT, "0x", proof, false],
+  });
 
   const initTxAction = {
     to: SEMAPHORE_EXECUTOR_ADDRESS,
     target: SEMAPHORE_EXECUTOR_ADDRESS,
     value: 0,
     callData: data,
-    data
+    data,
   };
 
   // get account nonce
   const nonce = await getAccountNonce(publicClient, {
     address: safeAccount.address,
-    entryPointAddress: entryPoint07Address
+    entryPointAddress: entryPoint07Address,
   });
 
   const initTxOp = await bundlerClient.prepareUserOperation({
     account: safeAccount,
     calls: [initTxAction],
-    nonce
+    nonce,
   });
 
   const opHashToSign = getUserOperationHash({
@@ -202,14 +189,24 @@ export default async function main({
   info(`initTxOpHash: ${initTxOpHash}`);
 
   const receipt = await bundlerClient.waitForUserOperationReceipt({
-    hash: initTxOpHash
+    hash: initTxOpHash,
   });
   info("receipt:", receipt);
 }
 
-async function installSemaphoreModules({ users, threshold, account, publicClient, bundlerClient }:
-  { users: User[], threshold: number, account: Account, publicClient: PublicClient, bundlerClient: SmartAccountClient })
-{
+async function installSemaphoreModules({
+  users,
+  threshold,
+  account,
+  publicClient,
+  bundlerClient,
+}: {
+  users: User[];
+  threshold: number;
+  account: Account;
+  publicClient: PublicClient;
+  bundlerClient: SmartAccountClient;
+}) {
   // Check if we need to install SemaphoreExecutor module
   // Commitments cannot include 1n, that is the SENTINEL value!!
   const semaphoreCommitments = getUserCommitmentsSorted(users);
@@ -254,4 +251,3 @@ async function installSemaphoreModules({ users, threshold, account, publicClient
     info("  L receipt:", receipt);
   }
 }
-
