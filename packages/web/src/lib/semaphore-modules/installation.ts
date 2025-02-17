@@ -1,22 +1,15 @@
-import { type Account, type PublicClient, encodePacked } from 'viem';
+import { encodePacked } from 'viem';
 import { type Module } from '@rhinestone/module-sdk';
-import {
-  SEMAPHORE_EXECUTOR_ADDRESS,
-  SEMAPHORE_VALIDATOR_ADDRESS,
-} from "./constants";
+import { SEMAPHORE_EXECUTOR_ADDRESS} from "./constants";
 
 type GetSemaphoreExecutorParams = {
-  account: Account,
-  client: PublicClient,
   threshold: number,
   semaphoreCommitments: Array<bigint>
 }
 
-export async function getSemaphoreExecutor({
-  account,
-  client,
+export function getSemaphoreExecutor({
   threshold,
-  semaphoreCommitments }: GetSemaphoreExecutorParams): Promise<Module>
+  semaphoreCommitments }: GetSemaphoreExecutorParams): Module
 {
   return {
     address: SEMAPHORE_EXECUTOR_ADDRESS,
@@ -30,4 +23,15 @@ export async function getSemaphoreExecutor({
     additionalContext: '0x',
     hook: undefined
   };
+}
+
+export function getSemaphoreValidator(): Module {
+  return {
+    address: SEMAPHORE_EXECUTOR_ADDRESS,
+    module: SEMAPHORE_EXECUTOR_ADDRESS,
+    type: "validator",
+    initData: '0x',
+    deInitData: '0x',
+    additionalContext: '0x',
+  }
 }
