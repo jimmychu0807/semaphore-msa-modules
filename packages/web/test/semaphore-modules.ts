@@ -38,7 +38,6 @@ import { debug } from "debug";
 import { type User } from "./types";
 import { getTxHash, getUserCommitmentsSorted, initUsers, signMessage, transferTo } from "./helpers";
 
-// const SAFE_ACCT_ADDR = "0x0A8905B6EF15f24901e5D74Cfa68118E69A8Cc63";
 const INIT_TRANSFER_AMT = undefined; // In ETH
 const TEST_TRANSFER_AMT = parseEther("0.001"); // In ETH
 const USER_LEN = 3;
@@ -51,12 +50,14 @@ export default async function main({
   bundlerUrl,
   rpcUrl,
   paymasterUrl,
+  safeAccountAddr,
   chain,
 }: {
   deployerSk: Hex;
   bundlerUrl: string;
   rpcUrl: string;
   paymasterUrl: string;
+  safeAccountAddr: Hex;
   chain: Chain;
 }) {
   const users: User[] = initUsers(USER_LEN, deployerSk);
@@ -87,6 +88,7 @@ export default async function main({
   // Create Safe smart account
   const safeAccount = await toSafeSmartAccount({
     client: publicClient,
+    address: safeAccountAddr !== "0x" ? safeAccountAddr : undefined,
     owners: [owner.account],
     version: "1.4.1",
     entryPoint: {
@@ -101,6 +103,8 @@ export default async function main({
     ],
     attestersThreshold: 1,
   });
+  // force the account to be a safe acct
+  safeAccount.type = "safe";
 
   info("Safe account:", safeAccount.address);
 
@@ -137,24 +141,26 @@ export default async function main({
   const target = users[0].account;
 
   // Get the semaphore proof here
-  const txHash = getTxHash(
-    await getAcctSeqNum({ account: safeAccount, client: publicClient }),
-    target.address,
-    TEST_TRANSFER_AMT,
-    "0x"
-  );
+  const seq = await getAcctSeqNum({ account: safeAccount, client: publicClient });
+  info(`acct seq #: ${seq}`);
+
+  const txHash = getTxHash(seq, target.address, TEST_TRANSFER_AMT, "0x");
+  info(`txHash: ${txHash}`);
 
   const gId = await getGroupId({ account: safeAccount, client: publicClient });
-  if (!gId) throw new Error("getGroupId() failed");
+  if (gId === undefined) throw new Error("getGroupId() failed");
+  info(`gId: ${gId}`);
 
   const group = new Group(getUserCommitmentsSorted(users));
-  const proof = generateProof(owner.identity, group, txHash, gId);
+  const proof = await generateProof(owner.identity, group, txHash, gId);
+  info(`proof:`, proof);
 
   const data = encodeFunctionData({
     functionName: "initiateTx",
     abi: semaphoreExecutorABI,
     args: [target.address, TEST_TRANSFER_AMT, "0x", proof, false],
   });
+  info(`data:`, data);
 
   const initTxAction = {
     to: SEMAPHORE_EXECUTOR_ADDRESS,
@@ -163,6 +169,8 @@ export default async function main({
     callData: data,
     data,
   };
+
+  return;
 
   // get account nonce
   const nonce = await getAccountNonce(publicClient, {
@@ -221,6 +229,7 @@ async function installSemaphoreModules({
     account,
     module: semaphoreExecutor,
   });
+  info(`semaphoreExecutor is${isInstalled ? "" : " not"} installed.`);
 
   if (!isInstalled) {
     info("Installing Semaphore Executor...");
@@ -240,6 +249,7 @@ async function installSemaphoreModules({
     account,
     module: semaphoreValidator,
   });
+  info(`semaphoreValidator is${isInstalled ? "" : " not"} installed.`);
 
   if (!isInstalled) {
     info("Installing Semaphore Validator...");

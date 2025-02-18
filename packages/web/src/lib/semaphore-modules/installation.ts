@@ -1,6 +1,6 @@
 import { encodePacked } from "viem";
 import { type Module } from "@rhinestone/module-sdk";
-import { SEMAPHORE_EXECUTOR_ADDRESS } from "./constants";
+import { SEMAPHORE_EXECUTOR_ADDRESS, SEMAPHORE_VALIDATOR_ADDRESS } from "./constants";
 
 type GetSemaphoreExecutorParams = {
   threshold: number;
@@ -21,8 +21,8 @@ export function getSemaphoreExecutor({ threshold, semaphoreCommitments }: GetSem
 
 export function getSemaphoreValidator(): Module {
   return {
-    address: SEMAPHORE_EXECUTOR_ADDRESS,
-    module: SEMAPHORE_EXECUTOR_ADDRESS,
+    address: SEMAPHORE_VALIDATOR_ADDRESS,
+    module: SEMAPHORE_VALIDATOR_ADDRESS,
     type: "validator",
     initData: "0x",
     deInitData: "0x",

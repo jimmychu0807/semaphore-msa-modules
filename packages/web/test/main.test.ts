@@ -8,10 +8,12 @@ import { debug } from "debug";
 
 const info = debug("test:main");
 
-const deployerSk = (process.env.DEPLOYER_SK || "0x") as Hex;
+const deployerSk = (process.env.DEPLOYER_SK ?? "0x") as Hex;
+const safeAccountAddr = (process.env.SAFE_ACCOUNT_ADDRESS ?? "0x") as Hex;
 const rpcUrl = process.env.ETH_RPC_URL as string;
 const bundlerUrl = process.env.BUNDLER_URL as string;
 const paymasterUrl = process.env.PAYMASTER_URL as string;
+
 const chain = baseSepolia;
 
 info("rpcUrl:", rpcUrl);
@@ -34,6 +36,7 @@ describe("Test Semaphore modules", function () {
       bundlerUrl,
       rpcUrl,
       paymasterUrl,
+      safeAccountAddr,
       chain,
     });
   });
