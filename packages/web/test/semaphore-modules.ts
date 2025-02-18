@@ -1,19 +1,17 @@
 import {
+  type Account,
   type Chain,
+  type Hex,
+  type PublicClient,
   createPublicClient,
-  createWalletClient,
-  getAddress,
+  encodeFunctionData,
   http,
   parseEther,
 } from "viem";
-import {
-  createPaymasterClient,
-  entryPoint07Address,
-  getUserOperationHash,
-} from "viem/account-abstraction";
-import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
+import { createPaymasterClient, entryPoint07Address, getUserOperationHash } from "viem/account-abstraction";
 
-import { createSmartAccountClient } from "permissionless";
+import { type SmartAccountClient, createSmartAccountClient } from "permissionless";
+import { getAccountNonce } from "permissionless/actions";
 import { createPimlicoClient } from "permissionless/clients/pimlico";
 import { toSafeSmartAccount } from "permissionless/accounts";
 import { erc7579Actions } from "permissionless/actions/erc7579";
@@ -21,42 +19,62 @@ import { erc7579Actions } from "permissionless/actions/erc7579";
 import {
   RHINESTONE_ATTESTER_ADDRESS, // Rhinestone Attester
   MOCK_ATTESTER_ADDRESS, // Mock Attester - do not use in production
-  getDeadmanSwitch,
-  getAccount,
-  getClient
+  isModuleInstalled,
 } from "@rhinestone/module-sdk";
 
-import { getSemaphoreExecutor } from "@/lib/semaphore-modules";
+import {
+  getSemaphoreExecutor,
+  getSemaphoreValidator,
+  SEMAPHORE_EXECUTOR_ADDRESS,
+  semaphoreExecutorABI,
+  getAcctSeqNum,
+  getGroupId,
+} from "@/lib/semaphore-modules";
+import { Group } from "@semaphore-protocol/group";
+import { generateProof } from "@semaphore-protocol/proof";
 
-const TEST_SK = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+import { debug } from "debug";
+
+import { type User } from "./types";
+import { getTxHash, getUserCommitmentsSorted, initUsers, signMessage, transferTo } from "./helpers";
+
+const INIT_TRANSFER_AMT = undefined; // In ETH
+const TEST_TRANSFER_AMT = parseEther("0.001"); // In ETH
+const USER_LEN = 3;
+const THRESHOLD = 2;
+
+const info = debug("test:semaphore-modules");
 
 export default async function main({
+  deployerSk,
   bundlerUrl,
   rpcUrl,
   paymasterUrl,
+  safeAccountAddr,
   chain,
 }: {
+  deployerSk: Hex;
   bundlerUrl: string;
   rpcUrl: string;
   paymasterUrl: string;
-  chain: Chain
+  safeAccountAddr: Hex;
+  chain: Chain;
 }) {
-  // EOAs
-  const owner = privateKeyToAccount(generatePrivateKey());
-  const user1 = privateKeyToAccount(generatePrivateKey());
-  const user2 = privateKeyToAccount(generatePrivateKey());
-  const user3 = privateKeyToAccount(generatePrivateKey());
+  const users: User[] = initUsers(USER_LEN, deployerSk);
+
+  const owner = users[0];
+  info("owner account:", owner.account.address);
 
   // viem public client
   const publicClient = createPublicClient({
     transport: http(rpcUrl),
-    chain
+    chain,
   });
 
   // paymaster client
   const paymasterClient = createPaymasterClient({
-    transport: http(paymasterUrl)
-  })
+    transport: http(paymasterUrl),
+  });
 
   // pimlico client
   const pimlicoClient = createPimlicoClient({
@@ -64,13 +82,14 @@ export default async function main({
     entryPoint: {
       address: entryPoint07Address,
       version: "0.7",
-    }
+    },
   });
 
-  // Safe smart account
+  // Create Safe smart account
   const safeAccount = await toSafeSmartAccount({
     client: publicClient,
-    owners: [owner],
+    address: safeAccountAddr !== "0x" ? safeAccountAddr : undefined,
+    owners: [owner.account],
     version: "1.4.1",
     entryPoint: {
       address: entryPoint07Address,
@@ -84,8 +103,10 @@ export default async function main({
     ],
     attestersThreshold: 1,
   });
+  // force the account to be a safe acct
+  safeAccount.type = "safe";
 
-  console.log("safe account:", safeAccount.address);
+  info("Safe account:", safeAccount.address);
 
   // bundler client
   const bundlerClient = createSmartAccountClient({
@@ -94,67 +115,149 @@ export default async function main({
     bundlerTransport: http(bundlerUrl),
     paymaster: paymasterClient,
     userOperation: {
-      estimateFeesPerGas: async() => (await pimlicoClient.getUserOperationGasPrice()).fast,
-    }
+      estimateFeesPerGas: async () => (await pimlicoClient.getUserOperationGasPrice()).fast,
+    },
   }).extend(erc7579Actions());
 
-  // transfer 10 ETH to the Safe account
-  await transferTo(safeAccount.address, "10", { chain, rpcUrl });
+  // transfer ETH to the Safe account for further ops
+  if (INIT_TRANSFER_AMT) {
+    await transferTo(deployerSk, safeAccount.address, INIT_TRANSFER_AMT, { chain, rpcUrl });
+  }
 
-  // get the SemaphoreExecutor module
-  const semaphoreCommitments: Array<bigint> = [1n, 2n, 3n];
+  try {
+    await installSemaphoreModules({
+      users,
+      threshold: THRESHOLD,
+      account: safeAccount,
+      publicClient,
+      bundlerClient,
+    });
+  } catch (err) {
+    console.error("safe account install module failed:", err);
+    return;
+  }
+
+  // Initiating a transfer
+  const target = users[0].account;
+
+  // Get the semaphore proof here
+  const seq = await getAcctSeqNum({ account: safeAccount, client: publicClient });
+  info(`acct seq #: ${seq}`);
+
+  const txHash = getTxHash(seq, target.address, TEST_TRANSFER_AMT, "0x");
+  info(`txHash: ${txHash}`);
+
+  const gId = await getGroupId({ account: safeAccount, client: publicClient });
+  if (gId === undefined) throw new Error("getGroupId() failed");
+  info(`gId: ${gId}`);
+
+  const group = new Group(getUserCommitmentsSorted(users));
+  const proof = await generateProof(owner.identity, group, txHash, gId);
+  info(`proof:`, proof);
+
+  const data = encodeFunctionData({
+    functionName: "initiateTx",
+    abi: semaphoreExecutorABI,
+    args: [target.address, TEST_TRANSFER_AMT, "0x", proof, false],
+  });
+  info(`data:`, data);
+
+  const initTxAction = {
+    to: SEMAPHORE_EXECUTOR_ADDRESS,
+    target: SEMAPHORE_EXECUTOR_ADDRESS,
+    value: 0,
+    callData: data,
+    data,
+  };
+
+  return;
+
+  // get account nonce
+  const nonce = await getAccountNonce(publicClient, {
+    address: safeAccount.address,
+    entryPointAddress: entryPoint07Address,
+  });
+
+  const initTxOp = await bundlerClient.prepareUserOperation({
+    account: safeAccount,
+    calls: [initTxAction],
+    nonce,
+  });
+
+  const opHashToSign = getUserOperationHash({
+    chainId: chain.id,
+    entryPointAddress: entryPoint07Address,
+    entryPointVersion: "0.7",
+    userOperation: initTxOp,
+  });
+
+  initTxOp.signature = signMessage(owner, opHashToSign);
+
+  const initTxOpHash = await bundlerClient.sendUserOperation(initTxOp);
+  info(`initTxOpHash: ${initTxOpHash}`);
+
+  const receipt = await bundlerClient.waitForUserOperationReceipt({
+    hash: initTxOpHash,
+  });
+  info("receipt:", receipt);
+}
+
+async function installSemaphoreModules({
+  users,
+  threshold,
+  account,
+  publicClient,
+  bundlerClient,
+}: {
+  users: User[];
+  threshold: number;
+  account: Account;
+  publicClient: PublicClient;
+  bundlerClient: SmartAccountClient;
+}) {
+  // Check if we need to install SemaphoreExecutor module
+  // Commitments cannot include 1n, that is the SENTINEL value!!
+  const semaphoreCommitments = getUserCommitmentsSorted(users);
 
   const semaphoreExecutor = await getSemaphoreExecutor({
-    account: safeAccount,
-    client: publicClient,
-    threshold: 1,
+    threshold,
     semaphoreCommitments,
   });
 
-  console.log("semaphoreExecutor:", semaphoreExecutor);
-
-  const account = getAccount({
-    address: safeAccount.address,
-    type: "safe",
-  });
-
-  const client = getClient({
-    rpcUrl,
-  });
-
-  const deadmanSwitch = await getDeadmanSwitch({
+  let isInstalled: boolean = await isModuleInstalled({
+    client: publicClient,
     account,
-    client,
-    nominee: user1.address,
-    timeout: 1,
-    moduleType: "validator",
+    module: semaphoreExecutor,
   });
-  console.log("deadman switch:", deadmanSwitch);
+  info(`semaphoreExecutor is${isInstalled ? "" : " not"} installed.`);
 
-  const opHash1 = await bundlerClient.installModule(semaphoreExecutor);
-  console.log("opHash1:", opHash1);
+  if (!isInstalled) {
+    info("Installing Semaphore Executor...");
 
-  // const receipt1 = await bundlerClient.waitForUserOperationReceipt({ hash: opHash1 });
+    const opHash = await bundlerClient.installModule(semaphoreExecutor);
+    info("  L opHash:", opHash);
 
-  // console.log("receipt1:", receipt1);
-}
+    const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: opHash });
+    info("  L receipt:", receipt);
+  }
 
-async function transferTo(address: string, ethBal: string, opt: { chain: Chain, rpcUrl: string }) {
-  const account = privateKeyToAccount(TEST_SK);
-  const client = createWalletClient({
+  // Check if we need to insatll SemaphoreValidator module
+  const semaphoreValidator = await getSemaphoreValidator();
+
+  isInstalled = await isModuleInstalled({
+    client: publicClient,
     account,
-    chain: opt.chain,
-    transport: http(opt.rpcUrl)
+    module: semaphoreValidator,
   });
+  info(`semaphoreValidator is${isInstalled ? "" : " not"} installed.`);
 
-  const parsedAddr = getAddress(address);
+  if (!isInstalled) {
+    info("Installing Semaphore Validator...");
 
-  const tx = {
-    account,
-    to: parsedAddr,
-    value: parseEther(ethBal)
-  };
+    const opHash = await bundlerClient.installModule(semaphoreValidator);
+    info("  L opHash:", opHash);
 
-  const hash = await client.sendTransaction(tx);
-  console.log(`sent ${ethBal} ETH to ${address}: ${hash}`);
+    const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: opHash });
+    info("  L receipt:", receipt);
+  }
 }

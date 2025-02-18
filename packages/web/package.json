@@ -5,13 +5,19 @@
     "dev": "next dev --turbopack -p 3010",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "next lint --dir ./src --dir ./test",
+    "prettier": "prettier --no-error-on-unmatched-pattern -c \"{src,test}/**/*.{json,ts,tsx}\"",
+    "prettier:write": "prettier --no-error-on-unmatched-pattern -w \"{src,test}/**/*.{json,ts,tsx}\"",
     "compile": "tsc --noEmit",
     "test": "mocha --config .mocharc.json",
-    "clean": "rimraf .next node_modules"
+    "clean": "rimraf .next"
   },
   "dependencies": {
     "@rhinestone/module-sdk": "^0.2.4",
+    "@semaphore-protocol/group": "catalog:",
+    "@semaphore-protocol/identity": "catalog:",
+    "@semaphore-protocol/proof": "catalog:",
+    "debug": "^4.4.0",
     "dotenv": "^16.4.5",
     "next": "15.1.6",
     "permissionless": "^0.2.29",

@@ -13,6 +13,13 @@ pnpm run build
 pnpm run test
 ```
 
+## Deployment
+
+**Base Sepolia**
+- Semaphore: [`0xB3aa1503DF73004D8aCC8b6F57AFEFC3104e9803`](https://sepolia.basescan.org/address/0xb3aa1503df73004d8acc8b6f57afefc3104e9803)
+- Semaphore Executor: [`0x535Ad4971d810da00981888BAd90D41b95e1E4E4`](https://sepolia.basescan.org/address/0x535ad4971d810da00981888bad90d41b95e1e4e4)
+- Semaphore Validator: [`0x0a5ddd51A3b31a0C89E6B13db18b123BCC7D8eBc`](https://sepolia.basescan.org/address/0x0a5ddd51A3b31a0C89E6B13db18b123BCC7D8eBc)
+
 ## Developer Documentation
 
 There are two ERC-7579 modules in this repo, namely [**SemaphoreValidator**](./src/SemaphoreValidator.sol) and [**SemaphoreExecutor**](./src/SemaphoreExecutor.sol). 
