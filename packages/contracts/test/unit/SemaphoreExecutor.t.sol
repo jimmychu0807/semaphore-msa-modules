@@ -66,6 +66,25 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         );
     }
 
+    function test_onInstall_KeepMemberAscOrder() public {
+        uint256 gId = 0;
+
+        smartAcct.installModule({
+            moduleTypeId: MODULE_TYPE_EXECUTOR,
+            module: address(semaphoreExecutor),
+            data: abi.encodePacked(uint8(2), [
+                11607007807378753003975429250673965311744748125068817954862939553263009294467,
+                2106140715974798855160070883852634960091865760146834573070109796353803304118,
+                4950121590542886510054876111383682513486057475224966179062467605780876843365
+            ])
+        });
+
+        assertEq(semaphore.getMerkleTreeSize(gId), 3);
+        assertEq(semaphore.indexOf(0, 2106140715974798855160070883852634960091865760146834573070109796353803304118), 0);
+        assertEq(semaphore.indexOf(0, 4950121590542886510054876111383682513486057475224966179062467605780876843365), 1);
+        assertEq(semaphore.indexOf(0, 11607007807378753003975429250673965311744748125068817954862939553263009294467), 2);
+    }
+
     function test_onUninstall_Pass() public setupSmartAcctWithMembersThreshold(1, 1) {
         // Uninsstall the validator first
         smartAcct.uninstallModule({

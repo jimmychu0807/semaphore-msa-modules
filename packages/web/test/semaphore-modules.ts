@@ -154,6 +154,8 @@ export default async function main({
   info(`gId: ${gId}`);
 
   const group = new Group(getUserCommitmentsSorted(users));
+  info("group merkleRoot:", group.root);
+
   const proof = await generateProof(owner.identity, group, txHash, gId as bigint);
   info(`proof:`, proof);
 
@@ -162,7 +164,6 @@ export default async function main({
     abi: semaphoreExecutorABI,
     args: [target.address, TEST_TRANSFER_AMT, "", proof, false],
   });
-  info(`data:`, data);
 
   // Refer to rhinestone impl: https://github.com/rhinestonewtf/module-sdk/blob/55b67b57eaf56ff11a7229396bb761eb7994e756/src/module/ownable-executor/usage.ts#L75
   const initTxAction = {
@@ -173,21 +174,10 @@ export default async function main({
     data,
   };
 
-  // get account nonce
-  // const nonce = await getAccountNonce(publicClient, {
-  //   address: safeAccount.address,
-  //   entryPointAddress: entryPoint07Address,
-  // });
-  // NX: need a valid group: change user to cmt 2
-
   const initTxOp = await bundlerClient.prepareUserOperation({
     account: safeAccount,
     calls: [initTxAction],
-    // nonce,
   });
-  info(`initTxOp:`, initTxOp);
-
-  return;
 
   const opHashToSign = getUserOperationHash({
     chainId: chain.id,
@@ -195,14 +185,16 @@ export default async function main({
     entryPointVersion: "0.7",
     userOperation: initTxOp,
   });
+  info("opHashToSign:", opHashToSign);
 
   initTxOp.signature = signMessage(owner, opHashToSign);
+  info("initTxOp.signature:", initTxOp.signature);
 
-  const initTxOpHash = await bundlerClient.sendUserOperation(initTxOp);
-  info(`initTxOpHash: ${initTxOpHash}`);
+  const initTxTxHash = await bundlerClient.sendUserOperation(initTxOp);
+  info(`initTxTxHash: ${initTxTxHash}`);
 
   const receipt = await bundlerClient.waitForUserOperationReceipt({
-    hash: initTxOpHash,
+    hash: initTxTxHash,
   });
   info("receipt:", receipt);
 }
@@ -240,7 +232,7 @@ async function installSemaphoreModules({
     account: rhinestoneAcct,
     module: semaphoreExecutor,
   });
-  info(`semaphoreExecutor is${isInstalled ? "" : " not"} installed.`);
+  info(`semaphoreExecutor is${isInstalled ? "" : " not"} installed`);
 
   if (!isInstalled) {
     info("Installing Semaphore Executor...");
@@ -260,7 +252,7 @@ async function installSemaphoreModules({
     account: rhinestoneAcct,
     module: semaphoreValidator,
   });
-  info(`semaphoreValidator is${isInstalled ? "" : " not"} installed.`);
+  info(`semaphoreValidator is${isInstalled ? "" : " not"} installed`);
 
   if (!isInstalled) {
     info("Installing Semaphore Validator...");

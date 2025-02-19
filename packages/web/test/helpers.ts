@@ -31,7 +31,7 @@ export async function transferTo(
   const bal = await publicClient.getBalance({ address: parsedAddr });
   const threshold = (amt * BigInt(thresholdpc * 100)) / BigInt(100);
   if (bal >= threshold) {
-    info(`${parsedAddr} bal: ${bal} > ${threshold}, skip transfer.`);
+    info(`${parsedAddr} bal: ${bal} > ${threshold}, skip transfer`);
     return;
   }
 
@@ -57,7 +57,7 @@ export function initUsers(userLen: number, firstSk: Hex): User[] {
 }
 
 export function getUserCommitmentsSorted(users: User[]): Array<bigint> {
-  return users.map((u) => u.identity.commitment).sort();
+  return users.map((u) => u.identity.commitment).sort((a, b) => a < b ? -1 : (a > b ? 1 : 0));
 }
 
 export function signMessage(user: User, hash: Hex) {
