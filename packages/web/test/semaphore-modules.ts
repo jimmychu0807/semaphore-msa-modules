@@ -1,5 +1,4 @@
 import {
-  type Account,
   type Chain,
   type Hex,
   type PublicClient,
@@ -8,10 +7,15 @@ import {
   http,
   parseEther,
 } from "viem";
-import { createPaymasterClient, entryPoint07Address, getUserOperationHash } from "viem/account-abstraction";
+import {
+  type SmartAccount,
+  createPaymasterClient,
+  entryPoint07Address,
+  getUserOperationHash
+} from "viem/account-abstraction";
 
 import { type SmartAccountClient, createSmartAccountClient } from "permissionless";
-import { getAccountNonce } from "permissionless/actions";
+// import { getAccountNonce } from "permissionless/actions";
 import { createPimlicoClient } from "permissionless/clients/pimlico";
 import { toSafeSmartAccount } from "permissionless/accounts";
 import { erc7579Actions } from "permissionless/actions/erc7579";
@@ -19,6 +23,7 @@ import { erc7579Actions } from "permissionless/actions/erc7579";
 import {
   RHINESTONE_ATTESTER_ADDRESS, // Rhinestone Attester
   MOCK_ATTESTER_ADDRESS, // Mock Attester - do not use in production
+  getAccount,
   isModuleInstalled,
 } from "@rhinestone/module-sdk";
 
@@ -35,13 +40,13 @@ import { generateProof } from "@semaphore-protocol/proof";
 
 import { debug } from "debug";
 
-import { type User } from "./types";
+import { type Erc7579SmartAccountClient, type User } from "./types";
 import { getTxHash, getUserCommitmentsSorted, initUsers, signMessage, transferTo } from "./helpers";
 
-const INIT_TRANSFER_AMT = undefined; // In ETH
-const TEST_TRANSFER_AMT = parseEther("0.001"); // In ETH
-const USER_LEN = 3;
-const THRESHOLD = 2;
+const INIT_TRANSFER_AMT: bigint = parseEther("0.01"); // In ETH
+const TEST_TRANSFER_AMT: bigint = parseEther("0.001"); // In ETH
+const USER_LEN: number = 3;
+const THRESHOLD: number = 2;
 
 const info = debug("test:semaphore-modules");
 
@@ -50,14 +55,14 @@ export default async function main({
   bundlerUrl,
   rpcUrl,
   paymasterUrl,
-  safeAccountAddr,
+  saltNonce,
   chain,
 }: {
   deployerSk: Hex;
   bundlerUrl: string;
   rpcUrl: string;
   paymasterUrl: string;
-  safeAccountAddr: Hex;
+  saltNonce: number;
   chain: Chain;
 }) {
   const users: User[] = initUsers(USER_LEN, deployerSk);
@@ -88,7 +93,7 @@ export default async function main({
   // Create Safe smart account
   const safeAccount = await toSafeSmartAccount({
     client: publicClient,
-    address: safeAccountAddr !== "0x" ? safeAccountAddr : undefined,
+    saltNonce,
     owners: [owner.account],
     version: "1.4.1",
     entryPoint: {
@@ -103,9 +108,6 @@ export default async function main({
     ],
     attestersThreshold: 1,
   });
-  // force the account to be a safe acct
-  safeAccount.type = "safe";
-
   info("Safe account:", safeAccount.address);
 
   // bundler client
@@ -121,7 +123,7 @@ export default async function main({
 
   // transfer ETH to the Safe account for further ops
   if (INIT_TRANSFER_AMT) {
-    await transferTo(deployerSk, safeAccount.address, INIT_TRANSFER_AMT, { chain, rpcUrl });
+    await transferTo(deployerSk, safeAccount.address, INIT_TRANSFER_AMT, 0.8, { chain, rpcUrl });
   }
 
   try {
@@ -130,7 +132,7 @@ export default async function main({
       threshold: THRESHOLD,
       account: safeAccount,
       publicClient,
-      bundlerClient,
+      bundlerClient: (bundlerClient as unknown as Erc7579SmartAccountClient)
     });
   } catch (err) {
     console.error("safe account install module failed:", err);
@@ -152,36 +154,29 @@ export default async function main({
   info(`gId: ${gId}`);
 
   const group = new Group(getUserCommitmentsSorted(users));
-  const proof = await generateProof(owner.identity, group, txHash, gId);
+  info("group merkleRoot:", group.root);
+
+  const proof = await generateProof(owner.identity, group, txHash, gId as bigint);
   info(`proof:`, proof);
 
   const data = encodeFunctionData({
     functionName: "initiateTx",
     abi: semaphoreExecutorABI,
-    args: [target.address, TEST_TRANSFER_AMT, "0x", proof, false],
+    args: [target.address, TEST_TRANSFER_AMT, "", proof, false],
   });
-  info(`data:`, data);
 
+  // Refer to rhinestone impl: https://github.com/rhinestonewtf/module-sdk/blob/55b67b57eaf56ff11a7229396bb761eb7994e756/src/module/ownable-executor/usage.ts#L75
   const initTxAction = {
     to: SEMAPHORE_EXECUTOR_ADDRESS,
     target: SEMAPHORE_EXECUTOR_ADDRESS,
-    value: 0,
+    value: 0n,
     callData: data,
     data,
   };
 
-  return;
-
-  // get account nonce
-  const nonce = await getAccountNonce(publicClient, {
-    address: safeAccount.address,
-    entryPointAddress: entryPoint07Address,
-  });
-
   const initTxOp = await bundlerClient.prepareUserOperation({
     account: safeAccount,
     calls: [initTxAction],
-    nonce,
   });
 
   const opHashToSign = getUserOperationHash({
@@ -190,14 +185,16 @@ export default async function main({
     entryPointVersion: "0.7",
     userOperation: initTxOp,
   });
+  info("opHashToSign:", opHashToSign);
 
   initTxOp.signature = signMessage(owner, opHashToSign);
+  info("initTxOp.signature:", initTxOp.signature);
 
-  const initTxOpHash = await bundlerClient.sendUserOperation(initTxOp);
-  info(`initTxOpHash: ${initTxOpHash}`);
+  const initTxTxHash = await bundlerClient.sendUserOperation(initTxOp);
+  info(`initTxTxHash: ${initTxTxHash}`);
 
   const receipt = await bundlerClient.waitForUserOperationReceipt({
-    hash: initTxOpHash,
+    hash: initTxTxHash,
   });
   info("receipt:", receipt);
 }
@@ -211,9 +208,9 @@ async function installSemaphoreModules({
 }: {
   users: User[];
   threshold: number;
-  account: Account;
+  account: SmartAccount;
   publicClient: PublicClient;
-  bundlerClient: SmartAccountClient;
+  bundlerClient: Erc7579SmartAccountClient;
 }) {
   // Check if we need to install SemaphoreExecutor module
   // Commitments cannot include 1n, that is the SENTINEL value!!
@@ -224,12 +221,18 @@ async function installSemaphoreModules({
     semaphoreCommitments,
   });
 
+  // Switch to use rhinestone module-sdk here
+  const rhinestoneAcct = await getAccount({
+    address: account.address,
+    type: 'safe',
+  })
+
   let isInstalled: boolean = await isModuleInstalled({
     client: publicClient,
-    account,
+    account: rhinestoneAcct,
     module: semaphoreExecutor,
   });
-  info(`semaphoreExecutor is${isInstalled ? "" : " not"} installed.`);
+  info(`semaphoreExecutor is${isInstalled ? "" : " not"} installed`);
 
   if (!isInstalled) {
     info("Installing Semaphore Executor...");
@@ -237,7 +240,7 @@ async function installSemaphoreModules({
     const opHash = await bundlerClient.installModule(semaphoreExecutor);
     info("  L opHash:", opHash);
 
-    const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: opHash });
+    const receipt = await (bundlerClient as unknown as SmartAccountClient).waitForUserOperationReceipt({ hash: opHash });
     info("  L receipt:", receipt);
   }
 
@@ -246,10 +249,10 @@ async function installSemaphoreModules({
 
   isInstalled = await isModuleInstalled({
     client: publicClient,
-    account,
+    account: rhinestoneAcct,
     module: semaphoreValidator,
   });
-  info(`semaphoreValidator is${isInstalled ? "" : " not"} installed.`);
+  info(`semaphoreValidator is${isInstalled ? "" : " not"} installed`);
 
   if (!isInstalled) {
     info("Installing Semaphore Validator...");

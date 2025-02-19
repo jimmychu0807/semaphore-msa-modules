@@ -33,6 +33,7 @@ abstract contract SharedTestSetup is RhinestoneModuleKit, Test {
     using IdentityLib for Identity;
 
     AccountInstance internal smartAcct;
+    Semaphore internal semaphore;
     SemaphoreValidator internal semaphoreValidator;
     SemaphoreExecutor internal semaphoreExecutor;
     SimpleContract internal simpleContract;
@@ -45,7 +46,7 @@ abstract contract SharedTestSetup is RhinestoneModuleKit, Test {
         SemaphoreVerifier semaphoreVerifier = new SemaphoreVerifier();
         vm.label(address(semaphoreVerifier), "SemaphoreVerifier");
 
-        Semaphore semaphore = new Semaphore(ISemaphoreVerifier(address(semaphoreVerifier)));
+        semaphore = new Semaphore(ISemaphoreVerifier(address(semaphoreVerifier)));
         vm.label(address(semaphore), "Semaphore");
 
         // Create the executor

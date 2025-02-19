@@ -37,10 +37,10 @@ importers:
     devDependencies:
       '@ERC4337/account-abstraction':
         specifier: github:kopy-kat/account-abstraction#develop
-        version: accountabstraction@https://codeload.github.com/kopy-kat/account-abstraction/tar.gz/c5887153fbfe3ed09b2637cac39873f96d676f38(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
+        version: accountabstraction@https://codeload.github.com/kopy-kat/account-abstraction/tar.gz/c5887153fbfe3ed09b2637cac39873f96d676f38(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
       '@ERC4337/account-abstraction-v0.6':
         specifier: github:eth-infinitism/account-abstraction#v0.6.0
-        version: accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/7174d6d845618dbd11cee68eefa715f5263690b6(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
+        version: accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/7174d6d845618dbd11cee68eefa715f5263690b6(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
       '@openzeppelin/contracts':
         specifier: ^5.2.0
         version: 5.2.0
@@ -49,10 +49,10 @@ importers:
         version: 4.1.0
       '@rhinestone/erc4337-validation':
         specifier: ^0.0.5
-        version: 0.0.5(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
+        version: 0.0.5(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
       '@rhinestone/modulekit':
         specifier: github:jimmychu0807/rhinestonewtf-modulekit#semaphore-msa-modules
-        version: https://codeload.github.com/jimmychu0807/rhinestonewtf-modulekit/tar.gz/20228012c6f23e7525741d5e09a02c84594427a8(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(typescript@5.7.3)
+        version: https://codeload.github.com/jimmychu0807/rhinestonewtf-modulekit/tar.gz/20228012c6f23e7525741d5e09a02c84594427a8(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(typescript@5.7.3)
       '@rhinestone/sentinellist':
         specifier: github:rhinestonewtf/sentinellist
         version: https://codeload.github.com/rhinestonewtf/sentinellist/tar.gz/e722c5cc68c570d535bc3c9f85b3ce90cdc38807
@@ -120,8 +120,8 @@ importers:
         specifier: 15.1.6
         version: 15.1.6(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       permissionless:
-        specifier: ^0.2.29
-        version: 0.2.30(viem@2.22.23(typescript@5.7.3))(webauthn-p256@0.0.10)
+        specifier: ^0.2.34
+        version: 0.2.34(viem@2.22.23(typescript@5.7.3))(webauthn-p256@0.0.10)
       react:
         specifier: ^19.0.0
         version: 19.0.0
@@ -1071,6 +1071,9 @@ packages:
 
   '@types/node@20.17.17':
     resolution: {integrity: sha512-/WndGO4kIfMicEQLTi/mDANUu/iVUhT7KboZPdEqqHQ4aTS+3qT3U5gIqWDFV+XouorjfgGqvKILJeHhuQgFYg==}
+
+  '@types/node@22.13.4':
+    resolution: {integrity: sha512-ywP2X0DYtX3y08eFVx5fNIw7/uIv8hYUKgXoK8oayJlLnKcRfEYCxWMVE1XagUdVtCJlZT1AU4LXEABW+L1Peg==}
 
   '@types/node@22.7.5':
     resolution: {integrity: sha512-jML7s2NAzMWc//QSJ1a3prpk78cOPchGvXJsC3C6R6PSMoooztvRVQEz89gmBTBY1SPMaqo5teB4uNHPdetShQ==}
@@ -3022,8 +3025,8 @@ packages:
     resolution: {integrity: sha512-iuh7L6jA7JEGu2WxDwtQP1ddOpaJNC4KlDEFfdQajSGgGPNi4OyDc2R7QnbY2bR9QjBVGwgvTdNJZoE7RaxUMA==}
     engines: {node: '>=0.12'}
 
-  permissionless@0.2.30:
-    resolution: {integrity: sha512-9Uzd8vAK6CXuhKrkDPG2aUyXtYXxAdOVnnvaCCCh4jFA1JTwrJcs4vJ930Plva0J74f9LVGfuZxYJrObCM1f3A==}
+  permissionless@0.2.34:
+    resolution: {integrity: sha512-N9injuAHLIJ88hKBGixYSgIUqDAnfhbCPYH+fMdx2vC0D70NtsNT+IUma0XlhQe+AmZRUSXdPyaA6Fz4Kt/aCg==}
     peerDependencies:
       viem: ^2.21.54
       webauthn-p256: 0.0.10
@@ -3188,8 +3191,8 @@ packages:
     resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
     engines: {node: '>=8.10.0'}
 
-  readdirp@4.1.1:
-    resolution: {integrity: sha512-h80JrZu/MHUZCyHu5ciuoI0+WxsCxzxJTILn6Fs8rxSnFPh+UVHYfeIxK1nVGugMqkfC4vJcBOYbkfkwYK0+gw==}
+  readdirp@4.1.2:
+    resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
     engines: {node: '>= 14.18.0'}
 
   rechoir@0.6.2:
@@ -3402,8 +3405,8 @@ packages:
   solady@0.0.287:
     resolution: {integrity: sha512-Cti/U83eqIB0e3UNxZvmkwrFrQCT9YLY1vhVguaWnOVLKzv/OU5tQbKLGpamUzMtcLSxaBjBdhaTlmiciGfhHg==}
 
-  solady@https://codeload.github.com/vectorized/solady/tar.gz/5dd6f93498b8ebdc9d72194cfa680a90b738e1ad:
-    resolution: {tarball: https://codeload.github.com/vectorized/solady/tar.gz/5dd6f93498b8ebdc9d72194cfa680a90b738e1ad}
+  solady@https://codeload.github.com/vectorized/solady/tar.gz/fe8ca073eca4a8170b40c06062fb259a94863df1:
+    resolution: {tarball: https://codeload.github.com/vectorized/solady/tar.gz/fe8ca073eca4a8170b40c06062fb259a94863df1}
     version: 0.1.8
 
   solarray@https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684:
@@ -3446,8 +3449,8 @@ packages:
   stable-hash@0.0.4:
     resolution: {integrity: sha512-LjdcbuBeLcdETCrPn9i8AYAZ1eCtu4ECAWtP7UleOiZ9LzVxRzzUZEoZ8zB24nhkQnDWyET0I+3sWokSDS3E7g==}
 
-  stacktrace-parser@0.1.10:
-    resolution: {integrity: sha512-KJP1OCML99+8fhOHxwwzyWrlUuVX5GQ0ZpJTd1DFXhdkrvg1szxfHhawXUZ3g9TkXORQd4/WG68jMlQZ2p8wlg==}
+  stacktrace-parser@0.1.11:
+    resolution: {integrity: sha512-WjlahMgHmCJpqzU8bIBy4qtsZdU9lRlcZE3Lvyej6t4tuOuv1vk57OW3MBrj6hXBFx/nNoC9MPMTcr5YA7NQbg==}
     engines: {node: '>=6'}
 
   static-eval@2.0.2:
@@ -3584,8 +3587,8 @@ packages:
   thenify@3.3.1:
     resolution: {integrity: sha512-RVZSIV5IG10Hk3enotrhvz0T9em6cyHBLkH/YAZuKqd8hRkKhSfCGIcP2KUY0EPxndzANBmNllzWPwak+bheSw==}
 
-  tinyglobby@0.2.10:
-    resolution: {integrity: sha512-Zc+8eJlFMvgatPZTl6A9L/yht8QqdmUNtURHaKZLmKBE12hNPSrqNkUp2cs3M/UKmNVVAMFQYSjYIVHDjW5zew==}
+  tinyglobby@0.2.11:
+    resolution: {integrity: sha512-32TmKeeKUahv0Go8WmQgiEp9Y21NuxjwjqiRC1nrUB51YacfSwuB44xgXD+HdIppmMRgjQNPdrHyA6vIybYZ+g==}
     engines: {node: '>=12.0.0'}
 
   tmp@0.0.33:
@@ -3729,6 +3732,9 @@ packages:
 
   undici-types@6.19.8:
     resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
+
+  undici-types@6.20.0:
+    resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
 
   undici@5.28.5:
     resolution: {integrity: sha512-zICwjrDrcrUE0pyyJc1I2QzBkLM8FINsgOrt6WjA+BgajVq9Nxu2PbFFXUrAggLfDXlZGZBVZYw7WNV5KiBiBA==}
@@ -4629,14 +4635,14 @@ snapshots:
       '@nomicfoundation/solidity-analyzer-linux-x64-musl': 0.1.2
       '@nomicfoundation/solidity-analyzer-win32-x64-msvc': 0.1.2
 
-  '@nomiclabs/hardhat-etherscan@2.1.8(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))':
+  '@nomiclabs/hardhat-etherscan@2.1.8(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))':
     dependencies:
       '@ethersproject/abi': 5.7.0
       '@ethersproject/address': 5.7.0
       cbor: 5.2.0
       debug: 4.4.0(supports-color@8.1.1)
       fs-extra: 7.0.1
-      hardhat: 2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3)
+      hardhat: 2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)
       node-fetch: 2.7.0
       semver: 6.3.1
     transitivePeerDependencies:
@@ -4666,15 +4672,15 @@ snapshots:
 
   '@prb/math@4.1.0': {}
 
-  '@rhinestone/erc4337-validation@0.0.5(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))':
+  '@rhinestone/erc4337-validation@0.0.5(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))':
     dependencies:
       '@openzeppelin/contracts': 5.0.1
-      account-abstraction: accountabstraction@https://codeload.github.com/kopy-kat/account-abstraction/tar.gz/c5887153fbfe3ed09b2637cac39873f96d676f38(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
-      account-abstraction-v0.6: accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/7174d6d845618dbd11cee68eefa715f5263690b6(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
+      account-abstraction: accountabstraction@https://codeload.github.com/kopy-kat/account-abstraction/tar.gz/c5887153fbfe3ed09b2637cac39873f96d676f38(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
+      account-abstraction-v0.6: accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/7174d6d845618dbd11cee68eefa715f5263690b6(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
       ds-test: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0
       forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/8a225d81aa8e2e013580564588c79abb65eacc9e
       prettier: 2.8.8
-      solady: https://codeload.github.com/vectorized/solady/tar.gz/5dd6f93498b8ebdc9d72194cfa680a90b738e1ad
+      solady: https://codeload.github.com/vectorized/solady/tar.gz/fe8ca073eca4a8170b40c06062fb259a94863df1
     transitivePeerDependencies:
       - bufferutil
       - encoding
@@ -4691,17 +4697,17 @@ snapshots:
       tslib: 2.8.1
       viem: 2.22.23(typescript@5.7.3)
 
-  '@rhinestone/modulekit@https://codeload.github.com/jimmychu0807/rhinestonewtf-modulekit/tar.gz/20228012c6f23e7525741d5e09a02c84594427a8(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(typescript@5.7.3)':
+  '@rhinestone/modulekit@https://codeload.github.com/jimmychu0807/rhinestonewtf-modulekit/tar.gz/20228012c6f23e7525741d5e09a02c84594427a8(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(typescript@5.7.3)':
     dependencies:
-      '@ERC4337/account-abstraction': accountabstraction@https://codeload.github.com/kopy-kat/account-abstraction/tar.gz/c5887153fbfe3ed09b2637cac39873f96d676f38(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
-      '@ERC4337/account-abstraction-v0.6': accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/7174d6d845618dbd11cee68eefa715f5263690b6(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
+      '@ERC4337/account-abstraction': accountabstraction@https://codeload.github.com/kopy-kat/account-abstraction/tar.gz/c5887153fbfe3ed09b2637cac39873f96d676f38(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
+      '@ERC4337/account-abstraction-v0.6': accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/7174d6d845618dbd11cee68eefa715f5263690b6(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
       '@prb/math': 4.1.0
-      '@rhinestone/erc4337-validation': 0.0.5(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
+      '@rhinestone/erc4337-validation': 0.0.5(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
       '@rhinestone/sentinellist': https://codeload.github.com/rhinestonewtf/sentinellist/tar.gz/e722c5cc68c570d535bc3c9f85b3ce90cdc38807
       ds-test: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0
       excessively-safe-call: '@nomad-xyz/excessively-safe-call@https://codeload.github.com/nomad-xyz/ExcessivelySafeCall/tar.gz/81cd99ce3e69117d665d7601c330ea03b97acce0'
       forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/b93cf4bc34ff214c099dc970b153f85ade8c9f66
-      solady: https://codeload.github.com/vectorized/solady/tar.gz/5dd6f93498b8ebdc9d72194cfa680a90b738e1ad
+      solady: https://codeload.github.com/vectorized/solady/tar.gz/fe8ca073eca4a8170b40c06062fb259a94863df1
       solarray: https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684
       solhint: 5.0.5(typescript@5.7.3)
     transitivePeerDependencies:
@@ -4906,16 +4912,16 @@ snapshots:
   '@tsconfig/node16@1.0.4':
     optional: true
 
-  '@typechain/hardhat@2.3.1(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))':
+  '@typechain/hardhat@2.3.1(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))':
     dependencies:
       fs-extra: 9.1.0
-      hardhat: 2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3)
+      hardhat: 2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)
       lodash: 4.17.21
       typechain: 5.2.0(typescript@5.7.3)
 
   '@types/bn.js@4.11.6':
     dependencies:
-      '@types/node': 20.17.17
+      '@types/node': 22.13.4
 
   '@types/bn.js@5.1.6':
     dependencies:
@@ -4955,6 +4961,10 @@ snapshots:
   '@types/node@20.17.17':
     dependencies:
       undici-types: 6.19.8
+
+  '@types/node@22.13.4':
+    dependencies:
+      undici-types: 6.20.0
 
   '@types/node@22.7.5':
     dependencies:
@@ -5088,19 +5098,19 @@ snapshots:
     optionalDependencies:
       typescript: 5.7.3
 
-  accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/7174d6d845618dbd11cee68eefa715f5263690b6(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3)):
+  accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/7174d6d845618dbd11cee68eefa715f5263690b6(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3)):
     dependencies:
       '@gnosis.pm/safe-contracts': 1.3.0(ethers@5.7.2)
-      '@nomiclabs/hardhat-etherscan': 2.1.8(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))
+      '@nomiclabs/hardhat-etherscan': 2.1.8(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))
       '@openzeppelin/contracts': 4.9.6
       '@thehubbleproject/bls': 0.5.1
-      '@typechain/hardhat': 2.3.1(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
+      '@typechain/hardhat': 2.3.1(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
       '@types/mocha': 9.1.1
       ethereumjs-util: 7.1.5
       ethereumjs-wallet: 1.0.2
       hardhat-deploy: 0.11.45
-      hardhat-deploy-ethers: 0.3.0-beta.13(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))
-      solidity-coverage: 0.8.14(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))
+      hardhat-deploy-ethers: 0.3.0-beta.13(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))
+      solidity-coverage: 0.8.14(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))
       source-map-support: 0.5.21
       table: 6.9.0
       typescript: 4.9.5
@@ -5114,20 +5124,20 @@ snapshots:
       - typechain
       - utf-8-validate
 
-  accountabstraction@https://codeload.github.com/kopy-kat/account-abstraction/tar.gz/c5887153fbfe3ed09b2637cac39873f96d676f38(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3)):
+  accountabstraction@https://codeload.github.com/kopy-kat/account-abstraction/tar.gz/c5887153fbfe3ed09b2637cac39873f96d676f38(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3)):
     dependencies:
-      '@nomiclabs/hardhat-etherscan': 2.1.8(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))
+      '@nomiclabs/hardhat-etherscan': 2.1.8(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))
       '@openzeppelin/contracts': 5.2.0
       '@thehubbleproject/bls': 0.5.1
-      '@typechain/hardhat': 2.3.1(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
+      '@typechain/hardhat': 2.3.1(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
       '@types/debug': 4.1.12
       '@types/mocha': 9.1.1
       debug: 4.4.0(supports-color@8.1.1)
       ethereumjs-util: 7.1.5
       ethereumjs-wallet: 1.0.2
       hardhat-deploy: 0.11.45
-      hardhat-deploy-ethers: 0.3.0-beta.13(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))
-      solidity-coverage: 0.8.14(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3))
+      hardhat-deploy-ethers: 0.3.0-beta.13(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))
+      solidity-coverage: 0.8.14(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3))
       source-map-support: 0.5.21
       table: 6.9.0
       typescript: 4.9.5
@@ -5528,7 +5538,7 @@ snapshots:
 
   chokidar@4.0.3:
     dependencies:
-      readdirp: 4.1.1
+      readdirp: 4.1.2
 
   ci-info@2.0.0: {}
 
@@ -6574,10 +6584,10 @@ snapshots:
     optionalDependencies:
       uglify-js: 3.19.3
 
-  hardhat-deploy-ethers@0.3.0-beta.13(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3)):
+  hardhat-deploy-ethers@0.3.0-beta.13(ethers@5.7.2)(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)):
     dependencies:
       ethers: 5.7.2
-      hardhat: 2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3)
+      hardhat: 2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)
 
   hardhat-deploy@0.11.45:
     dependencies:
@@ -6610,7 +6620,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3):
+  hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3):
     dependencies:
       '@ethersproject/abi': 5.7.0
       '@metamask/eth-sig-util': 4.0.1
@@ -6650,14 +6660,14 @@ snapshots:
       semver: 6.3.1
       solc: 0.8.26(debug@4.4.0)
       source-map-support: 0.5.21
-      stacktrace-parser: 0.1.10
-      tinyglobby: 0.2.10
+      stacktrace-parser: 0.1.11
+      tinyglobby: 0.2.11
       tsort: 0.0.1
       undici: 5.28.5
       uuid: 8.3.2
       ws: 7.5.10
     optionalDependencies:
-      ts-node: 10.9.2(@types/node@22.7.5)(typescript@5.7.3)
+      ts-node: 10.9.2(@types/node@22.13.4)(typescript@5.7.3)
       typescript: 5.7.3
     transitivePeerDependencies:
       - bufferutil
@@ -7401,7 +7411,7 @@ snapshots:
       safe-buffer: 5.2.1
       sha.js: 2.4.11
 
-  permissionless@0.2.30(viem@2.22.23(typescript@5.7.3))(webauthn-p256@0.0.10):
+  permissionless@0.2.34(viem@2.22.23(typescript@5.7.3))(webauthn-p256@0.0.10):
     dependencies:
       viem: 2.22.23(typescript@5.7.3)
       webauthn-p256: 0.0.10
@@ -7546,7 +7556,7 @@ snapshots:
     dependencies:
       picomatch: 2.3.1
 
-  readdirp@4.1.1: {}
+  readdirp@4.1.2: {}
 
   rechoir@0.6.2:
     dependencies:
@@ -7829,7 +7839,7 @@ snapshots:
 
   solady@0.0.287: {}
 
-  solady@https://codeload.github.com/vectorized/solady/tar.gz/5dd6f93498b8ebdc9d72194cfa680a90b738e1ad: {}
+  solady@https://codeload.github.com/vectorized/solady/tar.gz/fe8ca073eca4a8170b40c06062fb259a94863df1: {}
 
   solarray@https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684: {}
 
@@ -7870,7 +7880,7 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  solidity-coverage@0.8.14(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3)):
+  solidity-coverage@0.8.14(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)):
     dependencies:
       '@ethersproject/abi': 5.7.0
       '@solidity-parser/parser': 0.19.0
@@ -7881,7 +7891,7 @@ snapshots:
       ghost-testrpc: 0.0.2
       global-modules: 2.0.0
       globby: 10.0.2
-      hardhat: 2.22.18(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3))(typescript@5.7.3)
+      hardhat: 2.22.18(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)
       jsonschema: 1.5.0
       lodash: 4.17.21
       mocha: 10.8.2
@@ -7911,7 +7921,7 @@ snapshots:
 
   stable-hash@0.0.4: {}
 
-  stacktrace-parser@0.1.10:
+  stacktrace-parser@0.1.11:
     dependencies:
       type-fest: 0.7.1
 
@@ -8092,7 +8102,7 @@ snapshots:
     dependencies:
       any-promise: 1.3.0
 
-  tinyglobby@0.2.10:
+  tinyglobby@0.2.11:
     dependencies:
       fdir: 6.4.3(picomatch@4.0.2)
       picomatch: 4.0.2
@@ -8140,14 +8150,14 @@ snapshots:
       yn: 3.1.1
     optional: true
 
-  ts-node@10.9.2(@types/node@22.7.5)(typescript@5.7.3):
+  ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.11
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
-      '@types/node': 22.7.5
+      '@types/node': 22.13.4
       acorn: 8.14.0
       acorn-walk: 8.3.4
       arg: 4.1.3
@@ -8267,6 +8277,8 @@ snapshots:
   underscore@1.12.1: {}
 
   undici-types@6.19.8: {}
+
+  undici-types@6.20.0: {}
 
   undici@5.28.5:
     dependencies:

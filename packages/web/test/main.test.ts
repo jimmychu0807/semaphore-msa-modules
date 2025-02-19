@@ -9,7 +9,7 @@ import { debug } from "debug";
 const info = debug("test:main");
 
 const deployerSk = (process.env.DEPLOYER_SK ?? "0x") as Hex;
-const safeAccountAddr = (process.env.SAFE_ACCOUNT_ADDRESS ?? "0x") as Hex;
+const saltNonce = Number(process.env.ACCOUNT_SALT_NONCE) ?? 0;
 const rpcUrl = process.env.ETH_RPC_URL as string;
 const bundlerUrl = process.env.BUNDLER_URL as string;
 const paymasterUrl = process.env.PAYMASTER_URL as string;
@@ -36,7 +36,7 @@ describe("Test Semaphore modules", function () {
       bundlerUrl,
       rpcUrl,
       paymasterUrl,
-      safeAccountAddr,
+      saltNonce,
       chain,
     });
   });
