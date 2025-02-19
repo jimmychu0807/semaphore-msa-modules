@@ -9,7 +9,7 @@
     "prettier": "prettier --no-error-on-unmatched-pattern -c \"{src,test}/**/*.{json,ts,tsx}\"",
     "prettier:write": "prettier --no-error-on-unmatched-pattern -w \"{src,test}/**/*.{json,ts,tsx}\"",
     "compile": "tsc --noEmit",
-    "test": "mocha --config .mocharc.json",
+    "test": "DEBUG=test:* mocha --config .mocharc.json",
     "clean": "rimraf .next"
   },
   "dependencies": {
@@ -20,7 +20,7 @@
     "debug": "^4.4.0",
     "dotenv": "^16.4.5",
     "next": "15.1.6",
-    "permissionless": "^0.2.29",
+    "permissionless": "^0.2.34",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "viem": "^2.21.51"

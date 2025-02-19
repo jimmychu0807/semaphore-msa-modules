@@ -2,12 +2,12 @@ import {
   type Address,
   type Chain,
   type Hex,
+  createPublicClient,
   createWalletClient,
   encodePacked,
   http,
   getAddress,
   keccak256,
-  parseEther,
 } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { Identity } from "@semaphore-protocol/identity";
@@ -17,24 +17,29 @@ import { User } from "./types";
 
 const info = debug("test:helpers");
 
-export async function transferTo(sk: string, address: string, ethBal: string, opt: { chain: Chain; rpcUrl: string }) {
-  const account = privateKeyToAccount(sk as Hex);
-  const client = createWalletClient({
-    account,
-    chain: opt.chain,
-    transport: http(opt.rpcUrl),
-  });
-
+export async function transferTo(
+  sk: string,
+  address: string,
+  amt: bigint,
+  thresholdpc: number,
+  opt: { chain: Chain; rpcUrl: string }
+) {
+  const { chain, rpcUrl } = opt;
   const parsedAddr = getAddress(address);
 
-  const tx = {
-    account,
-    to: parsedAddr,
-    value: parseEther(ethBal),
-  };
+  const publicClient = createPublicClient({ chain, transport: http(rpcUrl) });
+  const bal = await publicClient.getBalance({ address: parsedAddr });
+  const threshold = (amt * BigInt(thresholdpc * 100)) / BigInt(100);
+  if (bal >= threshold) {
+    info(`${parsedAddr} bal: ${bal} > ${threshold}, skip transfer.`);
+    return;
+  }
 
+  const account = privateKeyToAccount(sk as Hex);
+  const client = createWalletClient({ account, chain, transport: http(rpcUrl) });
+  const tx = { account, to: parsedAddr, value: amt };
   const hash = await client.sendTransaction(tx);
-  info(`sent ${ethBal} ETH to ${address}: ${hash}`);
+  info(`transferred ${amt} to ${parsedAddr}: ${hash}`);
 }
 
 export function initUsers(userLen: number, firstSk: Hex): User[] {
