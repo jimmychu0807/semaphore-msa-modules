@@ -5,6 +5,7 @@ import { Vm } from "forge-std/Vm.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 import { ISemaphore } from "src/interfaces/Semaphore.sol";
 import { LibString } from "solady/Milady.sol";
+import { MOCK_SIG_P2 } from "src/utils/Constants.sol";
 
 // https://github.com/foundry-rs/forge-std/blob/master/src/Base.sol#L9
 address constant VM_ADDRESS = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D;
@@ -112,6 +113,11 @@ library IdentityLib {
         uint256[2] memory pub = IdentityLib._publicKey(self);
         bytes memory hashSig = IdentityLib._signHash(self, hash);
         return abi.encodePacked(pub, hashSig);
+    }
+
+    function mockSignature(Identity self) public returns (bytes memory signature) {
+        uint256[2] memory pub = IdentityLib._publicKey(self);
+        return abi.encodePacked(pub, MOCK_SIG_P2);
     }
 
     function getSempahoreProof(

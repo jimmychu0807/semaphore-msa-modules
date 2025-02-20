@@ -9,3 +9,6 @@ uint256 constant MIN_TARGET_CALLDATA_LEN = 56;
 string constant SEMAPHORE_VALIDATOR = "SemaphoreMSAValidator";
 string constant SEMAPHORE_EXECUTOR = "SemaphoreMSAExecutor";
 string constant VERSION = "0.1.0";
+
+bytes constant MOCK_SIG_P2 =
+    hex"deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef";
