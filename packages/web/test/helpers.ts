@@ -57,7 +57,7 @@ export function initUsers(userLen: number, firstSk: Hex): User[] {
 }
 
 export function getUserCommitmentsSorted(users: User[]): Array<bigint> {
-  return users.map((u) => u.identity.commitment).sort((a, b) => a < b ? -1 : (a > b ? 1 : 0));
+  return users.map((u) => u.identity.commitment).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 }
 
 export function signMessage(user: User, hash: Hex) {

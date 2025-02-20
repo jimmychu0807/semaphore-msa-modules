@@ -34,7 +34,7 @@ contract IntegrationTest is SharedTestSetup {
 
         // We need to increase the accountGasLimits, default 2e6 is not enough to verify
         // signature, for all those elliptic curve computation.
-        // Encoding two fields here, validation and execution gas
+        // Encoding two fields here, verificationGasLimit and callGasLimit.
         userOpData.userOp.accountGasLimits = bytes32(abi.encodePacked(uint128(2e7), uint128(2e7)));
         userOpData.userOpHash = smartAcct.aux.entrypoint.getUserOpHash(userOpData.userOp);
         userOpData.userOp.signature = signer.signHash(userOpData.userOpHash);

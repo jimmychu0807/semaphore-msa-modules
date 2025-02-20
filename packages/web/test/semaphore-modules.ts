@@ -11,18 +11,20 @@ import {
   type SmartAccount,
   createPaymasterClient,
   entryPoint07Address,
-  getUserOperationHash
+  getUserOperationHash,
 } from "viem/account-abstraction";
 
 import { type SmartAccountClient, createSmartAccountClient } from "permissionless";
 // import { getAccountNonce } from "permissionless/actions";
 import { createPimlicoClient } from "permissionless/clients/pimlico";
 import { toSafeSmartAccount } from "permissionless/accounts";
+import { getAccountNonce } from "permissionless/actions";
 import { erc7579Actions } from "permissionless/actions/erc7579";
 
 import {
   RHINESTONE_ATTESTER_ADDRESS, // Rhinestone Attester
   MOCK_ATTESTER_ADDRESS, // Mock Attester - do not use in production
+  encodeValidatorNonce,
   getAccount,
   isModuleInstalled,
 } from "@rhinestone/module-sdk";
@@ -62,7 +64,7 @@ export default async function main({
   bundlerUrl: string;
   rpcUrl: string;
   paymasterUrl: string;
-  saltNonce: number;
+  saltNonce: bigint;
   chain: Chain;
 }) {
   const users: User[] = initUsers(USER_LEN, deployerSk);
@@ -121,6 +123,12 @@ export default async function main({
     },
   }).extend(erc7579Actions());
 
+  // rhinestone account
+  const rhinestoneAcct = await getAccount({
+    address: safeAccount.address,
+    type: "safe",
+  });
+
   // transfer ETH to the Safe account for further ops
   if (INIT_TRANSFER_AMT) {
     await transferTo(deployerSk, safeAccount.address, INIT_TRANSFER_AMT, 0.8, { chain, rpcUrl });
@@ -132,7 +140,7 @@ export default async function main({
       threshold: THRESHOLD,
       account: safeAccount,
       publicClient,
-      bundlerClient: (bundlerClient as unknown as Erc7579SmartAccountClient)
+      bundlerClient: bundlerClient as unknown as Erc7579SmartAccountClient,
     });
   } catch (err) {
     console.error("safe account install module failed:", err);
@@ -174,10 +182,25 @@ export default async function main({
     data,
   };
 
+  // Check if we need to insatll SemaphoreValidator module
+  const semaphoreValidator = await getSemaphoreValidator();
+
+  const initTxNonce = await getAccountNonce(publicClient, {
+    address: safeAccount.address,
+    entryPointAddress: entryPoint07Address,
+    key: encodeValidatorNonce({ account: rhinestoneAcct, validator: semaphoreValidator }),
+  });
+  info("initTxNonce:", initTxNonce);
+
   const initTxOp = await bundlerClient.prepareUserOperation({
     account: safeAccount,
     calls: [initTxAction],
+    callGasLimit: BigInt(2e7),
+    verificationGasLimit: BigInt(2e7),
   });
+
+  // Include nonce only after performing prepareUserOperation()
+  initTxOp.nonce = initTxNonce;
 
   const opHashToSign = getUserOperationHash({
     chainId: chain.id,
@@ -190,6 +213,9 @@ export default async function main({
   initTxOp.signature = signMessage(owner, opHashToSign);
   info("initTxOp.signature:", initTxOp.signature);
 
+  // ERROR: Encountered error
+  // Details: User operation gas limits exceed the max gas per bundle: 40080000 > 10000000
+  // UserOp hash: 0x8a4976eed5ef52a31c0070033dc40a88e8077c06218073caa929969980ca18f2
   const initTxTxHash = await bundlerClient.sendUserOperation(initTxOp);
   info(`initTxTxHash: ${initTxTxHash}`);
 
@@ -224,8 +250,8 @@ async function installSemaphoreModules({
   // Switch to use rhinestone module-sdk here
   const rhinestoneAcct = await getAccount({
     address: account.address,
-    type: 'safe',
-  })
+    type: "safe",
+  });
 
   let isInstalled: boolean = await isModuleInstalled({
     client: publicClient,
@@ -240,7 +266,9 @@ async function installSemaphoreModules({
     const opHash = await bundlerClient.installModule(semaphoreExecutor);
     info("  L opHash:", opHash);
 
-    const receipt = await (bundlerClient as unknown as SmartAccountClient).waitForUserOperationReceipt({ hash: opHash });
+    const receipt = await (bundlerClient as unknown as SmartAccountClient).waitForUserOperationReceipt({
+      hash: opHash,
+    });
     info("  L receipt:", receipt);
   }
 
