@@ -9,12 +9,10 @@ import {
 } from "viem";
 import {
   type SmartAccount,
-  type UserOperation,
   createPaymasterClient,
   entryPoint07Address,
   getUserOperationHash,
 } from "viem/account-abstraction";
-import { type UnionPartialBy } from "viem";
 
 import { type SmartAccountClient, createSmartAccountClient } from "permissionless";
 // import { getAccountNonce } from "permissionless/actions";
