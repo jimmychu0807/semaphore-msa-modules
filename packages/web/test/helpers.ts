@@ -102,13 +102,9 @@ export function printUserOpReceipt(receipt: UserOperationReceipt, abis: Abi[]) {
   };
 
   info("-- receipt --");
-  info("userOpHash:", receipt.userOpHash);
-  info("sender:", receipt.sender);
-  info("nonce:", receipt.nonce);
-
-  info("total events in userOpReceipt:", receipt.logs.length);
-  printLogs(receipt.logs);
-
-  info("total events in txReceipt:", receipt.receipt.logs.length);
+  info("  userOpHash:", receipt.userOpHash);
+  info("  sender:", receipt.sender);
+  info("  nonce:", receipt.nonce);
+  info("  total events [userOpReceipt, txReceipt]:", [receipt.logs.length, receipt.receipt.logs.length]);
   printLogs(receipt.receipt.logs);
 }

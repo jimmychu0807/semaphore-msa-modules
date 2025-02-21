@@ -1,3 +1,4 @@
+import { debug } from "debug";
 import {
   type Address,
   type Abi,
@@ -31,6 +32,8 @@ import {
   getAccount,
   isModuleInstalled,
 } from "@rhinestone/module-sdk";
+import { Group } from "@semaphore-protocol/group";
+import { generateProof } from "@semaphore-protocol/proof";
 
 import {
   getAcctSeqNum,
@@ -39,16 +42,9 @@ import {
   getSemaphoreValidator,
   SEMAPHORE_EXECUTOR_ADDRESS,
 } from "@/lib/semaphore-modules";
-
 import { semaphoreABI, semaphoreExecutorABI, semaphoreValidatorABI } from "@/lib/semaphore-modules/abi";
-
-import { Group } from "@semaphore-protocol/group";
-import { generateProof } from "@semaphore-protocol/proof";
-
-import { debug } from "debug";
-
 import type { Erc7579SmartAccountClient, SemaphoreProofFix, User } from "./types";
-
+import { TestProcess } from "./types";
 import {
   getTxHash,
   getUserCommitmentsSorted,
@@ -65,13 +61,7 @@ const USER_LEN: number = 3;
 const THRESHOLD: number = 2;
 const USE_MOCK_SIGNATURE = true;
 
-enum TestProcess {
-  InstallModules = 0,
-  RunInit = 1,
-  RunInitSign = 2,
-  RunInitSignExecute = 3,
-}
-const TEST_PROCESS: TestProcess = TestProcess.RunInitSign;
+const TEST_PROCESS: TestProcess = TestProcess.RunInit;
 
 const info = debug("test:semaphore-modules");
 
@@ -224,7 +214,8 @@ async function initTx({
   const semGroup = new Group(getUserCommitmentsSorted(group));
   info("group merkleRoot:", semGroup.root);
 
-  const proof = (await generateProof(signer.identity, semGroup, txHash, gId as bigint)) as unknown as SemaphoreProofFix;
+  // The scope is the txHash
+  const proof = (await generateProof(signer.identity, semGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
   info(`proof:`, proof);
 
   const data = encodeFunctionData({

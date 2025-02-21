@@ -33,3 +33,10 @@ export type ParsedLog = Log & {
   >;
   logIndex: number;
 };
+
+export enum TestProcess {
+  InstallModules = 0,
+  RunInit = 1,
+  RunInitSign = 2,
+  RunInitSignExecute = 3,
+}
