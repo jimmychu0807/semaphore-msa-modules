@@ -232,6 +232,28 @@ contract SemaphoreValidatorTest is SharedTestSetup {
         assertEq(res, VALIDATION_FAILED, "test_validateUserOp_InvalidFuncSel");
     }
 
+    function test_validateUserOp_MockSignaturePass()
+        public
+        setupSmartAcctWithMembersThreshold(1, 1)
+    {
+        PackedUserOperation memory userOp = getEmptyUserOperation();
+        userOp.sender = smartAcct.account;
+        userOp.callData = getTestUserOpCallData(
+            address(semaphoreExecutor), 0, abi.encodeCall(semaphoreExecutor.executeTx, (""))
+        );
+        bytes32 userOpHash = bytes32(keccak256("userOpHash"));
+
+        Identity id = $users[0].identity;
+        // Using mock signature here
+        userOp.signature = id.mockSignature();
+
+        uint256 res = ERC7579ValidatorBase.ValidationData.unwrap(
+            semaphoreValidator.validateUserOp(userOp, userOpHash)
+        );
+
+        assertEq(res, VALIDATION_SUCCESS, "test_validateUserOp_MockSignaturePass");
+    }
+
     function test_validateUserOp_Pass() public setupSmartAcctWithMembersThreshold(1, 1) {
         PackedUserOperation memory userOp = getEmptyUserOperation();
         userOp.sender = smartAcct.account;

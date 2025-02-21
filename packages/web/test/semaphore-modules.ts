@@ -1,4 +1,7 @@
+import { debug } from "debug";
 import {
+  type Address,
+  type Abi,
   type Chain,
   type Hex,
   type PublicClient,
@@ -9,6 +12,7 @@ import {
 } from "viem";
 import {
   type SmartAccount,
+  type UserOperation,
   createPaymasterClient,
   entryPoint07Address,
   getUserOperationHash,
@@ -28,29 +32,40 @@ import {
   getAccount,
   isModuleInstalled,
 } from "@rhinestone/module-sdk";
-
-import {
-  getSemaphoreExecutor,
-  getSemaphoreValidator,
-  SEMAPHORE_EXECUTOR_ADDRESS,
-  semaphoreExecutorABI,
-  getAcctSeqNum,
-  getGroupId,
-} from "@/lib/semaphore-modules";
 import { Group } from "@semaphore-protocol/group";
 import { generateProof } from "@semaphore-protocol/proof";
 
-import { debug } from "debug";
-
-import { type Erc7579SmartAccountClient, type User } from "./types";
-import { getTxHash, getUserCommitmentsSorted, initUsers, signMessage, transferTo } from "./helpers";
+import {
+  getAcctSeqNum,
+  getGroupId,
+  getSemaphoreExecutor,
+  getSemaphoreValidator,
+  SEMAPHORE_EXECUTOR_ADDRESS,
+} from "@/lib/semaphore-modules";
+import { semaphoreABI, semaphoreExecutorABI, semaphoreValidatorABI } from "@/lib/semaphore-modules/abi";
+import type { Erc7579SmartAccountClient, SemaphoreProofFix, User } from "./types";
+import { TestProcess } from "./types";
+import {
+  getTxHash,
+  getUserCommitmentsSorted,
+  initUsers,
+  mockSignature,
+  printUserOpReceipt,
+  signMessage,
+  transferTo,
+} from "./helpers";
 
 const INIT_TRANSFER_AMT: bigint = parseEther("0.01"); // In ETH
 const TEST_TRANSFER_AMT: bigint = parseEther("0.001"); // In ETH
 const USER_LEN: number = 3;
 const THRESHOLD: number = 2;
+const USE_MOCK_SIGNATURE = true;
+
+const TEST_PROCESS: TestProcess = TestProcess.RunInit;
 
 const info = debug("test:semaphore-modules");
+
+const projectABIs = [semaphoreABI, semaphoreExecutorABI, semaphoreValidatorABI] as Abi[];
 
 export default async function main({
   deployerSk,
@@ -123,12 +138,6 @@ export default async function main({
     },
   }).extend(erc7579Actions());
 
-  // rhinestone account
-  const rhinestoneAcct = await getAccount({
-    address: safeAccount.address,
-    type: "safe",
-  });
-
   // transfer ETH to the Safe account for further ops
   if (INIT_TRANSFER_AMT) {
     await transferTo(deployerSk, safeAccount.address, INIT_TRANSFER_AMT, 0.8, { chain, rpcUrl });
@@ -143,34 +152,76 @@ export default async function main({
       bundlerClient: bundlerClient as unknown as Erc7579SmartAccountClient,
     });
   } catch (err) {
-    console.error("safe account install module failed:", err);
+    console.error("safe account install modules failed:", err);
     return;
   }
 
-  // Initiating a transfer
-  const target = users[0].account;
+  if (TEST_PROCESS < TestProcess.RunInit) return;
+
+  let txHash;
+  try {
+    txHash = await initTx({
+      signer: owner,
+      group: users,
+      to: users[0].account.address,
+      value: TEST_TRANSFER_AMT,
+      account: safeAccount,
+      publicClient,
+      bundlerClient: bundlerClient as unknown as Erc7579SmartAccountClient,
+    });
+  } catch (err) {
+    console.error("initTx failed:", err);
+    return;
+  }
+
+  if (TEST_PROCESS < TestProcess.RunInitSign) return;
+
+  info(txHash);
+
+  if (TEST_PROCESS < TestProcess.RunInitSignExecute) return;
+}
+
+async function initTx({
+  signer,
+  group,
+  to,
+  value,
+  account,
+  publicClient,
+  bundlerClient,
+}: {
+  signer: User;
+  group: User[];
+  to: Address;
+  value: bigint;
+  account: SmartAccount;
+  publicClient: PublicClient;
+  bundlerClient: Erc7579SmartAccountClient;
+}) {
+  info("✨✨ initTx ✨✨");
 
   // Get the semaphore proof here
-  const seq = await getAcctSeqNum({ account: safeAccount, client: publicClient });
+  const seq = await getAcctSeqNum({ account, client: publicClient });
   info(`acct seq #: ${seq}`);
 
-  const txHash = getTxHash(seq, target.address, TEST_TRANSFER_AMT, "0x");
+  const txHash = getTxHash(seq, to, value, "0x");
   info(`txHash: ${txHash}`);
 
-  const gId = await getGroupId({ account: safeAccount, client: publicClient });
+  const gId = await getGroupId({ account, client: publicClient });
   if (gId === undefined) throw new Error("getGroupId() failed");
   info(`gId: ${gId}`);
 
-  const group = new Group(getUserCommitmentsSorted(users));
-  info("group merkleRoot:", group.root);
+  const semGroup = new Group(getUserCommitmentsSorted(group));
+  info("group merkleRoot:", semGroup.root);
 
-  const proof = await generateProof(owner.identity, group, txHash, gId as bigint);
+  // The scope is the txHash
+  const proof = (await generateProof(signer.identity, semGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
   info(`proof:`, proof);
 
   const data = encodeFunctionData({
     functionName: "initiateTx",
     abi: semaphoreExecutorABI,
-    args: [target.address, TEST_TRANSFER_AMT, "", proof, false],
+    args: [to, value, "0x", proof, false],
   });
 
   // Refer to rhinestone impl: https://github.com/rhinestonewtf/module-sdk/blob/55b67b57eaf56ff11a7229396bb761eb7994e756/src/module/ownable-executor/usage.ts#L75
@@ -185,33 +236,60 @@ export default async function main({
   // Check if we need to insatll SemaphoreValidator module
   const semaphoreValidator = await getSemaphoreValidator();
 
+  // rhinestone account
+  const rhinestoneAcct = await getAccount({
+    address: account.address,
+    type: "safe",
+  });
+
   const initTxNonce = await getAccountNonce(publicClient, {
-    address: safeAccount.address,
+    address: account.address,
     entryPointAddress: entryPoint07Address,
     key: encodeValidatorNonce({ account: rhinestoneAcct, validator: semaphoreValidator }),
   });
   info("initTxNonce:", initTxNonce);
 
-  const initTxOp = await bundlerClient.prepareUserOperation({
-    account: safeAccount,
-    calls: [initTxAction],
-    callGasLimit: BigInt(2e7),
-    verificationGasLimit: BigInt(2e7),
-  });
+  // Decide if we go thru the mock or real signature
+  let initTxOp;
 
-  // Include nonce only after performing prepareUserOperation()
-  initTxOp.nonce = initTxNonce;
+  if (USE_MOCK_SIGNATURE) {
+    info("using mock signature...");
 
-  const opHashToSign = getUserOperationHash({
-    chainId: chain.id,
-    entryPointAddress: entryPoint07Address,
-    entryPointVersion: "0.7",
-    userOperation: initTxOp,
-  });
-  info("opHashToSign:", opHashToSign);
+    const signature = mockSignature(signer);
+    info("  L signature:", signature);
 
-  initTxOp.signature = signMessage(owner, opHashToSign);
-  info("initTxOp.signature:", initTxOp.signature);
+    initTxOp = (await bundlerClient.prepareUserOperation({
+      account,
+      calls: [initTxAction],
+      nonce: initTxNonce,
+      signature,
+      // callGasLimit: BigInt(2e7),
+      // verificationGasLimit: BigInt(2e7),
+    })) as UserOperation;
+  } else {
+    info("signing opHash regularly...");
+
+    initTxOp = (await bundlerClient.prepareUserOperation({
+      account,
+      calls: [initTxAction],
+      callGasLimit: BigInt(2e7),
+      verificationGasLimit: BigInt(2e7),
+    })) as UserOperation;
+
+    // Include nonce only after performing prepareUserOperation()
+    initTxOp.nonce = initTxNonce;
+
+    const opHashToSign = getUserOperationHash({
+      chainId: publicClient.chain!.id,
+      entryPointAddress: entryPoint07Address,
+      entryPointVersion: "0.7",
+      userOperation: initTxOp,
+    });
+    info("  L opHash:", opHashToSign);
+
+    initTxOp.signature = signMessage(signer, opHashToSign);
+    info("  L signature:", initTxOp.signature);
+  }
 
   // ERROR: Encountered error
   // Details: User operation gas limits exceed the max gas per bundle: 40080000 > 10000000
@@ -222,7 +300,9 @@ export default async function main({
   const receipt = await bundlerClient.waitForUserOperationReceipt({
     hash: initTxTxHash,
   });
-  info("receipt:", receipt);
+  printUserOpReceipt(receipt, projectABIs);
+
+  return txHash;
 }
 
 async function installSemaphoreModules({
@@ -269,7 +349,7 @@ async function installSemaphoreModules({
     const receipt = await (bundlerClient as unknown as SmartAccountClient).waitForUserOperationReceipt({
       hash: opHash,
     });
-    info("  L receipt:", receipt);
+    printUserOpReceipt(receipt, projectABIs);
   }
 
   // Check if we need to insatll SemaphoreValidator module
@@ -289,6 +369,6 @@ async function installSemaphoreModules({
     info("  L opHash:", opHash);
 
     const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: opHash });
-    info("  L receipt:", receipt);
+    printUserOpReceipt(receipt, projectABIs);
   }
 }

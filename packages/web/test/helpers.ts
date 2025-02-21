@@ -1,19 +1,27 @@
 import {
+  type Abi,
   type Address,
   type Chain,
   type Hex,
   createPublicClient,
   createWalletClient,
+  parseEventLogs,
   encodePacked,
   http,
   getAddress,
   keccak256,
 } from "viem";
+
+import { type UserOperationReceipt } from "viem/account-abstraction";
+
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { Identity } from "@semaphore-protocol/identity";
 import { debug } from "debug";
 
-import { User } from "./types";
+import type { ParsedLog, User } from "./types";
+
+export const MOCK_SIG_P2 =
+  "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef" as Hex;
 
 const info = debug("test:helpers");
 
@@ -67,6 +75,36 @@ export function signMessage(user: User, hash: Hex) {
   return encodePacked(["uint256[2]", "uint256[2]", "uint256"], [pk, signature.R8, signature.S]);
 }
 
+export function mockSignature(user: User) {
+  const pk = user.identity.publicKey;
+  return encodePacked(["uint256[2]", "bytes"], [pk, MOCK_SIG_P2]);
+}
+
 export function getTxHash(seq: bigint, target: Address, value: bigint, callData: Hex) {
   return keccak256(encodePacked(["uint256", "address", "uint256", "bytes"], [seq, target, value, callData]));
+}
+
+export function printUserOpReceipt(receipt: UserOperationReceipt, abis: Abi[]) {
+  const printLogs = (logs: typeof receipt.logs) => {
+    const parsedLogs = abis.reduce(
+      (acc, abi) => acc.concat(parseEventLogs({ abi, logs, strict: false })),
+      [] as ParsedLog[]
+    );
+
+    parsedLogs.forEach((log) => {
+      if (log.eventName === undefined) return;
+
+      info(`  event: ${log.eventName}, index: ${log.logIndex}`);
+      Object.keys(log.args).forEach((arg) => {
+        info(`    - ${arg}: ${(log.args as Record<string, string>)[arg]}`);
+      });
+    });
+  };
+
+  info("-- receipt --");
+  info("  userOpHash:", receipt.userOpHash);
+  info("  sender:", receipt.sender);
+  info("  nonce:", receipt.nonce);
+  info("  total events [userOpReceipt, txReceipt]:", [receipt.logs.length, receipt.receipt.logs.length]);
+  printLogs(receipt.receipt.logs);
 }

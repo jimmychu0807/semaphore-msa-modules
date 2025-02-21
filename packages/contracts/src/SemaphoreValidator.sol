@@ -15,6 +15,7 @@ import {
     MIN_TARGET_CALLDATA_LEN,
     SEMAPHORE_EXECUTOR,
     SEMAPHORE_VALIDATOR,
+    MOCK_SIG_P2,
     VERSION
 } from "src/utils/Constants.sol";
 
@@ -184,7 +185,9 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
 
         // The userOp.signature is 160 bytes containing:
         //   (uint256 pubX (32 bytes), uint256 pubY (32 bytes), bytes[96] signature (96 bytes))
-        if (signature.length != SIGNATURE_LEN || !Identity.verifySignature(hash, signature)) {
+        if (signature.length != SIGNATURE_LEN) revert InvalidSignature(account, signature);
+
+        if (!_isMockSignature(signature) && !Identity.verifySignature(hash, signature)) {
             revert InvalidSignature(account, signature);
         }
 
@@ -213,6 +216,25 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
 
     function _isAllowedSelector(bytes4 sel) internal pure returns (bool) {
         return sel == INITIATETX_SEL || sel == SIGNTX_SEL || sel == EXECUTETX_SEL;
+    }
+
+    function _isMockSignature(bytes calldata signature) internal view returns (bool) {
+        uint256 chainId = block.chainid;
+        // Mock signature is only allowed in testnet
+        uint256[4] memory allowedChains = [
+            uint256(11_155_111), // sepolia
+            84_532, // base sepolia
+            31_337, // anvil
+            11_155_420 // OP sepolia
+        ];
+
+        for (uint256 i = 0; i < allowedChains.length; ++i) {
+            if (allowedChains[i] == chainId && LibBytes.eq(signature[64:], MOCK_SIG_P2)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /*//////////////////////////////////////////////////////////////////////////

@@ -11,7 +11,7 @@ services:
         "0.0.0.0",
         "--silent",
         "--hardfork",
-        "prague",
+        "prague"
       ]
     platform: linux/x86_64
 
@@ -33,3 +33,4 @@ services:
     environment:
       - ANVIL_RPC=http://anvil:8545
       - SKIP_DEPLOYMENTS=true
+    entrypoint: ["pnpm", "run", "start"]
