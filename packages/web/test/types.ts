@@ -11,15 +11,6 @@ export type User = {
 
 export type Erc7579SmartAccountClient = Erc7579Actions<SmartAccount> & SmartAccountClient;
 
-export type SemaphoreProofFix = {
-  merkleTreeDepth: bigint;
-  merkleTreeRoot: bigint;
-  nullifier: bigint;
-  message: bigint;
-  scope: bigint;
-  points: readonly [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint];
-};
-
 export type ParsedLog = Log & {
   eventName: string | undefined;
   args: GetEventArgs<

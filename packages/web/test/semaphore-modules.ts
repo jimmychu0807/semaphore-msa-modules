@@ -6,7 +6,6 @@ import {
   type Hex,
   type PublicClient,
   createPublicClient,
-  encodeFunctionData,
   http,
   parseEther,
 } from "viem";
@@ -19,16 +18,13 @@ import {
 } from "viem/account-abstraction";
 
 import { type SmartAccountClient, createSmartAccountClient } from "permissionless";
-// import { getAccountNonce } from "permissionless/actions";
 import { createPimlicoClient } from "permissionless/clients/pimlico";
 import { toSafeSmartAccount } from "permissionless/accounts";
-import { getAccountNonce } from "permissionless/actions";
 import { erc7579Actions } from "permissionless/actions/erc7579";
 
 import {
   RHINESTONE_ATTESTER_ADDRESS, // Rhinestone Attester
   MOCK_ATTESTER_ADDRESS, // Mock Attester - do not use in production
-  encodeValidatorNonce,
   getAccount,
   isModuleInstalled,
 } from "@rhinestone/module-sdk";
@@ -40,11 +36,14 @@ import {
   getGroupId,
   getSemaphoreExecutor,
   getSemaphoreValidator,
-  SEMAPHORE_EXECUTOR_ADDRESS,
+  getInitTxAction,
+  getValidatorNonce,
 } from "@/lib/semaphore-modules";
+import { type SemaphoreProofFix } from "@/lib/semaphore-modules/types";
 import { semaphoreABI, semaphoreExecutorABI, semaphoreValidatorABI } from "@/lib/semaphore-modules/abi";
-import type { Erc7579SmartAccountClient, SemaphoreProofFix, User } from "./types";
-import { TestProcess } from "./types";
+
+import { type Erc7579SmartAccountClient, type User, TestProcess } from "./types";
+
 import {
   getTxHash,
   getUserCommitmentsSorted,
@@ -61,7 +60,7 @@ const USER_LEN: number = 3;
 const THRESHOLD: number = 2;
 const USE_MOCK_SIGNATURE = true;
 
-const TEST_PROCESS: TestProcess = TestProcess.RunInit;
+const TEST_PROCESS: TestProcess = TestProcess.RunInitSignExecute;
 
 const info = debug("test:semaphore-modules");
 
@@ -176,133 +175,36 @@ export default async function main({
 
   if (TEST_PROCESS < TestProcess.RunInitSign) return;
 
-  info(txHash);
-
-  if (TEST_PROCESS < TestProcess.RunInitSignExecute) return;
-}
-
-async function initTx({
-  signer,
-  group,
-  to,
-  value,
-  account,
-  publicClient,
-  bundlerClient,
-}: {
-  signer: User;
-  group: User[];
-  to: Address;
-  value: bigint;
-  account: SmartAccount;
-  publicClient: PublicClient;
-  bundlerClient: Erc7579SmartAccountClient;
-}) {
-  info("✨✨ initTx ✨✨");
-
-  // Get the semaphore proof here
-  const seq = await getAcctSeqNum({ account, client: publicClient });
-  info(`acct seq #: ${seq}`);
-
-  const txHash = getTxHash(seq, to, value, "0x");
-  info(`txHash: ${txHash}`);
-
-  const gId = await getGroupId({ account, client: publicClient });
-  if (gId === undefined) throw new Error("getGroupId() failed");
-  info(`gId: ${gId}`);
-
-  const semGroup = new Group(getUserCommitmentsSorted(group));
-  info("group merkleRoot:", semGroup.root);
-
-  // The scope is the txHash
-  const proof = (await generateProof(signer.identity, semGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
-  info(`proof:`, proof);
-
-  const data = encodeFunctionData({
-    functionName: "initiateTx",
-    abi: semaphoreExecutorABI,
-    args: [to, value, "0x", proof, false],
-  });
-
-  // Refer to rhinestone impl: https://github.com/rhinestonewtf/module-sdk/blob/55b67b57eaf56ff11a7229396bb761eb7994e756/src/module/ownable-executor/usage.ts#L75
-  const initTxAction = {
-    to: SEMAPHORE_EXECUTOR_ADDRESS,
-    target: SEMAPHORE_EXECUTOR_ADDRESS,
-    value: 0n,
-    callData: data,
-    data,
-  };
-
-  // Check if we need to insatll SemaphoreValidator module
-  const semaphoreValidator = await getSemaphoreValidator();
-
-  // rhinestone account
-  const rhinestoneAcct = await getAccount({
-    address: account.address,
-    type: "safe",
-  });
-
-  const initTxNonce = await getAccountNonce(publicClient, {
-    address: account.address,
-    entryPointAddress: entryPoint07Address,
-    key: encodeValidatorNonce({ account: rhinestoneAcct, validator: semaphoreValidator }),
-  });
-  info("initTxNonce:", initTxNonce);
-
-  // Decide if we go thru the mock or real signature
-  let initTxOp;
-
-  if (USE_MOCK_SIGNATURE) {
-    info("using mock signature...");
-
-    const signature = mockSignature(signer);
-    info("  L signature:", signature);
-
-    initTxOp = (await bundlerClient.prepareUserOperation({
-      account,
-      calls: [initTxAction],
-      nonce: initTxNonce,
-      signature,
-      // callGasLimit: BigInt(2e7),
-      // verificationGasLimit: BigInt(2e7),
-    })) as UserOperation;
-  } else {
-    info("signing opHash regularly...");
-
-    initTxOp = (await bundlerClient.prepareUserOperation({
-      account,
-      calls: [initTxAction],
-      callGasLimit: BigInt(2e7),
-      verificationGasLimit: BigInt(2e7),
-    })) as UserOperation;
-
-    // Include nonce only after performing prepareUserOperation()
-    initTxOp.nonce = initTxNonce;
-
-    const opHashToSign = getUserOperationHash({
-      chainId: publicClient.chain!.id,
-      entryPointAddress: entryPoint07Address,
-      entryPointVersion: "0.7",
-      userOperation: initTxOp,
+  try {
+    await signTx({
+      signer: users[1],
+      group: users,
+      txHash,
+      account: safeAccount,
+      publicClient,
+      bundlerClient: bundlerClient as unknown as Erc7579SmartAccountClient,
     });
-    info("  L opHash:", opHashToSign);
-
-    initTxOp.signature = signMessage(signer, opHashToSign);
-    info("  L signature:", initTxOp.signature);
+  } catch (err) {
+    console.error("signTx failed:", err);
+    return;
   }
 
-  // ERROR: Encountered error
-  // Details: User operation gas limits exceed the max gas per bundle: 40080000 > 10000000
-  // UserOp hash: 0x8a4976eed5ef52a31c0070033dc40a88e8077c06218073caa929969980ca18f2
-  const initTxTxHash = await bundlerClient.sendUserOperation(initTxOp);
-  info(`initTxTxHash: ${initTxTxHash}`);
+  if (TEST_PROCESS < TestProcess.RunInitSignExecute) return;
 
-  const receipt = await bundlerClient.waitForUserOperationReceipt({
-    hash: initTxTxHash,
-  });
-  printUserOpReceipt(receipt, projectABIs);
+  try {
+    await executeTx({
+      signer: users[2],
+      group: users,
+      txHash,
+      account: safeAccount,
+      publicClient,
+      bundlerClient: bundlerClient as unknown as Erc7579SmartAccountClient,
+    });
+  } catch (err) {
+    console.error("executeTx failed:", err);
+  }
 
-  return txHash;
+  // TODO: assert that the amount is transfer to the receipient.
 }
 
 async function installSemaphoreModules({
@@ -371,4 +273,112 @@ async function installSemaphoreModules({
     const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: opHash });
     printUserOpReceipt(receipt, projectABIs);
   }
+}
+
+async function initTx({
+  signer,
+  group,
+  to,
+  value,
+  account,
+  publicClient,
+  bundlerClient,
+}: {
+  signer: User;
+  group: User[];
+  to: Address;
+  value: bigint;
+  account: SmartAccount;
+  publicClient: PublicClient;
+  bundlerClient: Erc7579SmartAccountClient;
+}) {
+  info("✨✨ Initiate Transaction ✨✨");
+
+  // Get the semaphore proof here
+  const seq = await getAcctSeqNum({ account, client: publicClient });
+  info(`acct seq #: ${seq}`);
+
+  const txHash = getTxHash(seq, to, value, "0x");
+  info(`txHash: ${txHash}`);
+
+  const gId = await getGroupId({ account, client: publicClient });
+  if (gId === undefined) throw new Error("getGroupId() failed");
+  info(`gId: ${gId}`);
+
+  const semGroup = new Group(getUserCommitmentsSorted(group));
+  info("group merkleRoot:", semGroup.root);
+
+  // The scope is the txHash
+  const proof = (await generateProof(signer.identity, semGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
+  info(`proof:`, proof);
+
+  const initTxAction = getInitTxAction(to, value, "0x", proof, false);
+
+  const initTxOp = (await bundlerClient.prepareUserOperation({
+    account,
+    calls: [initTxAction],
+    // callGasLimit: BigInt(2e7),
+    // verificationGasLimit: BigInt(2e7),
+  })) as UserOperation;
+
+  const initTxOpHash = getUserOperationHash({
+    chainId: publicClient.chain!.id,
+    entryPointAddress: entryPoint07Address,
+    entryPointVersion: "0.7",
+    userOperation: initTxOp,
+  });
+  info("initTx opHash:", initTxOpHash);
+
+  initTxOp.nonce = await getValidatorNonce(account, "safe", publicClient);
+  info("initTxOp.nonce:", initTxOp.nonce);
+
+  // Encountered error:
+  // User operation gas limits exceed the max gas per bundle: 40080000 > 10000000
+  // UserOp hash: 0x8a4976eed5ef52a31c0070033dc40a88e8077c06218073caa929969980ca18f2
+  initTxOp.signature = USE_MOCK_SIGNATURE ? mockSignature(signer) : signMessage(signer, initTxOpHash);
+  info("initTxOp.signature:", initTxOp.signature);
+
+  const initTxHash = await bundlerClient.sendUserOperation(initTxOp);
+  info(`initTxHash: ${initTxHash}`);
+
+  const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: initTxHash });
+  printUserOpReceipt(receipt, projectABIs);
+
+  return txHash;
+}
+
+async function signTx({
+  signer,
+  group,
+  txHash,
+  account,
+  publicClient,
+  bundlerClient,
+}: {
+  signer: User;
+  group: User[];
+  txHash: Hex;
+  account: SmartAccount;
+  publicClient: PublicClient;
+  bundlerClient: Erc7579SmartAccountClient;
+}) {
+  info("✨✨ Sign Transaction ✨✨");
+}
+
+async function executeTx({
+  signer,
+  group,
+  txHash,
+  account,
+  publicClient,
+  bundlerClient,
+}: {
+  signer: User;
+  group: User[];
+  txHash: Hex;
+  account: SmartAccount;
+  publicClient: PublicClient;
+  bundlerClient: Erc7579SmartAccountClient;
+}) {
+  info("✨✨ Execute Transaction ✨✨");
 }
