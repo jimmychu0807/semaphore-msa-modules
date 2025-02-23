@@ -1,7 +1,14 @@
-import { type Account, type PublicClient } from "viem";
+import { type Account, type Address, type Hex, type PublicClient, encodeFunctionData } from "viem";
 
+import { type SmartAccount } from "viem/account-abstraction";
+import { getAccountNonce } from "permissionless/actions";
+
+import { type Execution, encodeValidatorNonce, getAccount } from "@rhinestone/module-sdk";
+
+import { getSemaphoreValidator } from "./installation";
 import { SEMAPHORE_EXECUTOR_ADDRESS } from "./constants";
 import { semaphoreExecutorABI } from "./abi";
+import type { SemaphoreProofFix } from "./types";
 
 export async function getAcctSeqNum({ account, client }: { account: Account; client: PublicClient }): Promise<bigint> {
   try {
@@ -37,4 +44,50 @@ export async function getGroupId({
   } catch {
     throw new Error("Failed to get account group ID");
   }
+}
+
+export function getInitTxAction(
+  to: Address,
+  value: bigint,
+  callData: Hex,
+  proof: SemaphoreProofFix,
+  bExecute: boolean
+): Execution {
+  const data = encodeFunctionData({
+    functionName: "initiateTx",
+    abi: semaphoreExecutorABI,
+    args: [to, value, callData, proof, bExecute],
+  });
+
+  // Refer to rhinestone impl: https://github.com/rhinestonewtf/module-sdk/blob/55b67b57eaf56ff11a7229396bb761eb7994e756/src/module/ownable-executor/usage.ts#L75
+  return {
+    to: SEMAPHORE_EXECUTOR_ADDRESS,
+    target: SEMAPHORE_EXECUTOR_ADDRESS,
+    value: 0n,
+    callData: data,
+    data,
+  };
+}
+
+export async function getValidatorNonce(
+  account: SmartAccount,
+  type: string,
+  publicClient: PublicClient
+): ReturnType<typeof getAccountNonce> {
+  const semaphoreValidator = await getSemaphoreValidator();
+
+  // rhinestone account
+  const rhinestoneAcct = await getAccount({
+    address: account.address,
+    type: "safe",
+  });
+
+  return await getAccountNonce(publicClient, {
+    address: account.address,
+    entryPointAddress: account.entryPoint.address,
+    key: encodeValidatorNonce({
+      account: rhinestoneAcct,
+      validator: semaphoreValidator,
+    }),
+  });
 }
