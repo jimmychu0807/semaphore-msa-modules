@@ -23,6 +23,7 @@ import { toSafeSmartAccount } from "permissionless/accounts";
 import { erc7579Actions } from "permissionless/actions/erc7579";
 
 import {
+  type Module,
   RHINESTONE_ATTESTER_ADDRESS, // Rhinestone Attester
   MOCK_ATTESTER_ADDRESS, // Mock Attester - do not use in production
   getAccount,
@@ -167,6 +168,7 @@ export default async function main({
       account: safeAccount,
       publicClient,
       bundlerClient: bundlerClient as unknown as Erc7579SmartAccountClient,
+      paymasterClient
     });
   } catch (err) {
     console.error("initTx failed:", err);
@@ -220,59 +222,41 @@ async function installSemaphoreModules({
   publicClient: PublicClient;
   bundlerClient: Erc7579SmartAccountClient;
 }) {
-  // Check if we need to install SemaphoreExecutor module
   // Commitments cannot include 1n, that is the SENTINEL value!!
   const semaphoreCommitments = getUserCommitmentsSorted(users);
-
   const semaphoreExecutor = await getSemaphoreExecutor({
     threshold,
     semaphoreCommitments,
   });
-
-  // Switch to use rhinestone module-sdk here
-  const rhinestoneAcct = await getAccount({
-    address: account.address,
-    type: "safe",
-  });
-
-  let isInstalled: boolean = await isModuleInstalled({
-    client: publicClient,
-    account: rhinestoneAcct,
-    module: semaphoreExecutor,
-  });
-  info(`semaphoreExecutor is${isInstalled ? "" : " not"} installed`);
-
-  if (!isInstalled) {
-    info("Installing Semaphore Executor...");
-
-    const opHash = await bundlerClient.installModule(semaphoreExecutor);
-    info("  L opHash:", opHash);
-
-    const receipt = await (bundlerClient as unknown as SmartAccountClient).waitForUserOperationReceipt({
-      hash: opHash,
-    });
-    printUserOpReceipt(receipt, projectABIs);
-  }
-
-  // Check if we need to insatll SemaphoreValidator module
   const semaphoreValidator = await getSemaphoreValidator();
 
-  isInstalled = await isModuleInstalled({
-    client: publicClient,
-    account: rhinestoneAcct,
-    module: semaphoreValidator,
-  });
-  info(`semaphoreValidator is${isInstalled ? "" : " not"} installed`);
+  const installSingleModule = async (moduleName: string, module: Module) => {
+    const rhinestoneAcct = await getAccount({
+      address: account.address,
+      type: "safe",
+    });
 
-  if (!isInstalled) {
-    info("Installing Semaphore Validator...");
+    const isInstalled: boolean = await isModuleInstalled({
+      client: publicClient,
+      account: rhinestoneAcct,
+      module,
+    });
+    info(`${moduleName} is${isInstalled ? "" : " not"} installed`);
 
-    const opHash = await bundlerClient.installModule(semaphoreValidator);
-    info("  L opHash:", opHash);
+    if (!isInstalled) {
+      info(`Installing ${moduleName}...`);
 
-    const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: opHash });
-    printUserOpReceipt(receipt, projectABIs);
+      const opHash = await bundlerClient.installModule(module);
+      info("  - opHash:", opHash);
+
+      const receipt = await (bundlerClient as unknown as SmartAccountClient)
+        .waitForUserOperationReceipt({ hash: opHash });
+      printUserOpReceipt(receipt, projectABIs);
+    }
   }
+
+  await installSingleModule("Semaphore Executor", semaphoreExecutor);
+  await installSingleModule("Semaphore Validator", semaphoreValidator);
 }
 
 async function initTx({
@@ -283,6 +267,7 @@ async function initTx({
   account,
   publicClient,
   bundlerClient,
+  paymasterClient
 }: {
   signer: User;
   group: User[];
@@ -291,6 +276,7 @@ async function initTx({
   account: SmartAccount;
   publicClient: PublicClient;
   bundlerClient: Erc7579SmartAccountClient;
+  paymasterClient: ReturnType<typeof createPaymasterClient>;
 }) {
   info("✨✨ Initiate Transaction ✨✨");
 
@@ -313,35 +299,56 @@ async function initTx({
   info(`proof:`, proof);
 
   const initTxAction = getInitTxAction(to, value, "0x", proof, false);
+  info(`initTxAction`, initTxAction);
+
+  const nonce = await getValidatorNonce(account, "safe", publicClient);
+  // info("initTxOp.nonce:", nonce);
 
   const initTxOp = (await bundlerClient.prepareUserOperation({
     account,
     calls: [initTxAction],
-    // callGasLimit: BigInt(2e7),
-    // verificationGasLimit: BigInt(2e7),
+    callGasLimit: BigInt(2e6),
+    verificationGasLimit: BigInt(2e6),
+    nonce,
+    signature: mockSignature(signer)
   })) as UserOperation;
 
+  const chainId = publicClient.chain!.id;
   const initTxOpHash = getUserOperationHash({
-    chainId: publicClient.chain!.id,
+    chainId,
     entryPointAddress: entryPoint07Address,
     entryPointVersion: "0.7",
     userOperation: initTxOp,
   });
-  info("initTx opHash:", initTxOpHash);
-
-  initTxOp.nonce = await getValidatorNonce(account, "safe", publicClient);
-  info("initTxOp.nonce:", initTxOp.nonce);
+  // info("initTx opHash:", initTxOpHash);
 
   // Encountered error:
   // User operation gas limits exceed the max gas per bundle: 40080000 > 10000000
   // UserOp hash: 0x8a4976eed5ef52a31c0070033dc40a88e8077c06218073caa929969980ca18f2
-  initTxOp.signature = USE_MOCK_SIGNATURE ? mockSignature(signer) : signMessage(signer, initTxOpHash);
-  info("initTxOp.signature:", initTxOp.signature);
+  // initTxOp.signature = USE_MOCK_SIGNATURE ? mockSignature(signer) : signMessage(signer, initTxOpHash);
+  // info("initTxOp.nonce:", initTxOp.signature);
+  // info("initTxOp.signature:", initTxOp.signature);
 
-  const initTxHash = await bundlerClient.sendUserOperation(initTxOp);
-  info(`initTxHash: ${initTxHash}`);
+  // info("initTxOp before:", initTxOp);
 
-  const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: initTxHash });
+  // {
+  //   const { callData, factory, factoryData, maxFeePerGas, maxPriorityFeePerGas, nonce, sender } = initTxOp;
+
+  //   const paymasterArgs = await paymasterClient.getPaymasterData({ callData, factory, factoryData, maxFeePerGas, maxPriorityFeePerGas, nonce, sender, chainId, entryPointAddress: entryPoint07Address });
+  //   // copy the paymasterArgs over to initTxOp
+
+  //   info("paymasterArgs:", paymasterArgs);
+
+  //   // Object.assign(initTxOp, paymasterArgs);
+  //   initTxOp.paymasterData = paymasterArgs.paymasterData;
+  // }
+
+  info("initTxOp:", initTxOp);
+
+  const initTxOpTxHash = await bundlerClient.sendUserOperation(initTxOp);
+  info(`initTxOp txHash: ${initTxOpTxHash}`);
+
+  const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: initTxOpTxHash });
   printUserOpReceipt(receipt, projectABIs);
 
   return txHash;
