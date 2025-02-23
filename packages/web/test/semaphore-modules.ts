@@ -59,12 +59,9 @@ const INIT_TRANSFER_AMT: bigint = parseEther("0.01"); // In ETH
 const TEST_TRANSFER_AMT: bigint = parseEther("0.001"); // In ETH
 const USER_LEN: number = 3;
 const THRESHOLD: number = 2;
-const USE_MOCK_SIGNATURE = true;
-
 const TEST_PROCESS: TestProcess = TestProcess.RunInitSignExecute;
 
 const info = debug("test:semaphore-modules");
-
 const projectABIs = [semaphoreABI, semaphoreExecutorABI, semaphoreValidatorABI] as Abi[];
 
 export default async function main({
@@ -168,7 +165,6 @@ export default async function main({
       account: safeAccount,
       publicClient,
       bundlerClient: bundlerClient as unknown as Erc7579SmartAccountClient,
-      paymasterClient
     });
   } catch (err) {
     console.error("initTx failed:", err);
@@ -249,11 +245,12 @@ async function installSemaphoreModules({
       const opHash = await bundlerClient.installModule(module);
       info("  - opHash:", opHash);
 
-      const receipt = await (bundlerClient as unknown as SmartAccountClient)
-        .waitForUserOperationReceipt({ hash: opHash });
+      const receipt = await (bundlerClient as unknown as SmartAccountClient).waitForUserOperationReceipt({
+        hash: opHash,
+      });
       printUserOpReceipt(receipt, projectABIs);
     }
-  }
+  };
 
   await installSingleModule("Semaphore Executor", semaphoreExecutor);
   await installSingleModule("Semaphore Validator", semaphoreValidator);
@@ -267,7 +264,6 @@ async function initTx({
   account,
   publicClient,
   bundlerClient,
-  paymasterClient
 }: {
   signer: User;
   group: User[];
@@ -276,7 +272,6 @@ async function initTx({
   account: SmartAccount;
   publicClient: PublicClient;
   bundlerClient: Erc7579SmartAccountClient;
-  paymasterClient: ReturnType<typeof createPaymasterClient>;
 }) {
   info("✨✨ Initiate Transaction ✨✨");
 
@@ -299,18 +294,18 @@ async function initTx({
   info(`proof:`, proof);
 
   const initTxAction = getInitTxAction(to, value, "0x", proof, false);
-  info(`initTxAction`, initTxAction);
-
   const nonce = await getValidatorNonce(account, "safe", publicClient);
-  // info("initTxOp.nonce:", nonce);
 
+  // TODO: explore how to set nonce and signature after prepareUserOp while going thru the
+  //   prepareUserOp -> getUserOperationHash -> sendUserOperation flow,
+  //   so avoid using mock signature in prepareUserOperation().
   const initTxOp = (await bundlerClient.prepareUserOperation({
     account,
     calls: [initTxAction],
-    callGasLimit: BigInt(2e6),
-    verificationGasLimit: BigInt(2e6),
     nonce,
-    signature: mockSignature(signer)
+    signature: mockSignature(signer),
+    callGasLimit: BigInt(2e6),
+    verificationGasLimit: BigInt(6e6),
   })) as UserOperation;
 
   const chainId = publicClient.chain!.id;
@@ -320,30 +315,8 @@ async function initTx({
     entryPointVersion: "0.7",
     userOperation: initTxOp,
   });
-  // info("initTx opHash:", initTxOpHash);
-
-  // Encountered error:
-  // User operation gas limits exceed the max gas per bundle: 40080000 > 10000000
-  // UserOp hash: 0x8a4976eed5ef52a31c0070033dc40a88e8077c06218073caa929969980ca18f2
-  // initTxOp.signature = USE_MOCK_SIGNATURE ? mockSignature(signer) : signMessage(signer, initTxOpHash);
-  // info("initTxOp.nonce:", initTxOp.signature);
-  // info("initTxOp.signature:", initTxOp.signature);
-
-  // info("initTxOp before:", initTxOp);
-
-  // {
-  //   const { callData, factory, factoryData, maxFeePerGas, maxPriorityFeePerGas, nonce, sender } = initTxOp;
-
-  //   const paymasterArgs = await paymasterClient.getPaymasterData({ callData, factory, factoryData, maxFeePerGas, maxPriorityFeePerGas, nonce, sender, chainId, entryPointAddress: entryPoint07Address });
-  //   // copy the paymasterArgs over to initTxOp
-
-  //   info("paymasterArgs:", paymasterArgs);
-
-  //   // Object.assign(initTxOp, paymasterArgs);
-  //   initTxOp.paymasterData = paymasterArgs.paymasterData;
-  // }
-
-  info("initTxOp:", initTxOp);
+  initTxOp.signature = signMessage(signer, initTxOpHash);
+  info(`initTxOp:`, initTxOp);
 
   const initTxOpTxHash = await bundlerClient.sendUserOperation(initTxOp);
   info(`initTxOp txHash: ${initTxOpTxHash}`);

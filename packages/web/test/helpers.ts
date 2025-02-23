@@ -84,7 +84,7 @@ export function getTxHash(seq: bigint, target: Address, value: bigint, callData:
   return keccak256(encodePacked(["uint256", "address", "uint256", "bytes"], [seq, target, value, callData]));
 }
 
-export function printUserOpReceipt(receipt: UserOperationReceipt, abis: Abi[]) {
+export function printUserOpReceipt(receipt: UserOperationReceipt, abis: Abi[], bPrintReceipt: boolean = false) {
   const printLogs = (logs: typeof receipt.logs) => {
     const parsedLogs = abis.reduce(
       (acc, abi) => acc.concat(parseEventLogs({ abi, logs, strict: false })),
@@ -102,7 +102,10 @@ export function printUserOpReceipt(receipt: UserOperationReceipt, abis: Abi[]) {
   };
 
   info("-- receipt --");
+  if (bPrintReceipt) info(`receipt:`, receipt);
   info("  userOpHash:", receipt.userOpHash);
+  info("  txHash:", receipt.receipt.transactionHash);
+  info("  cumulativeGasUsed:", receipt.receipt.cumulativeGasUsed);
   info("  sender:", receipt.sender);
   info("  nonce:", receipt.nonce);
   info("  total events [userOpReceipt, txReceipt]:", [receipt.logs.length, receipt.receipt.logs.length]);
