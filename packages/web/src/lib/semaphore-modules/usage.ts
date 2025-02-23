@@ -69,6 +69,38 @@ export function getInitTxAction(
   };
 }
 
+export function getSignTxAction(txHash: Hex, proof: SemaphoreProofFix, bExecute: boolean): Execution {
+  const data = encodeFunctionData({
+    functionName: "signTx",
+    abi: semaphoreExecutorABI,
+    args: [txHash, proof, bExecute],
+  });
+
+  return {
+    to: SEMAPHORE_EXECUTOR_ADDRESS,
+    target: SEMAPHORE_EXECUTOR_ADDRESS,
+    value: 0n,
+    callData: data,
+    data,
+  };
+}
+
+export function getExecuteTxAction(txHash: Hex): Execution {
+  const data = encodeFunctionData({
+    functionName: "executeTx",
+    abi: semaphoreExecutorABI,
+    args: [txHash],
+  });
+
+  return {
+    to: SEMAPHORE_EXECUTOR_ADDRESS,
+    target: SEMAPHORE_EXECUTOR_ADDRESS,
+    value: 0n,
+    callData: data,
+    data,
+  };
+}
+
 export async function getValidatorNonce(
   account: SmartAccount,
   type: string,

@@ -1,4 +1,5 @@
 import { debug } from "debug";
+import { expect } from "chai";
 import {
   type Address,
   type Abi,
@@ -38,6 +39,8 @@ import {
   getSemaphoreExecutor,
   getSemaphoreValidator,
   getInitTxAction,
+  getSignTxAction,
+  getExecuteTxAction,
   getValidatorNonce,
 } from "@/lib/semaphore-modules";
 import { type SemaphoreProofFix } from "@/lib/semaphore-modules/types";
@@ -189,6 +192,11 @@ export default async function main({
 
   if (TEST_PROCESS < TestProcess.RunInitSignExecute) return;
 
+  const sender = safeAccount.address;
+  const recipient = users[0].account.address;
+  const senderBefore = await publicClient.getBalance({ address: sender });
+  const recipientBefore = await publicClient.getBalance({ address: recipient });
+
   try {
     await executeTx({
       signer: users[2],
@@ -202,7 +210,11 @@ export default async function main({
     console.error("executeTx failed:", err);
   }
 
-  // TODO: assert that the amount is transfer to the receipient.
+  const senderAfter = await publicClient.getBalance({ address: sender });
+  const recipientAfter = await publicClient.getBalance({ address: recipient });
+
+  expect(recipientAfter - recipientBefore).to.equal(TEST_TRANSFER_AMT);
+  expect(senderBefore - senderAfter).to.equal(TEST_TRANSFER_AMT);
 }
 
 async function installSemaphoreModules({
@@ -308,15 +320,14 @@ async function initTx({
     verificationGasLimit: BigInt(6e6),
   })) as UserOperation;
 
-  const chainId = publicClient.chain!.id;
   const initTxOpHash = getUserOperationHash({
-    chainId,
+    chainId: publicClient.chain!.id,
     entryPointAddress: entryPoint07Address,
     entryPointVersion: "0.7",
     userOperation: initTxOp,
   });
   initTxOp.signature = signMessage(signer, initTxOpHash);
-  info(`initTxOp:`, initTxOp);
+  // info(`initTxOp:`, initTxOp);
 
   const initTxOpTxHash = await bundlerClient.sendUserOperation(initTxOp);
   info(`initTxOp txHash: ${initTxOpTxHash}`);
@@ -343,11 +354,40 @@ async function signTx({
   bundlerClient: Erc7579SmartAccountClient;
 }) {
   info("✨✨ Sign Transaction ✨✨");
+
+  const semGroup = new Group(getUserCommitmentsSorted(group));
+  const proof = (await generateProof(signer.identity, semGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
+  info(`proof:`, proof);
+
+  const signTxAction = getSignTxAction(txHash, proof, false);
+  const nonce = await getValidatorNonce(account, "safe", publicClient);
+  const signTxOp = (await bundlerClient.prepareUserOperation({
+    account,
+    calls: [signTxAction],
+    nonce,
+    signature: mockSignature(signer),
+    callGasLimit: BigInt(2e6),
+    verificationGasLimit: BigInt(6e6),
+  })) as UserOperation;
+
+  const signTxOpHash = getUserOperationHash({
+    chainId: publicClient.chain!.id,
+    entryPointAddress: entryPoint07Address,
+    entryPointVersion: "0.7",
+    userOperation: signTxOp,
+  });
+  signTxOp.signature = signMessage(signer, signTxOpHash);
+  // info(`signTxOp:`, signTxOp);
+
+  const signTxOpTxHash = await bundlerClient.sendUserOperation(signTxOp);
+  info(`signTxOp txHash: ${signTxOpTxHash}`);
+
+  const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: signTxOpTxHash });
+  printUserOpReceipt(receipt, projectABIs);
 }
 
 async function executeTx({
   signer,
-  group,
   txHash,
   account,
   publicClient,
@@ -361,4 +401,30 @@ async function executeTx({
   bundlerClient: Erc7579SmartAccountClient;
 }) {
   info("✨✨ Execute Transaction ✨✨");
+
+  const executeTxAction = getExecuteTxAction(txHash);
+  const nonce = await getValidatorNonce(account, "safe", publicClient);
+  const executeTxOp = (await bundlerClient.prepareUserOperation({
+    account,
+    calls: [executeTxAction],
+    nonce,
+    signature: mockSignature(signer),
+    callGasLimit: BigInt(2e6),
+    verificationGasLimit: BigInt(6e6),
+  })) as UserOperation;
+
+  const executeTxOpHash = getUserOperationHash({
+    chainId: publicClient.chain!.id,
+    entryPointAddress: entryPoint07Address,
+    entryPointVersion: "0.7",
+    userOperation: executeTxOp,
+  });
+  executeTxOp.signature = signMessage(signer, executeTxOpHash);
+  // info(`executeTxOp:`, executeTxOp);
+
+  const executeTxOpTxHash = await bundlerClient.sendUserOperation(executeTxOp);
+  info(`executeTxOp txHash: ${executeTxOpTxHash}`);
+
+  const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: executeTxOpTxHash });
+  printUserOpReceipt(receipt, projectABIs);
 }
