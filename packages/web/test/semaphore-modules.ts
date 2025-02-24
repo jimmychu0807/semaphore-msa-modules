@@ -10,13 +10,7 @@ import {
   http,
   parseEther,
 } from "viem";
-import {
-  type SmartAccount,
-  type UserOperation,
-  createPaymasterClient,
-  entryPoint07Address,
-  getUserOperationHash,
-} from "viem/account-abstraction";
+import { type SmartAccount, createPaymasterClient, entryPoint07Address } from "viem/account-abstraction";
 
 import { type SmartAccountClient, createSmartAccountClient } from "permissionless";
 import { createPimlicoClient } from "permissionless/clients/pimlico";
@@ -35,28 +29,20 @@ import { generateProof } from "@semaphore-protocol/proof";
 
 import {
   getAcctSeqNum,
-  getGroupId,
   getSemaphoreExecutor,
   getSemaphoreValidator,
   getInitTxAction,
   getSignTxAction,
   getExecuteTxAction,
-  getValidatorNonce,
+  sendSemaphoreTransaction,
 } from "@/lib/semaphore-modules";
-import { type SemaphoreProofFix } from "@/lib/semaphore-modules/types";
+import type { Erc7579SmartAccountClient, SemaphoreProofFix, User } from "@/lib/semaphore-modules/types";
+import { getTxHash } from "@/lib/semaphore-modules/helpers";
 import { semaphoreABI, semaphoreExecutorABI, semaphoreValidatorABI } from "@/lib/semaphore-modules/abi";
 
-import { type Erc7579SmartAccountClient, type User, TestProcess } from "./types";
+import { TestProcess } from "./types";
 
-import {
-  getTxHash,
-  getUserCommitmentsSorted,
-  initUsers,
-  mockSignature,
-  printUserOpReceipt,
-  signMessage,
-  transferTo,
-} from "./helpers";
+import { getUserCommitmentsSorted, initUsers, printUserOpReceipt, transferTo } from "./helpers";
 
 const INIT_TRANSFER_AMT: bigint = parseEther("0.01"); // In ETH
 const TEST_TRANSFER_AMT: bigint = parseEther("0.001"); // In ETH
@@ -289,14 +275,8 @@ async function initTx({
 
   // Get the semaphore proof here
   const seq = await getAcctSeqNum({ account, client: publicClient });
-  info(`acct seq #: ${seq}`);
-
   const txHash = getTxHash(seq, to, value, "0x");
   info(`txHash: ${txHash}`);
-
-  const gId = await getGroupId({ account, client: publicClient });
-  if (gId === undefined) throw new Error("getGroupId() failed");
-  info(`gId: ${gId}`);
 
   const semGroup = new Group(getUserCommitmentsSorted(group));
   info("group merkleRoot:", semGroup.root);
@@ -305,34 +285,14 @@ async function initTx({
   const proof = (await generateProof(signer.identity, semGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
   info(`proof:`, proof);
 
-  const initTxAction = getInitTxAction(to, value, "0x", proof, false);
-  const nonce = await getValidatorNonce(account, "safe", publicClient);
-
-  // TODO: explore how to set nonce and signature after prepareUserOp while going thru the
-  //   prepareUserOp -> getUserOperationHash -> sendUserOperation flow,
-  //   so avoid using mock signature in prepareUserOperation().
-  const initTxOp = (await bundlerClient.prepareUserOperation({
+  const action = getInitTxAction(to, value, "0x", proof, false);
+  const receipt = await sendSemaphoreTransaction({
+    signer,
     account,
-    calls: [initTxAction],
-    nonce,
-    signature: mockSignature(signer),
-    callGasLimit: BigInt(2e6),
-    verificationGasLimit: BigInt(6e6),
-  })) as UserOperation;
-
-  const initTxOpHash = getUserOperationHash({
-    chainId: publicClient.chain!.id,
-    entryPointAddress: entryPoint07Address,
-    entryPointVersion: "0.7",
-    userOperation: initTxOp,
+    action,
+    publicClient,
+    bundlerClient,
   });
-  initTxOp.signature = signMessage(signer, initTxOpHash);
-  // info(`initTxOp:`, initTxOp);
-
-  const initTxOpTxHash = await bundlerClient.sendUserOperation(initTxOp);
-  info(`initTxOp txHash: ${initTxOpTxHash}`);
-
-  const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: initTxOpTxHash });
   printUserOpReceipt(receipt, projectABIs);
 
   return txHash;
@@ -359,30 +319,14 @@ async function signTx({
   const proof = (await generateProof(signer.identity, semGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
   info(`proof:`, proof);
 
-  const signTxAction = getSignTxAction(txHash, proof, false);
-  const nonce = await getValidatorNonce(account, "safe", publicClient);
-  const signTxOp = (await bundlerClient.prepareUserOperation({
+  const action = getSignTxAction(txHash, proof, false);
+  const receipt = await sendSemaphoreTransaction({
+    signer,
     account,
-    calls: [signTxAction],
-    nonce,
-    signature: mockSignature(signer),
-    callGasLimit: BigInt(2e6),
-    verificationGasLimit: BigInt(6e6),
-  })) as UserOperation;
-
-  const signTxOpHash = getUserOperationHash({
-    chainId: publicClient.chain!.id,
-    entryPointAddress: entryPoint07Address,
-    entryPointVersion: "0.7",
-    userOperation: signTxOp,
+    action,
+    publicClient,
+    bundlerClient,
   });
-  signTxOp.signature = signMessage(signer, signTxOpHash);
-  // info(`signTxOp:`, signTxOp);
-
-  const signTxOpTxHash = await bundlerClient.sendUserOperation(signTxOp);
-  info(`signTxOp txHash: ${signTxOpTxHash}`);
-
-  const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: signTxOpTxHash });
   printUserOpReceipt(receipt, projectABIs);
 }
 
@@ -402,29 +346,13 @@ async function executeTx({
 }) {
   info("✨✨ Execute Transaction ✨✨");
 
-  const executeTxAction = getExecuteTxAction(txHash);
-  const nonce = await getValidatorNonce(account, "safe", publicClient);
-  const executeTxOp = (await bundlerClient.prepareUserOperation({
+  const action = getExecuteTxAction(txHash);
+  const receipt = await sendSemaphoreTransaction({
+    signer,
     account,
-    calls: [executeTxAction],
-    nonce,
-    signature: mockSignature(signer),
-    callGasLimit: BigInt(2e6),
-    verificationGasLimit: BigInt(6e6),
-  })) as UserOperation;
-
-  const executeTxOpHash = getUserOperationHash({
-    chainId: publicClient.chain!.id,
-    entryPointAddress: entryPoint07Address,
-    entryPointVersion: "0.7",
-    userOperation: executeTxOp,
+    action,
+    publicClient,
+    bundlerClient,
   });
-  executeTxOp.signature = signMessage(signer, executeTxOpHash);
-  // info(`executeTxOp:`, executeTxOp);
-
-  const executeTxOpTxHash = await bundlerClient.sendUserOperation(executeTxOp);
-  info(`executeTxOp txHash: ${executeTxOpTxHash}`);
-
-  const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: executeTxOpTxHash });
   printUserOpReceipt(receipt, projectABIs);
 }

@@ -102,7 +102,6 @@ contract DeploySemaphoreModules is Script, RegistryDeployer {
     {
         if (bRegister) {
             console.log("Registering module: %s", moduleAddr);
-
             registerModule({
                 module: moduleAddr,
                 metadata: metadata,
@@ -112,12 +111,12 @@ contract DeploySemaphoreModules is Script, RegistryDeployer {
 
         if (bAttest && !isModuleAttestedMock(moduleAddr)) {
             console.log("Attesting module: %s of type: %s", moduleAddr, moduleType);
-
             ModuleType[] memory mts = new ModuleType[](1);
             mts[0] = ModuleType.wrap(moduleType);
 
             mockAttestToModule({ module: moduleAddr, attestationData: metadata, moduleTypes: mts });
-            require(isModuleAttestedMock(moduleAddr), "module registration and attestation failed");
+            // forgefmt: disable-next-item
+            require(isModuleAttestedMock(moduleAddr), "module reg/attest failed");
         }
     }
 }

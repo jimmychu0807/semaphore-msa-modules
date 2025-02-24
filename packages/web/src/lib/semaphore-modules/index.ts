@@ -8,6 +8,7 @@ import {
   getExecuteTxAction,
   getValidatorNonce,
 } from "./usage";
+import { sendSemaphoreTransaction } from "./helpers";
 
 export {
   getSemaphoreExecutor,
@@ -20,4 +21,5 @@ export {
   getSignTxAction,
   getExecuteTxAction,
   getValidatorNonce,
+  sendSemaphoreTransaction,
 };
