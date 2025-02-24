@@ -1,15 +1,12 @@
 import {
   type Abi,
-  type Address,
   type Chain,
   type Hex,
   createPublicClient,
   createWalletClient,
   parseEventLogs,
-  encodePacked,
   http,
   getAddress,
-  keccak256,
 } from "viem";
 
 import { type UserOperationReceipt } from "viem/account-abstraction";
@@ -18,10 +15,8 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { Identity } from "@semaphore-protocol/identity";
 import { debug } from "debug";
 
-import type { ParsedLog, User } from "./types";
-
-export const MOCK_SIG_P2 =
-  "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef" as Hex;
+import type { User } from "@/lib/semaphore-modules/types";
+import type { ParsedLog } from "./types";
 
 const info = debug("test:helpers");
 
@@ -66,22 +61,6 @@ export function initUsers(userLen: number, firstSk: Hex): User[] {
 
 export function getUserCommitmentsSorted(users: User[]): Array<bigint> {
   return users.map((u) => u.identity.commitment).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
-}
-
-export function signMessage(user: User, hash: Hex) {
-  const pk = user.identity.publicKey;
-  const signature = user.identity.signMessage(hash);
-
-  return encodePacked(["uint256[2]", "uint256[2]", "uint256"], [pk, signature.R8, signature.S]);
-}
-
-export function mockSignature(user: User) {
-  const pk = user.identity.publicKey;
-  return encodePacked(["uint256[2]", "bytes"], [pk, MOCK_SIG_P2]);
-}
-
-export function getTxHash(seq: bigint, target: Address, value: bigint, callData: Hex) {
-  return keccak256(encodePacked(["uint256", "address", "uint256", "bytes"], [seq, target, value, callData]));
 }
 
 export function printUserOpReceipt(receipt: UserOperationReceipt, abis: Abi[], bPrintReceipt: boolean = false) {
