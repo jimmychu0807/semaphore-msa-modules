@@ -37,7 +37,7 @@
     "lint": "pnpm -r --filter './packages/*' lint",
     "lint:write": "pnpm -r --filter './packages/*' lint:write",
     "test": "pnpm -r --filter './packages/*' test",
-    "ci-check": "(pnpm build && pnpm test) & pnpm lint"
+    "ci-check": "pnpm build && pnpm test && pnpm lint"
   },
   "publishConfig": {
     "access": "public"
