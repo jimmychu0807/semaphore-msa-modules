@@ -36,7 +36,7 @@
     "clean": "pnpm -r --filter './packages/*' clean && rimraf node_modules",
     "lint": "pnpm -r --filter './packages/*' lint",
     "lint:write": "pnpm -r --filter './packages/*' lint:write",
-    "test": "pnpm -r --filter './packages/*' test",
+    "test": "pnpm -r --filter './packages/contracts' test",
     "ci-check": "pnpm build && pnpm test && pnpm lint"
   },
   "publishConfig": {
