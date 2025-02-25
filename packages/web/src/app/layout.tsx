@@ -1,6 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Footer } from "@/components/layout/footer";
+import { cookieToInitialState } from "wagmi";
+
+import { getConfig } from "@/utils/clients";
+import { Footer } from "@/components/Footer";
+import { Providers } from "@/components/Providers";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,21 +22,29 @@ export const metadata: Metadata = {
   chatset: "UTF-8",
   title: "Semaphore Module Demo",
   description: "Created with ❤️ by Jimmy Chu",
-  viewport: "width=device-width, initial-scale=1.0",
 };
 
-export default function RootLayout({
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const initialState = cookieToInitialState(getConfig(), (await headers()).get("cookie"));
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-          <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">{children}</main>
-          <Footer />
-        </div>
+        <Providers initialState={initialState}>
+          <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+            <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">{children}</main>
+            <Footer />
+          </div>
+        </Providers>
       </body>
     </html>
   );
