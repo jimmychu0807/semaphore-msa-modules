@@ -15,10 +15,10 @@ export function Connector({ requiredChainId }: { requiredChainId: number }) {
       {account.status === "connected" || account.status === "reconnecting" ? (
         <div>
           <div className="mb-2">
-            Account: {account.address}&nbsp;&nbsp;
+            Account: {account.address}&nbsp;
             {balanceResult.isSuccess && (
               <span>
-                bal: ({formatEther(balanceResult.data.value)}
+                ({formatEther(balanceResult.data.value)}&nbsp;
                 {balanceResult.data.symbol})
               </span>
             )}

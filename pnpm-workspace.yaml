@@ -2,9 +2,16 @@ packages:
   - 'packages/*'
 
 catalog:
-  rimraf: ^5.0.10
-  wait-on: ^8.0.2
+  "@rhinestone/module-sdk": ^0.2.4
   "@semaphore-protocol/contracts": github:jimmychu0807/semaphore#identity-cli&path:/packages/contracts/contracts
   "@semaphore-protocol/group": github:jimmychu0807/semaphore#identity-cli&path:/packages/group
   "@semaphore-protocol/identity": github:jimmychu0807/semaphore#identity-cli&path:/packages/identity
   "@semaphore-protocol/proof": github:jimmychu0807/semaphore#identity-cli&path:/packages/proof
+  dotenv: ^16.4.5
+  permissionless: ^0.2.34
+  rimraf: ^5.0.10
+  tsx: 4.19.2
+  typescript: ^5
+  viem: ^2.21.51
+  wagmi: ^2.14.12
+  wait-on: ^8.0.2

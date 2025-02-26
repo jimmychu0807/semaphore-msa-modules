@@ -1,4 +1,4 @@
-# Semaphore Modular Smart Account Modules - Frontend
+# Semaphore Modular Smart Account Modules - UI Demo
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 

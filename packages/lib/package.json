@@ -1,47 +1,49 @@
 {
-  "name": "@jimmychu0807/semaphore-msa-modules-web",
-  "description": "Semaphore modular smart account modules (UI demo)",
+  "name": "@jimmychu0807/semaphore-msa-modules-lib",
+  "description": "Semaphore modular smart account modules (JS library)",
   "version": "0.1.0",
+  "license": "GPL-3.0",
+  "type": "module",
+  "author": {
+    "name": "Jimmy Chu",
+    "url": "https://jimmychu0807.hk"
+  },
+  "homepage": "https://github.com/jimmychu0807/semaphore-msa-modules",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jimmychu0807/semaphore-msa-modules.git"
+  },
   "scripts": {
-    "dev": "next dev -p 3010",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint --dir ./src --dir ./test && pnpm prettier",
-    "lint:write": "pnpm prettier:write",
     "prettier": "prettier --no-error-on-unmatched-pattern -c \"{src,test}/**/*.{json,ts,tsx}\"",
+    "lint": "eslint && pnpm prettier",
     "prettier:write": "prettier --no-error-on-unmatched-pattern -w \"{src,test}/**/*.{json,ts,tsx}\"",
+    "lint:write": "pnpm prettier:write",
     "compile": "tsc --noEmit",
-    "test": "DEBUG=test:* mocha --config .mocharc.json",
-    "clean": "rimraf .next"
+    "test": "DEBUG=test:* mocha --config .mocharc.json"
   },
   "dependencies": {
     "@rhinestone/module-sdk": "catalog:",
     "@semaphore-protocol/group": "catalog:",
     "@semaphore-protocol/identity": "catalog:",
     "@semaphore-protocol/proof": "catalog:",
+    "debug": "^4.4.0",
     "dotenv": "catalog:",
-    "next": "15.1.6",
     "permissionless": "catalog:",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-icons": "^5.5.0",
-    "viem": "catalog:",
-    "wagmi": "catalog:"
+    "viem": "catalog:"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@eslint/js": "^9.21.0",
     "@types/chai": "^5.0.1",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
     "chai": "^5.1.1",
     "eslint": "^9",
-    "eslint-config-next": "15.1.6",
-    "postcss": "^8",
+    "globals": "^16.0.0",
+    "mocha": "^11.1.0",
     "rimraf": "catalog:",
-    "tailwindcss": "^3.4.1",
     "tsx": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "typescript-eslint": "^8.25.0"
   },
   "packageManager": "pnpm@9.15.4+sha512.b2dc20e2fc72b3e18848459b37359a32064663e5627a51e4c74b2c29dd8e8e0491483c3abb40789cfd578bf362fb6ba8261b05f0387d76792ed6e23ea3b1b6a0"
 }

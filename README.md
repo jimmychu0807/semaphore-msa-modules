@@ -13,5 +13,6 @@ Development of this project is supported by [PSE Acceleration Program](https://g
 Project Code: FY24-1847
 
 Please refer to the project packages READMEs:
-- [packages/contracts](./packages/contracts): contains the key components of the validator and executor module.
-- [packages/web](./packages/web): contains the frontend serves as a demo to interact with a smart account and semaphore modules.
+- [packages/contracts](./packages/contracts): Smart contracts of the Semaphore validator and executor module.
+- [packages/lib](./packages/lib): Javascript library for using Semaphore MSA modules.
+- [packages/web](./packages/web): Frontend demo to interact with a smart account and semaphore MSA modules.

@@ -35,13 +35,12 @@ import {
   getSignTxAction,
   getExecuteTxAction,
   sendSemaphoreTransaction,
-} from "@/lib/semaphore-modules";
-import type { Erc7579SmartAccountClient, SemaphoreProofFix, User } from "@/lib/semaphore-modules/types";
-import { getTxHash } from "@/lib/semaphore-modules/helpers";
-import { semaphoreABI, semaphoreExecutorABI, semaphoreValidatorABI } from "@/lib/semaphore-modules/abi";
+} from "@/index";
+import type { Erc7579SmartAccountClient, SemaphoreProofFix, User } from "@/types";
+import { getTxHash } from "@/helpers";
+import { semaphoreABI, semaphoreExecutorABI, semaphoreValidatorABI } from "@/abi";
 
 import { TestProcess } from "./types";
-
 import { getUserCommitmentsSorted, initUsers, printUserOpReceipt, transferTo } from "./helpers";
 
 const INIT_TRANSFER_AMT: bigint = parseEther("0.01"); // In ETH
