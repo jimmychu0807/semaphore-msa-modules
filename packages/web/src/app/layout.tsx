@@ -19,7 +19,6 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  chatset: "UTF-8",
   title: "Semaphore Module Demo",
   description: "Created with ❤️ by Jimmy Chu",
 };

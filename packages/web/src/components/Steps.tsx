@@ -21,7 +21,7 @@ export function Steps() {
         <h3>Identity</h3>
       </div>
       <div className="flex-1">
-        <Button buttonText="Create an Identity" onClick={() => createIdentity(account.address)} />
+        <Button buttonText="Create an Identity" onClick={() => createIdentity(account.address!)} />
       </div>
     </section>
   );
