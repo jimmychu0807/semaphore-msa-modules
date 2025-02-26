@@ -3,6 +3,9 @@
 ## Using the Module
 
 ```shell
+# Setup the proper environment file
+ln -sf ../../.env .env
+
 # Install dependencies
 pnpm install
 
