@@ -3,7 +3,6 @@
   "description": "Semaphore modular smart account modules (JS library)",
   "version": "0.1.0",
   "license": "GPL-3.0",
-  "type": "module",
   "author": {
     "name": "Jimmy Chu",
     "url": "https://jimmychu0807.hk"
