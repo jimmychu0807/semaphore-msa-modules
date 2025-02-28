@@ -15,6 +15,7 @@
     "clean": "rimraf .next"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.0",
     "@rhinestone/module-sdk": "catalog:",
     "@semaphore-protocol/group": "catalog:",
     "@semaphore-protocol/identity": "catalog:",

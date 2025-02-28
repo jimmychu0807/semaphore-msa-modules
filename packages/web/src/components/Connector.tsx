@@ -11,10 +11,10 @@ export function Connector({ requiredChainId }: { requiredChainId: number }) {
   const { switchChain } = useSwitchChain();
 
   return (
-    <div className="text-sm flex items-end">
+    <div className="text-sm flex items-end self-center">
       {account.status === "connected" || account.status === "reconnecting" ? (
         <div>
-          <div className="mb-2">
+          <div className="my-2 text-center">
             Account: {account.address}&nbsp;
             {balanceResult.isSuccess && (
               <span>
@@ -23,7 +23,7 @@ export function Connector({ requiredChainId }: { requiredChainId: number }) {
               </span>
             )}
           </div>
-          <div className="flex flwx-row gap-x-2">
+          <div className="flex flex-row gap-x-4 justify-center">
             {account.chainId !== requiredChainId && (
               <Button buttonText="Swtich Network" onClick={() => switchChain({ chainId: requiredChainId })} />
             )}
@@ -32,8 +32,8 @@ export function Connector({ requiredChainId }: { requiredChainId: number }) {
         </div>
       ) : (
         <div>
-          <div className="mb-2">Connet Wallet</div>
-          <div className="flex gap-4 items-center flex-col sm:flex-row">
+          <div className="my-2 text-center">Connet Wallet</div>
+          <div className="flex flex-row gap-x-4 justify-center">
             {connectors.map((c) => (
               <Button key={c.uid} buttonText={c.name} onClick={() => connect({ connector: c })} />
             ))}

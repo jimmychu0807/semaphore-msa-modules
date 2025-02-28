@@ -16,13 +16,9 @@ export function Steps() {
   }
 
   return (
-    <section className="flex flex-col">
-      <div className="flex-1">
-        <h3>Identity</h3>
-      </div>
-      <div className="flex-1">
-        <Button buttonText="Create an Identity" onClick={() => createIdentity(account.address!)} />
-      </div>
+    <section className="self-center flex flex-col items-center">
+      <h3>Identity</h3>
+      <Button buttonText="Create an Identity" onClick={() => createIdentity(account.address!)} />
     </section>
   );
 }
