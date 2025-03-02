@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <>
       <Connector requiredChainId={baseSepolia.id} />
-      <h3 className="font-bold text-center w-full">Multi-sig Wallet with Semaphore Modules</h3>
+      <h2 className="font-bold text-center p-4 self-center">Multi-sig Wallet with Semaphore Modules</h2>
       <Instructions />
       <Steps />
     </>
