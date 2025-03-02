@@ -20,6 +20,7 @@
     "@semaphore-protocol/group": "catalog:",
     "@semaphore-protocol/identity": "catalog:",
     "@semaphore-protocol/proof": "catalog:",
+    "@tanstack/react-query": "catalog:",
     "dotenv": "catalog:",
     "next": "15.1.6",
     "permissionless": "catalog:",

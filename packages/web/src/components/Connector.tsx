@@ -1,11 +1,12 @@
 "use client";
+
 import { useAccount, useBalance, useConnect, useDisconnect, useSwitchChain } from "wagmi";
 import { Button } from "./Button";
 import { formatEther } from "@/utils/clients";
 
 export function Connector({ requiredChainId }: { requiredChainId: number }) {
   const account = useAccount();
-  const balanceResult = useBalance({ address: account.address });
+  const { data: balance } = useBalance({ address: account.address });
   const { connectors, connect } = useConnect();
   const { disconnect } = useDisconnect();
   const { switchChain } = useSwitchChain();
@@ -15,13 +16,8 @@ export function Connector({ requiredChainId }: { requiredChainId: number }) {
       {account.status === "connected" || account.status === "reconnecting" ? (
         <div>
           <div className="my-2 text-center">
-            Account: {account.address}&nbsp;
-            {balanceResult.isSuccess && (
-              <span>
-                ({formatEther(balanceResult.data.value)}&nbsp;
-                {balanceResult.data.symbol})
-              </span>
-            )}
+            Account: {account.address}
+            <span>{balance && ` (${formatEther(balance.value)} ${balance.symbol})`}</span>
           </div>
           <div className="flex flex-row gap-x-4 justify-center">
             {account.chainId !== requiredChainId && (
