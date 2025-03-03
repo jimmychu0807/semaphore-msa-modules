@@ -4,7 +4,7 @@ import TestSemaphoreModules from "./semaphore-modules";
 import { type Hex } from "viem";
 import { baseSepolia } from "viem/chains";
 import "dotenv/config";
-import { debug } from "debug";
+import debug from "debug";
 
 const info = debug("test:main");
 

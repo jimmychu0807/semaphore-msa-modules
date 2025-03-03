@@ -13,7 +13,7 @@ import { type UserOperationReceipt } from "viem/account-abstraction";
 
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { Identity } from "@semaphore-protocol/identity";
-import { debug } from "debug";
+import debug from "debug";
 
 import type { User } from "@/lib/semaphore-modules/types";
 import type { ParsedLog } from "./types";

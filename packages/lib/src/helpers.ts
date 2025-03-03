@@ -1,4 +1,4 @@
-import { debug } from "debug";
+import debug from "debug";
 import { type Address, type Hex, type PublicClient, encodePacked, keccak256 } from "viem";
 
 import {
@@ -66,7 +66,6 @@ export async function sendSemaphoreTransaction({
     userOperation: userOp,
   });
   userOp.signature = signMessage(signer, userOpHash);
-  // info(`initTxOp:`, initTxOp);
 
   const userOpTxHash = await bundlerClient.sendUserOperation(userOp);
   info(`userOp txHash: ${userOpTxHash}`);

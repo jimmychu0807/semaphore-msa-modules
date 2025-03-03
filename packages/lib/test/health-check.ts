@@ -1,6 +1,6 @@
 import { createBundlerClient } from "viem/account-abstraction";
 import { type Chain, http } from "viem";
-import { debug } from "debug";
+import debug from "debug";
 
 const info = debug("test:health-check");
 
