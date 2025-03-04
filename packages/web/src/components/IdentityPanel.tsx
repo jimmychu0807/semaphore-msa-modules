@@ -1,16 +1,27 @@
 "use client";
 
 import { Button } from "./Button";
+import { useAppState, useMutateAppState, useClearAppState } from "@/hooks/useAppState";
 
 const TEST_IDENTITY_CMT = 5926199064674296336324214663897687094599930109695195936304576785549579890551n;
 
-export function IdentityPanel({ identity, setIdentity }) {
-  function createIdentity() {
-    setIdentity(TEST_IDENTITY_CMT);
+export function IdentityPanel() {
+  const { data: identity } = useAppState("identity");
+  const mutateId = useMutateAppState("identity");
+  const clearId = useClearAppState("identity");
+
+  const mutateStep = useMutateAppState("step");
+
+  function createIdentity(cmt: bigint) {
+    mutateId.mutate(cmt.toString(), {
+      onSuccess: () => mutateStep.mutate("setSmartAccount"),
+    });
   }
 
   function forgetIdentity() {
-    setIdentity(null);
+    clearId.mutate(null, {
+      onSuccess: () => mutateStep.mutate("setIdentity"),
+    });
   }
 
   return (
@@ -25,7 +36,7 @@ export function IdentityPanel({ identity, setIdentity }) {
         </>
       ) : (
         <div className="py-4 mx-auto">
-          <Button buttonText="Create an Identity" onClick={() => createIdentity()} />
+          <Button buttonText="Create an Identity" onClick={() => createIdentity(TEST_IDENTITY_CMT)} />
         </div>
       )}
     </div>

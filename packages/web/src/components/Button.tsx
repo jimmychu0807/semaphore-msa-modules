@@ -7,7 +7,7 @@ export function Button({
   disabled,
 }: {
   buttonText: string;
-  onClick: () => void;
+  onClick: (ev) => void;
   isLoading?: boolean;
   disabled?: boolean;
 }) {
