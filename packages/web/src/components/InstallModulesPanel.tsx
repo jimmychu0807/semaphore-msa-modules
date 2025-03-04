@@ -1,5 +1,6 @@
 "use client";
 
+import { type MouseEvent } from "react";
 import { Field, Fieldset, Input, Label, Legend } from "@headlessui/react";
 
 import { Button } from "./Button";
@@ -15,12 +16,12 @@ export function InstallModulesPanel() {
 
   const mutateStep = useMutateAppState("step");
 
-  function installExecutorModule(ev) {
+  function installExecutorModule(ev: MouseEvent<HTMLElement>) {
     ev.preventDefault();
     setExecutor.mutate(true);
   }
 
-  function installValidatorModule(ev) {
+  function installValidatorModule(ev: MouseEvent<HTMLElement>) {
     ev.preventDefault();
     setValidator.mutate(true, {
       onSuccess: () => mutateStep.mutate("transactions"),

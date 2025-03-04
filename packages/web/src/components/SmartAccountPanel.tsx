@@ -1,5 +1,6 @@
 "use client";
 
+import { type MouseEvent } from "react";
 import { type Address } from "viem";
 import { useBalance } from "wagmi";
 import { Field, Label, Input } from "@headlessui/react";
@@ -30,7 +31,7 @@ export function SmartAccountPanel() {
     });
   }
 
-  function claimAccount(addr: Address, ev) {
+  function claimAccount(addr: Address, ev: MouseEvent<HTMLElement>) {
     ev.preventDefault();
 
     mutateAccount.mutate(addr, {

@@ -15,7 +15,9 @@ export function useMutateAppState(key: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (val: unknown) => window.localStorage.setItem(key, JSON.stringify(val)),
+    mutationFn: async (val: unknown) => {
+      window.localStorage.setItem(key, JSON.stringify(val));
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [APP_SCOPE, { key }] });
     },
@@ -26,14 +28,18 @@ export function useClearAppState(key: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => window.localStorage.removeItem(key),
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    mutationFn: async (val: unknown) => {
+      window.localStorage.removeItem(key);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [APP_SCOPE, { key }] });
     },
   });
 }
 
-async function fetchAppState({ queryKey }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchAppState({ queryKey }: { queryKey: any }) {
   const key = queryKey[1].key!;
   const item = window.localStorage.getItem(key);
   const val = item ? JSON.parse(item) : null;
