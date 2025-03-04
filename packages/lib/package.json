@@ -2,6 +2,7 @@
   "name": "@jimmychu0807/semaphore-msa-modules-lib",
   "description": "Semaphore modular smart account modules (JS library)",
   "version": "0.1.0",
+  "type": "module",
   "license": "GPL-3.0",
   "author": {
     "name": "Jimmy Chu",

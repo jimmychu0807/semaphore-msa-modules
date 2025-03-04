@@ -1,4 +1,4 @@
-import { debug } from "debug";
+import debug from "debug";
 import { expect } from "chai";
 import {
   type Address,

@@ -1,3 +1,4 @@
+import { type MouseEvent } from "react";
 import { LoadingSpinner } from "./LoadingSpinner";
 
 export function Button({
@@ -7,7 +8,7 @@ export function Button({
   disabled,
 }: {
   buttonText: string;
-  onClick: () => void;
+  onClick: (ev: MouseEvent<HTMLElement>) => void;
   isLoading?: boolean;
   disabled?: boolean;
 }) {
