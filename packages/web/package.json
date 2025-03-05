@@ -21,6 +21,7 @@
     "@semaphore-protocol/identity": "catalog:",
     "@semaphore-protocol/proof": "catalog:",
     "@tanstack/react-query": "catalog:",
+    "clsx": "^2.1.1",
     "dotenv": "catalog:",
     "next": "15.1.6",
     "permissionless": "catalog:",

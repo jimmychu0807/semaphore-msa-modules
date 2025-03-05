@@ -19,9 +19,8 @@ export function IdentityPanel() {
   }
 
   function forgetIdentity() {
-    clearId.mutate(null, {
-      onSuccess: () => mutateStep.mutate("setIdentity"),
-    });
+    clearId.mutate();
+    mutateStep.mutate("setIdentity");
   }
 
   return (

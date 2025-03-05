@@ -204,6 +204,9 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.66.9(react@19.0.0)
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
       dotenv:
         specifier: 'catalog:'
         version: 16.4.7
