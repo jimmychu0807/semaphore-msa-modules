@@ -1,5 +1,5 @@
 {
-  "name": "@jimmychu0807/semaphore-msa-modules",
+  "name": "@semaphore-msa-modules/root",
   "description": "Semaphore modular smart account modules",
   "license": "GPL-3.0",
   "private": true,
@@ -33,7 +33,7 @@
     "contracts:test": "pnpm --filter semaphore-msa-modules-contracts test",
     "web:build": "pnpm --filter semaphore-msa-modules-web build",
     "build": "pnpm -r --filter './packages/*' build",
-    "clean": "pnpm -r --filter './packages/*' clean && rimraf node_modules",
+    "clean": "pnpm -r --filter './packages/*' clean",
     "lint": "pnpm -r --filter './packages/*' lint",
     "lint:write": "pnpm -r --filter './packages/*' lint:write",
     "test": "pnpm -r --filter './packages/contracts' test",

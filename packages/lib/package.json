@@ -1,17 +1,32 @@
 {
-  "name": "@jimmychu0807/semaphore-msa-modules-lib",
+  "name": "@semaphore-msa-modules/lib",
   "description": "Semaphore modular smart account modules (JS library)",
   "version": "0.1.0",
-  "type": "module",
-  "license": "GPL-3.0",
-  "author": {
-    "name": "Jimmy Chu",
-    "url": "https://jimmychu0807.hk"
-  },
   "homepage": "https://github.com/jimmychu0807/semaphore-msa-modules",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jimmychu0807/semaphore-msa-modules.git"
+  },
+  "author": {
+    "name": "Jimmy Chu",
+    "url": "https://jimmychu0807.hk"
+  },
+  "license": "GPL-3.0",
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "default": "./dist/cjs/index.js"
+    },
+    "./abi": {
+      "types": "./dist/types/abi/index.d.ts",
+      "import": "./dist/esm/abi/index.js",
+      "default": "./dist/cjs/abi/index.js"
+    }
   },
   "scripts": {
     "prettier": "prettier --no-error-on-unmatched-pattern -c \"{src,test}/**/*.{json,ts,tsx}\"",
@@ -19,6 +34,12 @@
     "prettier:write": "prettier --no-error-on-unmatched-pattern -w \"{src,test}/**/*.{json,ts,tsx}\"",
     "lint:write": "pnpm prettier:write",
     "compile": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "prepare": "pnpm run build",
+    "build": "pnpm run clean && pnpm build:cjs && pnpm build:esm && pnpm build:types",
+    "build:cjs": "tsc --project ./tsconfig.build.json --module commonjs --outDir ./dist/cjs --removeComments --verbatimModuleSyntax false && printf '{\"type\":\"commonjs\"}' > ./dist/cjs/package.json",
+    "build:esm": "tsc --project ./tsconfig.build.json --module esnext --outDir ./dist/esm && tsc-alias --project ./tsconfig.build.json --outDir ./dist/esm && printf '{\"type\": \"module\",\"sideEffects\":false}' > ./dist/esm/package.json",
+    "build:types": "tsc --project ./tsconfig.build.json --module esnext --declarationDir ./dist/types --outDir ./dist/esm --emitDeclarationOnly --declaration --declarationMap",
     "test": "DEBUG=test:* mocha --config .mocharc.json"
   },
   "dependencies": {
@@ -41,6 +62,7 @@
     "globals": "^16.0.0",
     "mocha": "^11.1.0",
     "rimraf": "catalog:",
+    "tsc-alias": "^1.8.11",
     "tsx": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "^8.25.0"
