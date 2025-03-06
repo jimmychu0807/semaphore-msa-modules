@@ -1,4 +1,3 @@
-// import { expect } from 'chai';
 import { ensureBundlerIsReady, ensurePaymasterIsReady } from "./health-check";
 import TestSemaphoreModules from "./semaphore-modules";
 import { type Hex } from "viem";
