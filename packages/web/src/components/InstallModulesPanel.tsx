@@ -6,8 +6,9 @@ import clsx from "clsx";
 
 import { Button } from "./Button";
 import { useAppState, useMutateAppState } from "@/hooks/useAppState";
+import { AppSmartAccountClient } from "@/utils/types";
 
-export function InstallModulesPanel() {
+export function InstallModulesPanel({ smartAccountClient }: { smartAccountClient: AppSmartAccountClient | undefined }) {
   const { data: smartAccount } = useAppState("smartAccount");
   const { data: isExecutorInstalled } = useAppState("isExecutorInstalled");
   const setExecutor = useMutateAppState("isExecutorInstalled");
@@ -39,6 +40,8 @@ export function InstallModulesPanel() {
     "mt-3 block w-full rounded-lg border-none bg-black/5 py-1.5 px-3 text-sm/6 text-black",
     "focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25"
   );
+
+  console.log("smart acct client:", smartAccountClient);
 
   return (
     <div className="flex flex-col justify-center items-center">

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useAccount } from "wagmi";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { IdentityPanel } from "./IdentityPanel";
@@ -8,6 +9,7 @@ import { InstallModulesPanel } from "./InstallModulesPanel";
 import { TransactionsPanel } from "./TransactionsPanel";
 
 import { useAppState } from "@/hooks/useAppState";
+import { type AppSmartAccountClient } from "@/utils/types";
 
 function getLargestTabFromStep(step: string): number {
   switch (step) {
@@ -29,6 +31,7 @@ export function Steps() {
   const isConnected = !!account.address;
   const { data: currentStep } = useAppState("step");
   const largestTab = getLargestTabFromStep(currentStep);
+  const [smartAccountClient, setSmartAccountClient] = useState<AppSmartAccountClient>();
 
   const tabClassNames =
     "rounded-full py-1 px-3 font-semibold text-sm/6 focus:outline-none data-[selected]:bg-black/10 data-[hover]:bg-black/5 data-[selected]:data-[hover]:bg-black/10 data-[focus]:outline-1 data-[focus]:outline-black";
@@ -65,10 +68,10 @@ export function Steps() {
             <IdentityPanel />
           </TabPanel>
           <TabPanel className="rounded-xl bg-black/5 p-3">
-            <SmartAccountPanel />
+            <SmartAccountPanel smartAccountClient={smartAccountClient} setSmartAccountClient={setSmartAccountClient} />
           </TabPanel>
           <TabPanel className="rounded-xl bg-black/5 p-3">
-            <InstallModulesPanel />
+            <InstallModulesPanel smartAccountClient={smartAccountClient} />
           </TabPanel>
           <TabPanel className="rounded-xl bg-black/5 p-3">
             <TransactionsPanel />
