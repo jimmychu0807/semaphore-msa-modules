@@ -43,7 +43,7 @@ export function Steps() {
   return (
     <section className="self-center flex flex-col items-center w-full md:w-2/3">
       <TabGroup className="w-full">
-        <TabList className="flex gap-4">
+        <TabList className="flex gap-2">
           <Tab key="identityTab" className={tabClassNames}>
             1. Set Identity
           </Tab>

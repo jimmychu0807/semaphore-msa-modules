@@ -1,8 +1,8 @@
 "use client";
 
 import { type FormEvent, type Dispatch, type SetStateAction, useState, useEffect } from "react";
-import { type Address, type Account, type PublicClient, http } from "viem";
-import { useAccount, useBalance, usePublicClient } from "wagmi";
+import { type Address, type PublicClient, type WalletClient, http } from "viem";
+import { useBalance, usePublicClient, useWalletClient } from "wagmi";
 import { baseSepolia } from "wagmi/chains";
 import { Field, Label, Input } from "@headlessui/react";
 import { createSmartAccountClient } from "permissionless";
@@ -27,7 +27,7 @@ async function getSmartAccountClient({
 }: {
   publicClient: PublicClient | undefined;
   saltNonce?: bigint;
-  owners?: Array<Account>;
+  owners?: Array<WalletClient>;
   address?: Address;
 }): Promise<AppSmartAccountClient> {
   if (!publicClient) throw new Error("publicClient is falsy");
@@ -36,7 +36,7 @@ async function getSmartAccountClient({
   const safeAccount = await toSafeSmartAccount({
     client: publicClient,
     saltNonce,
-    owners: owners || [],
+    owners: owners || [], // note: is it okay to have empty owners?
     address,
     version: "1.4.1",
     entryPoint: {
@@ -72,7 +72,7 @@ export function SmartAccountPanel({
   smartAccountClient: AppSmartAccountClient | undefined;
   setSmartAccountClient: Dispatch<SetStateAction<AppSmartAccountClient | undefined>>;
 }) {
-  const ownerAcct = useAccount();
+  const walletClient = useWalletClient();
   const { data: smartAccountAddr } = useAppState("smartAccountAddr");
   const mutateAccountAddr = useMutateAppState("smartAccountAddr");
   const clearAccountAddr = useClearAppState("smartAccountAddr");
@@ -85,12 +85,17 @@ export function SmartAccountPanel({
   const publicClient = usePublicClient();
 
   async function createAccount() {
+    if (!walletClient.data) {
+      console.error("No wallet account");
+      return;
+    }
+
     setCreateBtnLoading(true);
 
     const _smartAccountClient = await getSmartAccountClient({
       publicClient,
       saltNonce: accountSaltNonce,
-      owners: [ownerAcct as unknown as Account],
+      owners: [walletClient.data],
     });
 
     setSmartAccountClient(_smartAccountClient);
@@ -109,6 +114,11 @@ export function SmartAccountPanel({
 
   async function claimAccount(ev: FormEvent<HTMLElement>) {
     ev.preventDefault();
+    if (!walletClient.data) {
+      console.error("No wallet account");
+      return;
+    }
+
     setClaimHandling(true);
 
     const formData = new FormData(ev.target as HTMLFormElement);
@@ -117,6 +127,8 @@ export function SmartAccountPanel({
     const _smartAccountClient = await getSmartAccountClient({
       publicClient,
       address: acctAddress,
+      saltNonce: accountSaltNonce,
+      owners: [walletClient.data],
     });
     setSmartAccountClient(_smartAccountClient);
 
@@ -129,15 +141,17 @@ export function SmartAccountPanel({
     let isMounted = true;
 
     const toGetSmartAccountClient = async () => {
-      if (smartAccountAddr) {
-        const _smartAccountClient = await getSmartAccountClient({
-          publicClient,
-          address: smartAccountAddr,
-        });
+      if (!smartAccountAddr || !walletClient.data) return;
 
-        if (isMounted) {
-          setSmartAccountClient(_smartAccountClient);
-        }
+      const _smartAccountClient = await getSmartAccountClient({
+        publicClient,
+        address: smartAccountAddr,
+        saltNonce: accountSaltNonce,
+        owners: [walletClient.data],
+      });
+
+      if (isMounted) {
+        setSmartAccountClient(_smartAccountClient);
       }
     };
 
@@ -146,7 +160,7 @@ export function SmartAccountPanel({
     return () => {
       isMounted = false;
     };
-  }, [smartAccountAddr, setSmartAccountClient, publicClient]);
+  }, [smartAccountAddr, setSmartAccountClient, publicClient, walletClient]);
 
   return (
     <div className="flex flex-col justify-center items-center">

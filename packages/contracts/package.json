@@ -1,5 +1,5 @@
 {
-  "name": "@jimmychu0807/semaphore-msa-modules-contracts",
+  "name": "@semaphore-msa-modules/contracts",
   "version": "0.0.1",
   "description": "Semaphore modular smart account modules (smart contracts)",
   "license": "GPL-3.0",
