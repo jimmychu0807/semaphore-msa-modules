@@ -41,9 +41,9 @@ export function Steps() {
   }
 
   return (
-    <section className="self-center flex flex-col items-center w-full md:w-2/3">
+    <section className="self-center flex flex-col items-center w-full md:w-5/6 lg:w-2/3">
       <TabGroup className="w-full">
-        <TabList className="flex gap-2">
+        <TabList className="flex justify-center gap-2">
           <Tab key="identityTab" className={tabClassNames}>
             1. Set Identity
           </Tab>
@@ -63,7 +63,7 @@ export function Steps() {
             </Tab>
           )}
         </TabList>
-        <TabPanels className="mt-3">
+        <TabPanels className="mt-2">
           <TabPanel className="rounded-xl bg-black/5 p-3">
             <IdentityPanel />
           </TabPanel>
