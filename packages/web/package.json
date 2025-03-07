@@ -1,5 +1,5 @@
 {
-  "name": "@jimmychu0807/semaphore-msa-modules-web",
+  "name": "@semaphore-msa-modules/web",
   "description": "Semaphore modular smart account modules (UI demo)",
   "version": "0.1.0",
   "scripts": {
@@ -21,6 +21,7 @@
     "@semaphore-protocol/identity": "catalog:",
     "@semaphore-protocol/proof": "catalog:",
     "@tanstack/react-query": "catalog:",
+    "@semaphore-msa-modules/lib": "workspace:*",
     "clsx": "^2.1.1",
     "dotenv": "catalog:",
     "next": "15.1.6",
