@@ -1,33 +1,30 @@
 "use client";
 
-import { type FormEvent, useState, useEffect } from "react";
+import { type FormEvent, useState } from "react";
 import { Field, Fieldset, Input, Label, Legend } from "@headlessui/react";
-import { usePublicClient } from "wagmi";
 import clsx from "clsx";
 
 import { Button } from "./Button";
-import { useMutateAppState } from "@/hooks/useAppState";
-import { AppSmartAccountClient } from "@/utils/types";
+import { useAppContext } from "@/contexts/AppContext";
+import { Step } from "@/types";
 import { getCommitmentsSorted } from "@/utils";
 import { getSemaphoreExecutor, getSemaphoreValidator } from "@semaphore-msa-modules/lib";
 
-export function InstallModulesPanel({ smartAccountClient }: { smartAccountClient: AppSmartAccountClient | undefined }) {
-  const [isExecutorInstalled, setExecutorInstalled] = useState<boolean>();
-  const [isValidatorInstalled, setValidatorInstalled] = useState<boolean>();
+export function InstallModulesPanel() {
+  const { appState, dispatch } = useAppContext();
+  const { executorInstalled, validatorInstalled } = appState;
 
   const [installingExecutor, setInstallingExecutor] = useState<boolean>(false);
   const [installingValidator, setInstallingValidator] = useState<boolean>(false);
 
-  const mutateStep = useMutateAppState("step");
-  const publicClient = usePublicClient();
-
   async function installExecutorModule(ev: FormEvent<HTMLElement>) {
     ev.preventDefault();
-    if (!smartAccountClient) {
+    if (!appState.smartAccountClient) {
       console.error("smart account client is not setup");
       return;
     }
 
+    const { smartAccountClient } = appState;
     setInstallingExecutor(true);
 
     const formData = new FormData(ev.target as HTMLFormElement);
@@ -40,13 +37,11 @@ export function InstallModulesPanel({ smartAccountClient }: { smartAccountClient
         threshold,
         semaphoreCommitments,
       });
-
       const opHash = await smartAccountClient.installModule(semaphoreExecutor);
       const receipt = await smartAccountClient.waitForUserOperationReceipt({ hash: opHash });
-
       console.log("receipt:", receipt);
 
-      setExecutorInstalled(true);
+      dispatch({ type: "installExecutor" });
     } catch (err) {
       console.error("installExecutorModule error:", err);
     } finally {
@@ -56,23 +51,22 @@ export function InstallModulesPanel({ smartAccountClient }: { smartAccountClient
 
   async function installValidatorModule(ev: FormEvent<HTMLElement>) {
     ev.preventDefault();
-    if (!smartAccountClient) {
+    if (!appState.smartAccountClient) {
       console.error("smart account client is not setup");
       return;
     }
 
+    const { smartAccountClient } = appState;
     setInstallingValidator(true);
 
     try {
       const semaphoreValidator = await getSemaphoreValidator();
-
       const opHash = await smartAccountClient.installModule(semaphoreValidator);
       const receipt = await smartAccountClient.waitForUserOperationReceipt({ hash: opHash });
-
       console.log("receipt:", receipt);
 
-      setValidatorInstalled(true);
-      mutateStep.mutate("transactions");
+      dispatch({ type: "installValidator" });
+      dispatch({ type: "setStep", value: Step.Transactions });
     } catch (err) {
       console.error("installValidatorModule error:", err);
     } finally {
@@ -85,41 +79,16 @@ export function InstallModulesPanel({ smartAccountClient }: { smartAccountClient
     "focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25"
   );
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const checkIsModulesInstalled = async () => {
-      if (!smartAccountClient || !publicClient || !smartAccountClient?.account) return;
-
-      // Check that the smart account has been initialized
-      const address = smartAccountClient.account.address;
-      const isAcctInited = await publicClient.getCode({ address });
-      if (!isAcctInited) return;
-
-      const eInstalled = await smartAccountClient.isModuleInstalled(getSemaphoreExecutor());
-      const vInstalled = await smartAccountClient.isModuleInstalled(getSemaphoreValidator());
-
-      if (isMounted) {
-        setExecutorInstalled(eInstalled);
-        setValidatorInstalled(vInstalled);
-      }
-    };
-
-    checkIsModulesInstalled();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [publicClient, smartAccountClient]);
-
-  if (!smartAccountClient) {
+  if (!appState.smartAccountClient) {
     return <div>Please setup a smart account first.</div>;
   }
+
+  const { smartAccountClient } = appState;
 
   return (
     <div className="flex flex-col justify-center items-center">
       <div className="text-sm py-3">Smart Account: {smartAccountClient?.account?.address}</div>
-      {!isExecutorInstalled ? (
+      {!executorInstalled ? (
         <form className="block w-full max-w-lg px-4" onSubmit={installExecutorModule}>
           <Fieldset className="space-y-6 rounded-xl p-6">
             <Legend className="text-base/7 font-semibold text-black">Install Executor Module</Legend>
@@ -145,13 +114,13 @@ export function InstallModulesPanel({ smartAccountClient }: { smartAccountClient
         <div className="text-sm my-3">Semaphore Executor Module has been installed in your smart account.</div>
       )}
 
-      {!isValidatorInstalled ? (
+      {!validatorInstalled ? (
         <form className="block w-full max-w-lg px-4" onSubmit={installValidatorModule}>
           <Fieldset className="space-y-6 rounded-xl p-6">
             <Legend className="text-base/7 font-semibold text-black">Install Validator Module</Legend>
             <div className="flex justify-center">
               <Button
-                disabled={!isExecutorInstalled}
+                disabled={!executorInstalled}
                 buttonText="Install Validator Module"
                 isLoading={installingValidator}
                 isSubmit={true}

@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import { cookieToInitialState } from "wagmi";
 
-import { getConfig } from "@/utils/clients";
+import { getConfig } from "@/utils";
 import { Footer } from "@/components/Footer";
 import { Providers } from "@/components/Providers";
 import "./globals.css";
@@ -39,7 +39,7 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers initialState={initialState}>
-          <div className="grid grid-rows items-center justify-items-center min-h-screen gap-16 px-8 font-[family-name:var(--font-geist-sans)]">
+          <div className="grid grid-rows items-center justify-items-center min-h-screen gap-12 px-8 font-[family-name:var(--font-geist-sans)]">
             <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">{children}</main>
             <Footer />
           </div>
