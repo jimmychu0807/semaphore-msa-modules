@@ -1,37 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 import { Button } from "./Button";
-import { useAppState, useMutateAppState, useClearAppState } from "@/hooks/useAppState";
+import { useAppContext } from "@/contexts/AppContext";
+import { Step } from "@/utils/types";
 import { Identity } from "@semaphore-protocol/identity";
 
 export function IdentityPanel() {
-  const { isPending, data: sk } = useAppState("identitySk");
-  const mutateSk = useMutateAppState("identitySk");
-  const clearSk = useClearAppState("identitySk");
+  const { appState, dispatch } = useAppContext();
 
-  const [identity, setIdentity] = useState<Identity | null>();
-  const mutateStep = useMutateAppState("step");
-
-  useEffect(() => {
-    if (sk) {
-      setIdentity(Identity.import(sk));
-    }
-  }, [sk]);
+  const isPending = false;
+  const { identity } = appState;
 
   function createIdentity() {
     const newId = new Identity();
-    setIdentity(newId);
-    mutateSk.mutate(newId.export(), {
-      onSuccess: () => mutateStep.mutate("setSmartAccount"),
+    dispatch({
+      type: "setIdentity",
+      value: newId,
+    });
+    dispatch({
+      type: "setStep",
+      value: Step.SetSmartAccount,
     });
   }
 
   function forgetIdentity() {
-    setIdentity(null);
-    clearSk.mutate();
-    mutateStep.mutate("setIdentity");
+    dispatch({ type: "clearIdentity" });
+    dispatch({
+      type: "setStep",
+      value: Step.SetIdentity,
+    });
   }
 
   return (
