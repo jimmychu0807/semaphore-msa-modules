@@ -1,5 +1,5 @@
 "use client";
-import { getConfig } from "@/utils/clients";
+import { getConfig } from "@/utils";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type ReactNode, useState } from "react";
 import { type State, WagmiProvider } from "wagmi";

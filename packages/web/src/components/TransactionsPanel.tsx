@@ -1,35 +1,18 @@
 import { useState, type MouseEvent, type FormEvent } from "react";
 import { Dialog, DialogPanel, DialogTitle, Fieldset, Field, Label, Input } from "@headlessui/react";
 
-import { type Address, type Hex } from "viem";
+import { type Address } from "viem";
 import clsx from "clsx";
-import { useAppState, useMutateAppState, useClearAppState } from "@/hooks/useAppState";
 
 import { Button } from "./Button";
 import { generateRandomHex } from "@/utils";
+import { type Transaction } from "@/types";
 
-type Transaction = {
-  recipient: Address;
-  amount: number;
-  txHash: Hex;
-  signatureCnt: number;
-};
+const ACCT_THRESHOLD = 3;
 
 export function TransactionsPanel() {
   const [isOpen, setIsOpen] = useState(false);
-  const { isSuccess: transactionLoaded, data: transactions } = useAppState("transactions", []);
-  const mutateTransactions = useMutateAppState(
-    "transactions",
-    async ({ recipient, amount }: { recipient: Address; amount: number }) => {
-      // simulate the txHash
-      const txHash = generateRandomHex();
-      window.localStorage.setItem(
-        "transactions",
-        JSON.stringify([...transactions, { txHash, recipient, amount, signatureCnt: 1 }])
-      );
-    }
-  );
-  const clearTransactions = useClearAppState("transactions");
+  const [transactions, setTransactions] = useState<Array<Transaction>>([]);
 
   const inputClassNames = clsx(
     "mt-3 block w-full rounded-lg border-none bg-black/5 py-1.5 px-3 text-sm/6 text-black",
@@ -46,18 +29,21 @@ export function TransactionsPanel() {
   function submitTransfer(ev: FormEvent<HTMLElement>) {
     ev.preventDefault();
     const formData = new FormData(ev.target as HTMLFormElement);
-    const recipient = formData.get("recipient");
-    const amount = formData.get("amount");
+    const recipient = formData.get("recipient") as Address;
+    const amount = Number(formData.get("amount"));
     console.log(`${recipient}: ${amount}`);
 
-    mutateTransactions.mutate(
-      { recipient, amount },
+    setTransactions([
+      ...transactions,
       {
-        onSuccess: () => {
-          setIsOpen(false);
-        },
-      }
-    );
+        recipient,
+        amount,
+        txHash: generateRandomHex(),
+        signatureCnt: 1,
+      },
+    ]);
+
+    setIsOpen(false);
   }
 
   function cancelTransfer(ev: MouseEvent<HTMLElement>) {
@@ -67,7 +53,7 @@ export function TransactionsPanel() {
 
   function resetTransactions(ev: MouseEvent<HTMLElement>) {
     ev.preventDefault();
-    clearTransactions.mutate();
+    setTransactions([]);
   }
 
   function signTx(ev: MouseEvent<HTMLElement>) {
@@ -80,39 +66,34 @@ export function TransactionsPanel() {
     console.log("executeTx");
   }
 
-  if (!transactionLoaded) {
-    return <div>loading...</div>;
-  }
-
   return (
     <>
-      <div className="flex flex-col items-center gap-y-3">
+      <div className="flex flex-col items-center gap-y-3 my-3">
         <h2>Pending Transactions</h2>
-        {!transactionLoaded ? (
-          <div>loading...</div>
-        ) : (
-          transactions.map((tx: Transaction) => (
-            <div key={tx.txHash} className="flex flex-row items-center w-full">
-              <div className="w-3/4 text-xs">
-                <div>tx hash: {tx.txHash}</div>
-                <div>recipient: {tx.recipient}</div>
-                <div>value: {tx.amount} ETH</div>
-              </div>
-              <div className="w-1/4 flex flex-row justify-evenly">
-                <button className={btnClassNames} onClick={signTx}>
-                  Sign
-                </button>
-                <button className={btnClassNames} onClick={executeTx}>
-                  Execute
-                </button>
+        {transactions.map((tx: Transaction) => (
+          <div key={tx.txHash} className="flex flex-row items-center w-full">
+            <div className="w-3/4 text-xs">
+              <div>tx hash: {tx.txHash}</div>
+              <div>recipient: {tx.recipient}</div>
+              <div>value: {tx.amount} ETH</div>
+              <div>
+                signatures: {tx.signatureCnt}/{ACCT_THRESHOLD}
               </div>
             </div>
-          ))
-        )}
-        <div className="flex flex-row justify-center gap-x-4">
-          <Button buttonText="Initiate a Tx" onClick={() => setIsOpen(true)} />
-          <Button buttonText="Reset" onClick={resetTransactions} />
-        </div>
+            <div className="w-1/4 flex flex-row justify-evenly">
+              <button className={btnClassNames} onClick={signTx}>
+                Sign
+              </button>
+              <button className={btnClassNames} onClick={executeTx}>
+                Execute
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-row justify-center gap-x-4">
+        <Button buttonText="Initiate a Tx" onClick={() => setIsOpen(true)} />
+        <Button buttonText="Reset" onClick={resetTransactions} />
       </div>
 
       <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">

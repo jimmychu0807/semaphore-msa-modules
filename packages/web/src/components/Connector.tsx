@@ -2,7 +2,7 @@
 
 import { useAccount, useBalance, useConnect, useDisconnect, useSwitchChain } from "wagmi";
 import { Button } from "./Button";
-import { formatEther } from "@/utils/clients";
+import { formatEther } from "@/utils";
 
 export function Connector({ requiredChainId }: { requiredChainId: number }) {
   const account = useAccount();

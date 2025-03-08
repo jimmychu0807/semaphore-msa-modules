@@ -6,7 +6,7 @@ import { useBalance, usePublicClient, useWalletClient } from "wagmi";
 import { Field, Label, Input } from "@headlessui/react";
 
 import { Button } from "./Button";
-import { accountSaltNonce, formatEther, getSmartAccountClient } from "@/utils/clients";
+import { accountSaltNonce, formatEther, getSmartAccountClient } from "@/utils";
 import { useAppContext } from "@/contexts/AppContext";
 import { Step } from "@/types";
 

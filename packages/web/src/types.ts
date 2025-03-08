@@ -1,5 +1,5 @@
 import { type SmartAccountClient } from "permissionless";
-import { Chain, Transport } from "viem";
+import { type Address, type Hex, Chain, Transport } from "viem";
 import { ToSafeSmartAccountReturnType } from "permissionless/accounts";
 import { Erc7579Actions } from "permissionless/actions/erc7579";
 import { Identity } from "@semaphore-protocol/identity";
@@ -10,8 +10,10 @@ export type AppSmartAccountClient = SmartAccountClient<Transport, Chain, ToSafeS
 
 export type TAppState = {
   identity?: Identity;
-  step?: Step;
   smartAccountClient?: AppSmartAccountClient;
+  step: Step;
+  executorInstalled: boolean;
+  validatorInstalled: boolean;
   status: "pending" | "ready";
 };
 
@@ -21,7 +23,9 @@ export type TAppAction =
   | { type: "clearIdentity" }
   | { type: "setSmartAccountClient"; value: AppSmartAccountClient }
   | { type: "clearSmartAccountClient" }
-  | { type: "setStep"; value: Step };
+  | { type: "setStep"; value: Step }
+  | { type: "installExecutor" }
+  | { type: "installValidator" };
 
 export type TAppContext = {
   appState: TAppState;
@@ -34,3 +38,10 @@ export enum Step {
   InstallModules,
   Transactions,
 }
+
+export type Transaction = {
+  recipient: Address;
+  amount: number;
+  txHash: Hex;
+  signatureCnt: number;
+};

@@ -4,13 +4,15 @@ import { type ReactNode, createContext, useContext, useReducer, useEffect, useSt
 import { type Address, type PublicClient, type WalletClient } from "viem";
 import { usePublicClient, useWalletClient } from "wagmi";
 
-import { accountSaltNonce, getSmartAccountClient } from "@/utils/clients";
+import { accountSaltNonce, getSmartAccountClient } from "@/utils";
 import { type TAppContext, type TAppState, type TAppAction, Step } from "@/types";
 import { Identity } from "@semaphore-protocol/identity";
+import { getSemaphoreExecutor, getSemaphoreValidator } from "@semaphore-msa-modules/lib";
 
 const unInitAppState: TAppState = {
-  identity: undefined,
   step: Step.SetIdentity,
+  executorInstalled: false,
+  validatorInstalled: false,
   status: "pending",
 };
 
@@ -21,7 +23,7 @@ export const AppContext = createContext<TAppContext>({
 
 // Restoring the appstate from localstorage
 async function initAppState(publicClient: PublicClient, walletClient: WalletClient): Promise<TAppState> {
-  const appState: TAppState = { status: "ready" };
+  const appState: TAppState = { ...unInitAppState, status: "ready" };
 
   const identitySk = window.localStorage.getItem("identitySk");
   if (identitySk) {
@@ -34,14 +36,29 @@ async function initAppState(publicClient: PublicClient, walletClient: WalletClie
     appState.step = Number(step) as Step;
   }
 
-  const smartAccountAddr = window.localStorage.getItem("smartAccountAddr") as Address;
-  if (smartAccountAddr) {
-    appState.smartAccountClient = await getSmartAccountClient({
-      publicClient,
-      saltNonce: accountSaltNonce,
-      owners: [walletClient],
-      address: smartAccountAddr,
-    });
+  const address = window.localStorage.getItem("smartAccountAddr") as Address;
+  if (address) {
+    // Restore the smart account client
+    try {
+      const smartAccountClient = await getSmartAccountClient({
+        publicClient,
+        saltNonce: accountSaltNonce,
+        owners: [walletClient],
+        address,
+      });
+      appState.smartAccountClient = smartAccountClient;
+
+      // Check if the two modules are installed
+      const isAcctInited = await publicClient.getCode({ address });
+      if (isAcctInited) {
+        const sme = getSemaphoreExecutor();
+        const smv = getSemaphoreValidator();
+        if (await smartAccountClient.isModuleInstalled(sme)) appState.executorInstalled = true;
+        if (await smartAccountClient.isModuleInstalled(smv)) appState.validatorInstalled = true;
+      }
+    } catch (err) {
+      console.error("Restoring smart account client error:", err);
+    }
   }
 
   return appState;
@@ -72,6 +89,12 @@ function appStateReducer(appState: TAppState, action: TAppAction): TAppState {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { smartAccountClient, ...newState } = appState;
       return newState;
+    }
+    case "installExecutor": {
+      return { ...appState, executorInstalled: true };
+    }
+    case "installValidator": {
+      return { ...appState, validatorInstalled: true };
     }
     default: {
       throw new Error(`Unknown action: ${action}`);
