@@ -2,7 +2,7 @@
 
 import { Button } from "./Button";
 import { useAppContext } from "@/contexts/AppContext";
-import { Step } from "@/utils/types";
+import { Step } from "@/types";
 import { Identity } from "@semaphore-protocol/identity";
 
 export function IdentityPanel() {

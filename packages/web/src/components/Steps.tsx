@@ -9,7 +9,7 @@ import { InstallModulesPanel } from "./InstallModulesPanel";
 import { TransactionsPanel } from "./TransactionsPanel";
 
 import { useAppContext } from "@/contexts/AppContext";
-import { type AppSmartAccountClient, Step } from "@/utils/types";
+import { type AppSmartAccountClient, Step } from "@/types";
 
 export function Steps() {
   const account = useAccount();
@@ -20,7 +20,7 @@ export function Steps() {
 
   const [selectedTab, setSelectedTab] = useState(Number(step));
 
-  const [smartAccountClient, setSmartAccountClient] = useState<AppSmartAccountClient>();
+  const [smartAccountClient] = useState<AppSmartAccountClient>();
 
   useEffect(() => {
     setSelectedTab(Number(step));
@@ -64,7 +64,7 @@ export function Steps() {
             <IdentityPanel />
           </TabPanel>
           <TabPanel className="rounded-xl bg-black/5 p-3">
-            <SmartAccountPanel smartAccountClient={smartAccountClient} setSmartAccountClient={setSmartAccountClient} />
+            <SmartAccountPanel />
           </TabPanel>
           <TabPanel className="rounded-xl bg-black/5 p-3">
             <InstallModulesPanel smartAccountClient={smartAccountClient} />

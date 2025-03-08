@@ -7,7 +7,7 @@ import clsx from "clsx";
 
 import { Button } from "./Button";
 import { useMutateAppState } from "@/hooks/useAppState";
-import { AppSmartAccountClient } from "@/utils/types";
+import { AppSmartAccountClient } from "@/types";
 import { getCommitmentsSorted } from "@/utils";
 import { getSemaphoreExecutor, getSemaphoreValidator } from "@semaphore-msa-modules/lib";
 

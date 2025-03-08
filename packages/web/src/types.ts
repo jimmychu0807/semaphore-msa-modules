@@ -11,13 +11,16 @@ export type AppSmartAccountClient = SmartAccountClient<Transport, Chain, ToSafeS
 export type TAppState = {
   identity?: Identity;
   step?: Step;
+  smartAccountClient?: AppSmartAccountClient;
   status: "pending" | "ready";
 };
 
 export type TAppAction =
   | { type: "init"; value: TAppState }
-  | { type: "clearIdentity" }
   | { type: "setIdentity"; value: Identity }
+  | { type: "clearIdentity" }
+  | { type: "setSmartAccountClient"; value: AppSmartAccountClient }
+  | { type: "clearSmartAccountClient" }
   | { type: "setStep"; value: Step };
 
 export type TAppContext = {

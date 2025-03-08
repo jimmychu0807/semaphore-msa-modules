@@ -1,86 +1,23 @@
 "use client";
 
-import { type FormEvent, type Dispatch, type SetStateAction, useState, useEffect } from "react";
-import { type Address, type PublicClient, type WalletClient, http } from "viem";
+import { type FormEvent, useState } from "react";
+import { type Address } from "viem";
 import { useBalance, usePublicClient, useWalletClient } from "wagmi";
-import { baseSepolia } from "wagmi/chains";
 import { Field, Label, Input } from "@headlessui/react";
-import { createSmartAccountClient } from "permissionless";
-import { toSafeSmartAccount } from "permissionless/accounts";
-import { erc7579Actions } from "permissionless/actions/erc7579";
-import { entryPoint07Address } from "viem/account-abstraction";
-import {
-  RHINESTONE_ATTESTER_ADDRESS, // Rhinestone Attester
-  MOCK_ATTESTER_ADDRESS, // Mock Attester - do not use in production
-} from "@rhinestone/module-sdk";
 
 import { Button } from "./Button";
-import { accountSaltNonce, formatEther, pimlicoClient, paymasterClient, bundlerUrl } from "@/utils/clients";
-import { useAppState, useMutateAppState, useClearAppState } from "@/hooks/useAppState";
-import { type AppSmartAccountClient } from "@/utils/types";
+import { accountSaltNonce, formatEther, getSmartAccountClient } from "@/utils/clients";
+import { useAppContext } from "@/contexts/AppContext";
+import { Step } from "@/types";
 
-async function getSmartAccountClient({
-  publicClient,
-  saltNonce,
-  owners,
-  address,
-}: {
-  publicClient: PublicClient | undefined;
-  saltNonce?: bigint;
-  owners?: Array<WalletClient>;
-  address?: Address;
-}): Promise<AppSmartAccountClient> {
-  if (!publicClient) throw new Error("publicClient is falsy");
-  if (!address && !saltNonce && !owners) throw new Error("not enough data to get a safe account");
-
-  const safeAccount = await toSafeSmartAccount({
-    client: publicClient,
-    saltNonce,
-    owners: owners || [], // note: is it okay to have empty owners?
-    address,
-    version: "1.4.1",
-    entryPoint: {
-      address: entryPoint07Address,
-      version: "0.7",
-    },
-    safe4337ModuleAddress: "0x7579EE8307284F293B1927136486880611F20002",
-    erc7579LaunchpadAddress: "0x7579011aB74c46090561ea277Ba79D510c6C00ff",
-    attesters: [
-      RHINESTONE_ATTESTER_ADDRESS, // Rhinestone Attester
-      MOCK_ATTESTER_ADDRESS,
-    ],
-    attestersThreshold: 1,
-  });
-
-  const smartAccountClient = createSmartAccountClient({
-    account: safeAccount,
-    chain: baseSepolia,
-    bundlerTransport: http(bundlerUrl),
-    paymaster: paymasterClient,
-    userOperation: {
-      estimateFeesPerGas: async () => (await pimlicoClient.getUserOperationGasPrice()).fast,
-    },
-  }).extend(erc7579Actions());
-
-  return smartAccountClient as unknown as AppSmartAccountClient;
-}
-
-export function SmartAccountPanel({
-  smartAccountClient,
-  setSmartAccountClient,
-}: {
-  smartAccountClient: AppSmartAccountClient | undefined;
-  setSmartAccountClient: Dispatch<SetStateAction<AppSmartAccountClient | undefined>>;
-}) {
+export function SmartAccountPanel() {
   const walletClient = useWalletClient();
-  const { data: smartAccountAddr } = useAppState("smartAccountAddr");
-  const mutateAccountAddr = useMutateAppState("smartAccountAddr");
-  const clearAccountAddr = useClearAppState("smartAccountAddr");
+  const { appState, dispatch } = useAppContext();
 
-  const mutateStep = useMutateAppState("step");
+  const { smartAccountClient } = appState;
   const { data: balance } = useBalance({ address: smartAccountClient?.account?.address });
 
-  const [createBtnLoading, setCreateBtnLoading] = useState(false);
+  const [isCreateHandling, setCreateHandling] = useState(false);
   const [isClaimHandling, setClaimHandling] = useState(false);
   const publicClient = usePublicClient();
 
@@ -90,7 +27,7 @@ export function SmartAccountPanel({
       return;
     }
 
-    setCreateBtnLoading(true);
+    setCreateHandling(true);
 
     const _smartAccountClient = await getSmartAccountClient({
       publicClient,
@@ -98,18 +35,15 @@ export function SmartAccountPanel({
       owners: [walletClient.data],
     });
 
-    setSmartAccountClient(_smartAccountClient);
+    dispatch({ type: "setSmartAccountClient", value: _smartAccountClient });
+    dispatch({ type: "setStep", value: Step.InstallModules });
 
-    setCreateBtnLoading(false);
-    mutateAccountAddr.mutate(_smartAccountClient.account.address);
-    mutateStep.mutate("installModules");
+    setCreateHandling(false);
   }
 
   function forgetAccount() {
-    setSmartAccountClient(undefined);
-    clearAccountAddr.mutate();
-
-    mutateStep.mutate("setSmartAccount");
+    dispatch({ type: "clearSmartAccountClient" });
+    dispatch({ type: "setStep", value: Step.SetSmartAccount });
   }
 
   async function claimAccount(ev: FormEvent<HTMLElement>) {
@@ -130,37 +64,12 @@ export function SmartAccountPanel({
       saltNonce: accountSaltNonce,
       owners: [walletClient.data],
     });
-    setSmartAccountClient(_smartAccountClient);
+
+    dispatch({ type: "setSmartAccountClient", value: _smartAccountClient });
+    dispatch({ type: "setStep", value: Step.InstallModules });
 
     setClaimHandling(false);
-    mutateAccountAddr.mutate(_smartAccountClient.account.address);
-    mutateStep.mutate("installModules");
   }
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const toGetSmartAccountClient = async () => {
-      if (!smartAccountAddr || !walletClient.data) return;
-
-      const _smartAccountClient = await getSmartAccountClient({
-        publicClient,
-        address: smartAccountAddr,
-        saltNonce: accountSaltNonce,
-        owners: [walletClient.data],
-      });
-
-      if (isMounted) {
-        setSmartAccountClient(_smartAccountClient);
-      }
-    };
-
-    toGetSmartAccountClient();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [smartAccountAddr, setSmartAccountClient, publicClient, walletClient]);
 
   return (
     <div className="flex flex-col justify-center items-center">
@@ -177,7 +86,7 @@ export function SmartAccountPanel({
         </>
       ) : (
         <>
-          <Button buttonText="Create a Smart Account" onClick={createAccount} isLoading={createBtnLoading} />
+          <Button buttonText="Create a Smart Account" onClick={createAccount} isLoading={isCreateHandling} />
           <div className="py-3">or</div>
           <form className="w-2/3" onSubmit={claimAccount}>
             <Field className="py-3">
