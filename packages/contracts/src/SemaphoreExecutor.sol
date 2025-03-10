@@ -77,7 +77,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     mapping(address account => uint8 threshold) public thresholds;
     SentinelList4337Lib.SentinelList private acctMembers;
 
-    // smart account -> hash(call(params)) -> valid proof count
+    // smart account -> txHash -> valid proof count
     mapping(address account => mapping(bytes32 txHash => ExtCallCount callDataCount)) public
         acctTxCount;
 

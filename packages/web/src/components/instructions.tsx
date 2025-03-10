@@ -6,7 +6,7 @@ export function Instructions() {
         <ol className="list-decimal pl-6">
           <li>Create a Semaphore identity.</li>
           <li>Create a smart account.</li>
-          <li>Collect all identity commitments.</li>
+          <li>Collect all member identity commitments.</li>
           <li>Install Semaphore executor and validator modules.</li>
         </ol>
       </div>

@@ -15,7 +15,7 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { Identity } from "@semaphore-protocol/identity";
 import debug from "debug";
 
-import type { User } from "@/lib/semaphore-modules/types";
+import type { User } from "@/types";
 import type { ParsedLog } from "./types";
 
 const info = debug("test:helpers");

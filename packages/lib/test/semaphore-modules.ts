@@ -29,8 +29,10 @@ import { generateProof } from "@semaphore-protocol/proof";
 
 import {
   getAcctSeqNum,
+  getAcctThreshold,
   getSemaphoreExecutor,
   getSemaphoreValidator,
+  getMemberCount,
   getInitTxAction,
   getSignTxAction,
   getExecuteTxAction,
@@ -251,6 +253,13 @@ async function installSemaphoreModules({
 
   await installSingleModule("Semaphore Executor", semaphoreExecutor);
   await installSingleModule("Semaphore Validator", semaphoreValidator);
+
+  // Test read functions
+  const _threshold = await getAcctThreshold({ account, client: publicClient });
+  expect(_threshold).to.equal(threshold);
+
+  const _cnt = await getMemberCount({ account, client: publicClient });
+  expect(_cnt).to.equal(semaphoreCommitments.length);
 }
 
 async function initTx({
@@ -286,7 +295,7 @@ async function initTx({
 
   const action = getInitTxAction(to, value, "0x", proof, false);
   const receipt = await sendSemaphoreTransaction({
-    signer,
+    signer: signer.identity,
     account,
     action,
     publicClient,
@@ -320,7 +329,7 @@ async function signTx({
 
   const action = getSignTxAction(txHash, proof, false);
   const receipt = await sendSemaphoreTransaction({
-    signer,
+    signer: signer.identity,
     account,
     action,
     publicClient,
@@ -347,7 +356,7 @@ async function executeTx({
 
   const action = getExecuteTxAction(txHash);
   const receipt = await sendSemaphoreTransaction({
-    signer,
+    signer: signer.identity,
     account,
     action,
     publicClient,

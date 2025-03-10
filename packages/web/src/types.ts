@@ -10,8 +10,10 @@ export type AppSmartAccountClient = SmartAccountClient<Transport, Chain, ToSafeS
 
 export type TAppState = {
   identity?: Identity;
-  smartAccountClient?: AppSmartAccountClient;
   step: Step;
+  smartAccountClient?: AppSmartAccountClient;
+  commitments?: bigint[];
+  acctThreshold?: number;
   executorInstalled: boolean;
   validatorInstalled: boolean;
   status: "pending" | "ready";
@@ -25,7 +27,14 @@ export type TAppAction =
   | { type: "clearSmartAccountClient" }
   | { type: "setStep"; value: Step }
   | { type: "installExecutor" }
-  | { type: "installValidator" };
+  | { type: "installValidator" }
+  | {
+      type: "update";
+      value: {
+        acctThreshold?: number;
+        commitments?: bigint[];
+      };
+    };
 
 export type TAppContext = {
   appState: TAppState;

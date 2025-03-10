@@ -1,25 +1,33 @@
-import { getSemaphoreExecutor, getSemaphoreValidator } from "./installation";
 import { SEMAPHORE_EXECUTOR_ADDRESS, SEMAPHORE_VALIDATOR_ADDRESS } from "./constants";
+import { getSemaphoreExecutor, getSemaphoreValidator } from "./installation";
 import {
   getAcctSeqNum,
+  getAcctThreshold,
   getGroupId,
+  getMemberCount,
   getInitTxAction,
   getSignTxAction,
   getExecuteTxAction,
   getValidatorNonce,
 } from "./usage";
-import { sendSemaphoreTransaction } from "./helpers";
+import { getTxHash, sendSemaphoreTransaction } from "./helpers";
+
+import type { SemaphoreProofFix } from "./types";
 
 export {
-  getSemaphoreExecutor,
-  getSemaphoreValidator,
+  type SemaphoreProofFix,
   SEMAPHORE_EXECUTOR_ADDRESS,
   SEMAPHORE_VALIDATOR_ADDRESS,
+  getSemaphoreExecutor,
+  getSemaphoreValidator,
   getAcctSeqNum,
+  getAcctThreshold,
   getGroupId,
+  getMemberCount,
   getInitTxAction,
   getSignTxAction,
   getExecuteTxAction,
   getValidatorNonce,
+  getTxHash,
   sendSemaphoreTransaction,
 };

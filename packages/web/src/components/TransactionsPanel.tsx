@@ -1,17 +1,31 @@
 import { useState, type MouseEvent, type FormEvent } from "react";
 import { Dialog, DialogPanel, DialogTitle, Fieldset, Field, Label, Input } from "@headlessui/react";
 
-import { type Address } from "viem";
+import { type Address, parseEther } from "viem";
+import { usePublicClient } from "wagmi";
 import clsx from "clsx";
+
+import { Group } from "@semaphore-protocol/group";
+import { generateProof } from "@semaphore-protocol/proof";
+
+import {
+  type SemaphoreProofFix,
+  getAcctSeqNum,
+  getTxHash,
+  getInitTxAction,
+  sendSemaphoreTransaction,
+} from "@semaphore-msa-modules/lib";
 
 import { Button } from "./Button";
 import { generateRandomHex } from "@/utils";
+import { useAppContext } from "@/contexts/AppContext";
 import { type Transaction } from "@/types";
-
-const ACCT_THRESHOLD = 3;
 
 export function TransactionsPanel() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDialogBtnLoading, setDialogBtnLoading] = useState<boolean>(false);
+  const { appState } = useAppContext();
+  const publicClient = usePublicClient();
   const [transactions, setTransactions] = useState<Array<Transaction>>([]);
 
   const inputClassNames = clsx(
@@ -26,23 +40,48 @@ export function TransactionsPanel() {
     "data-[open]:bg-green-200 data-[focus]:outline-1 data-[focus]:outline-white text-sm"
   );
 
-  function submitTransfer(ev: FormEvent<HTMLElement>) {
+  const { acctThreshold } = appState;
+
+  async function submitTransfer(ev: FormEvent<HTMLElement>) {
     ev.preventDefault();
+
+    const { smartAccountClient, identity, commitments } = appState;
+    if (!smartAccountClient || !publicClient || !identity || !commitments) {
+      console.error("[smartAccountClient, publicClient, identity, commitment] at least one values are not set.");
+      return;
+    }
+
+    setDialogBtnLoading(true);
+    const { account } = smartAccountClient;
+
     const formData = new FormData(ev.target as HTMLFormElement);
     const recipient = formData.get("recipient") as Address;
-    const amount = Number(formData.get("amount"));
-    console.log(`${recipient}: ${amount}`);
+    const amount = (formData.get("amount") || "") as string;
 
-    setTransactions([
-      ...transactions,
-      {
-        recipient,
-        amount,
-        txHash: generateRandomHex(),
-        signatureCnt: 1,
-      },
-    ]);
+    try {
+      // Composse the initTxAction
+      const seqNum = await getAcctSeqNum({ account, client: publicClient });
+      const value = parseEther(amount);
+      const txHash = getTxHash(seqNum, recipient, value, "0x");
+      const smGroup = new Group(commitments);
+      const smProof = (await generateProof(identity, smGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
+      console.log("proof:", smProof);
 
+      const action = getInitTxAction(recipient, value, "0x", smProof, false);
+      const receipt = await sendSemaphoreTransaction({
+        signer: identity,
+        account,
+        action,
+        publicClient,
+        bundlerClient: smartAccountClient,
+      });
+
+      console.log("receipt:", receipt);
+    } catch (err) {
+      console.error("submitTransfer error:", err);
+    }
+
+    setDialogBtnLoading(false);
     setIsOpen(false);
   }
 
@@ -77,7 +116,7 @@ export function TransactionsPanel() {
               <div>recipient: {tx.recipient}</div>
               <div>value: {tx.amount} ETH</div>
               <div>
-                signatures: {tx.signatureCnt}/{ACCT_THRESHOLD}
+                signatures: {tx.signatureCnt}/{acctThreshold}
               </div>
             </div>
             <div className="w-1/4 flex flex-row justify-evenly">
@@ -92,8 +131,8 @@ export function TransactionsPanel() {
         ))}
       </div>
       <div className="flex flex-row justify-center gap-x-4">
-        <Button buttonText="Initiate a Tx" onClick={() => setIsOpen(true)} />
-        <Button buttonText="Reset" onClick={resetTransactions} />
+        <Button buttonText="Initiate Tx" onClick={() => setIsOpen(true)} />
+        <Button buttonText="Reset Txs" onClick={resetTransactions} />
       </div>
 
       <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">
@@ -112,8 +151,8 @@ export function TransactionsPanel() {
                 </Field>
               </Fieldset>
               <div className="flex gap-4">
-                <Button isSubmit={true} buttonText="Transfer" onClick={() => {}} />
-                <Button buttonText="Cancel" onClick={cancelTransfer} />
+                <Button isSubmit={true} buttonText="Transfer" isLoading={isDialogBtnLoading} onClick={() => {}} />
+                <Button buttonText="Cancel" disabled={isDialogBtnLoading} onClick={cancelTransfer} />
               </div>
             </form>
           </DialogPanel>
