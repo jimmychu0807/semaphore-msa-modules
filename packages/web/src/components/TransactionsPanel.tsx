@@ -13,7 +13,7 @@ import {
   getAcctSeqNum,
   getTxHash,
   getInitTxAction,
-  sendSemaphoreTransaction
+  sendSemaphoreTransaction,
 } from "@semaphore-msa-modules/lib";
 
 import { Button } from "./Button";
@@ -21,10 +21,9 @@ import { generateRandomHex } from "@/utils";
 import { useAppContext } from "@/contexts/AppContext";
 import { type Transaction } from "@/types";
 
-const ACCT_THRESHOLD = 3;
-
 export function TransactionsPanel() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDialogBtnLoading, setDialogBtnLoading] = useState<boolean>(false);
   const { appState } = useAppContext();
   const publicClient = usePublicClient();
   const [transactions, setTransactions] = useState<Array<Transaction>>([]);
@@ -41,43 +40,48 @@ export function TransactionsPanel() {
     "data-[open]:bg-green-200 data-[focus]:outline-1 data-[focus]:outline-white text-sm"
   );
 
+  const { acctThreshold } = appState;
+
   async function submitTransfer(ev: FormEvent<HTMLElement>) {
     ev.preventDefault();
 
     const { smartAccountClient, identity, commitments } = appState;
     if (!smartAccountClient || !publicClient || !identity || !commitments) {
-      console.error("[smartAccountClient, publicClient, identity, commitment] at least one value is not set.");
+      console.error("[smartAccountClient, publicClient, identity, commitment] at least one values are not set.");
       return;
     }
 
+    setDialogBtnLoading(true);
     const { account } = smartAccountClient;
 
     const formData = new FormData(ev.target as HTMLFormElement);
     const recipient = formData.get("recipient") as Address;
     const amount = (formData.get("amount") || "") as string;
-    console.log(`${recipient}: ${amount}`);
 
-    // Composse the initTxAction
-    const seqNum = await getAcctSeqNum({ account, client: publicClient });
-    const value = parseEther(amount);
-    const txHash = getTxHash(seqNum, recipient, value, "0x");
-    console.log(`txHash: ${txHash}`);
+    try {
+      // Composse the initTxAction
+      const seqNum = await getAcctSeqNum({ account, client: publicClient });
+      const value = parseEther(amount);
+      const txHash = getTxHash(seqNum, recipient, value, "0x");
+      const smGroup = new Group(commitments);
+      const smProof = (await generateProof(identity, smGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
+      console.log("proof:", smProof);
 
-    const smGroup = new Group(commitments);
-    console.log("commitments:", commitments);
+      const action = getInitTxAction(recipient, value, "0x", smProof, false);
+      const receipt = await sendSemaphoreTransaction({
+        signer: identity,
+        account,
+        action,
+        publicClient,
+        bundlerClient: smartAccountClient,
+      });
 
-    const smProof = (await generateProof(identity, smGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
-    console.log("proof:", smProof);
+      console.log("receipt:", receipt);
+    } catch (err) {
+      console.error("submitTransfer error:", err);
+    }
 
-    const action = getInitTxAction(recipient, value, "0x" , smProof, false);
-    const receipt = await sendSemaphoreTransaction({
-      signer: identity,
-      account,
-      action,
-      publicClient,
-      bundlerClient: smartAccountClient,
-    });
-
+    setDialogBtnLoading(false);
     setIsOpen(false);
   }
 
@@ -112,7 +116,7 @@ export function TransactionsPanel() {
               <div>recipient: {tx.recipient}</div>
               <div>value: {tx.amount} ETH</div>
               <div>
-                signatures: {tx.signatureCnt}/{ACCT_THRESHOLD}
+                signatures: {tx.signatureCnt}/{acctThreshold}
               </div>
             </div>
             <div className="w-1/4 flex flex-row justify-evenly">
@@ -127,8 +131,8 @@ export function TransactionsPanel() {
         ))}
       </div>
       <div className="flex flex-row justify-center gap-x-4">
-        <Button buttonText="Initiate a Tx" onClick={() => setIsOpen(true)} />
-        <Button buttonText="Reset" onClick={resetTransactions} />
+        <Button buttonText="Initiate Tx" onClick={() => setIsOpen(true)} />
+        <Button buttonText="Reset Txs" onClick={resetTransactions} />
       </div>
 
       <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">
@@ -147,8 +151,8 @@ export function TransactionsPanel() {
                 </Field>
               </Fieldset>
               <div className="flex gap-4">
-                <Button isSubmit={true} buttonText="Transfer" onClick={() => {}} />
-                <Button buttonText="Cancel" onClick={cancelTransfer} />
+                <Button isSubmit={true} buttonText="Transfer" isLoading={isDialogBtnLoading} onClick={() => {}} />
+                <Button buttonText="Cancel" disabled={isDialogBtnLoading} onClick={cancelTransfer} />
               </div>
             </form>
           </DialogPanel>

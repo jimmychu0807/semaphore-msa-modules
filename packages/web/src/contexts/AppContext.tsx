@@ -55,9 +55,16 @@ async function initAppState(publicClient: PublicClient, walletClient: WalletClie
         const smv = getSemaphoreValidator();
         if (await smartAccountClient.isModuleInstalled(sme)) appState.executorInstalled = true;
         if (await smartAccountClient.isModuleInstalled(smv)) appState.validatorInstalled = true;
+
         if (appState.executorInstalled) {
-          appState.acctThreshold =
-            Number(await getAcctThreshold({ account: smartAccountClient.account, client: publicClient }));
+          appState.acctThreshold = Number(
+            await getAcctThreshold({ account: smartAccountClient.account, client: publicClient })
+          );
+        }
+
+        const commitments = window.localStorage.getItem("commitments");
+        if (commitments) {
+          appState.commitments = JSON.parse(commitments).map((c: string) => BigInt(c));
         }
       }
     } catch (err) {
@@ -89,16 +96,22 @@ function appStateReducer(appState: TAppState, action: TAppAction): TAppState {
     case "setSmartAccountClient": {
       return { ...appState, smartAccountClient: action.value };
     }
+    // There are a few other state need to be cleared
     case "clearSmartAccountClient": {
+      // Need to remove 5 related properties: smartAccountClient, commitments, acctThreshold
+      //   validatorInstalled, executorInstalled
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { smartAccountClient, ...newState } = appState;
-      return newState;
+      const { smartAccountClient, commitments, acctThreshold, ...newState } = appState;
+      return { ...newState, validatorInstalled: false, executorInstalled: false };
     }
     case "installExecutor": {
       return { ...appState, executorInstalled: true };
     }
     case "installValidator": {
       return { ...appState, validatorInstalled: true };
+    }
+    case "update": {
+      return { ...appState, ...action.value };
     }
     default: {
       throw new Error(`Unknown action: ${action}`);
@@ -149,11 +162,18 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("step", appState.step.toString());
     }
 
-    //smartAccountClient
+    // smartAccountClient
     if (appState.smartAccountClient === undefined) {
       localStorage.removeItem("smartAccountAddr");
     } else {
       localStorage.setItem("smartAccountAddr", appState.smartAccountClient.account.address);
+    }
+
+    // Save the commitments
+    if (appState.commitments === undefined) {
+      localStorage.removeItem("commitments");
+    } else {
+      localStorage.setItem("commitments", JSON.stringify(appState.commitments.map((c) => c.toString())));
     }
   }, [appState]);
 

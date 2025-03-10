@@ -42,6 +42,13 @@ export function InstallModulesPanel() {
       console.log("receipt:", receipt);
 
       dispatch({ type: "installExecutor" });
+      dispatch({
+        type: "update",
+        value: {
+          acctThreshold: threshold,
+          commitments: semaphoreCommitments,
+        },
+      });
     } catch (err) {
       console.error("installExecutorModule error:", err);
     } finally {
