@@ -3,6 +3,8 @@ import { SEMAPHORE_EXECUTOR_ADDRESS, SEMAPHORE_VALIDATOR_ADDRESS } from "./const
 import {
   getAcctSeqNum,
   getGroupId,
+  getMemberCount,
+  getThreshold,
   getInitTxAction,
   getSignTxAction,
   getExecuteTxAction,
@@ -17,6 +19,8 @@ export {
   SEMAPHORE_VALIDATOR_ADDRESS,
   getAcctSeqNum,
   getGroupId,
+  getMemberCount,
+  getThreshold,
   getInitTxAction,
   getSignTxAction,
   getExecuteTxAction,

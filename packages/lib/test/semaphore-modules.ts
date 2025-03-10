@@ -31,6 +31,8 @@ import {
   getAcctSeqNum,
   getSemaphoreExecutor,
   getSemaphoreValidator,
+  getThreshold,
+  getMemberCount,
   getInitTxAction,
   getSignTxAction,
   getExecuteTxAction,
@@ -251,6 +253,13 @@ async function installSemaphoreModules({
 
   await installSingleModule("Semaphore Executor", semaphoreExecutor);
   await installSingleModule("Semaphore Validator", semaphoreValidator);
+
+  // Test read functions
+  const _threshold = await getThreshold({ account, client: publicClient });
+  expect(_threshold).to.equal(threshold);
+
+  const _cnt = await getMemberCount({ account, client: publicClient });
+  expect(_cnt).to.equal(semaphoreCommitments.length);
 }
 
 async function initTx({

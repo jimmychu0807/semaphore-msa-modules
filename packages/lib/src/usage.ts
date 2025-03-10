@@ -10,19 +10,33 @@ import { SEMAPHORE_EXECUTOR_ADDRESS } from "./constants";
 import { semaphoreExecutorABI } from "./abi";
 import type { SemaphoreProofFix } from "./types";
 
-export async function getAcctSeqNum({ account, client }: { account: Account; client: PublicClient }): Promise<bigint> {
+async function queryFunc({ client, funcName, funcArgs }: {
+  client: PublicClient,
+  funcName: "accountMemberCount" | "getAcctSeqNum" | "thresholds",
+  funcArgs: [Address] }): Promise<bigint> {
   try {
-    const threshold = (await client.readContract({
+    const val = (await client.readContract({
       address: SEMAPHORE_EXECUTOR_ADDRESS,
       abi: semaphoreExecutorABI,
-      functionName: "getAcctSeqNum",
-      args: [account.address],
-    })) as bigint;
-
-    return threshold;
-  } catch {
-    throw new Error("Failed to get account sequence number");
+      functionName: funcName,
+      args: funcArgs,
+    })) as unknown as bigint;
+    return val;
+  } catch (err) {
+    throw new Error(`Failed to query ${funcName}: ${err}`, { cause: err as Error });
   }
+}
+
+export async function getAcctSeqNum({ account, client }: { account: Account; client: PublicClient }): Promise<bigint> {
+  return await queryFunc({ client, funcName: "getAcctSeqNum", funcArgs: [account.address] });
+}
+
+export async function getMemberCount({ account, client }: { account: Account; client: PublicClient }): Promise<bigint> {
+  return await queryFunc({ client, funcName: "accountMemberCount", funcArgs: [account.address] });
+}
+
+export async function getThreshold({ account, client }: { account: Account; client: PublicClient }): Promise<bigint> {
+  return await queryFunc({ client, funcName: "thresholds", funcArgs: [account.address] });
 }
 
 export async function getGroupId({
