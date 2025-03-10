@@ -8,23 +8,24 @@ import {
   getUserOperationHash,
 } from "viem/account-abstraction";
 
+import { Identity } from "@semaphore-protocol/identity";
 import { type Execution } from "@rhinestone/module-sdk";
 
-import { type Erc7579SmartAccountClient, type User } from "./types";
+import { type Erc7579SmartAccountClient } from "./types";
 import { MOCK_SIG_P2 } from "./constants";
 import { getValidatorNonce } from "./usage";
 
 const info = debug("lib:helpers");
 
-export function signMessage(user: User, hash: Hex) {
-  const pk = user.identity.publicKey;
-  const signature = user.identity.signMessage(hash);
+export function signMessage(signer: Identity, hash: Hex) {
+  const pk = signer.publicKey;
+  const signature = signer.signMessage(hash);
 
   return encodePacked(["uint256[2]", "uint256[2]", "uint256"], [pk, signature.R8, signature.S]);
 }
 
-export function mockSignature(user: User) {
-  const pk = user.identity.publicKey;
+export function mockSignature(signer: Identity) {
+  const pk = signer.publicKey;
   return encodePacked(["uint256[2]", "bytes"], [pk, MOCK_SIG_P2]);
 }
 
@@ -39,7 +40,7 @@ export async function sendSemaphoreTransaction({
   publicClient,
   bundlerClient,
 }: {
-  signer: User;
+  signer: Identity;
   account: SmartAccount;
   action: Execution;
   publicClient: PublicClient;

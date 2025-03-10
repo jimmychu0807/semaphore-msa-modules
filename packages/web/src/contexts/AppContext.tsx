@@ -7,7 +7,7 @@ import { usePublicClient, useWalletClient } from "wagmi";
 import { accountSaltNonce, getSmartAccountClient } from "@/utils";
 import { type TAppContext, type TAppState, type TAppAction, Step } from "@/types";
 import { Identity } from "@semaphore-protocol/identity";
-import { getSemaphoreExecutor, getSemaphoreValidator } from "@semaphore-msa-modules/lib";
+import { getSemaphoreExecutor, getSemaphoreValidator, getAcctThreshold } from "@semaphore-msa-modules/lib";
 
 const unInitAppState: TAppState = {
   step: Step.SetIdentity,
@@ -55,6 +55,10 @@ async function initAppState(publicClient: PublicClient, walletClient: WalletClie
         const smv = getSemaphoreValidator();
         if (await smartAccountClient.isModuleInstalled(sme)) appState.executorInstalled = true;
         if (await smartAccountClient.isModuleInstalled(smv)) appState.validatorInstalled = true;
+        if (appState.executorInstalled) {
+          appState.acctThreshold =
+            Number(await getAcctThreshold({ account: smartAccountClient.account, client: publicClient }));
+        }
       }
     } catch (err) {
       console.error("Restoring smart account client error:", err);

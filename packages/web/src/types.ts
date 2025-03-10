@@ -11,6 +11,8 @@ export type AppSmartAccountClient = SmartAccountClient<Transport, Chain, ToSafeS
 export type TAppState = {
   identity?: Identity;
   smartAccountClient?: AppSmartAccountClient;
+  commitments?: bigint[];
+  acctThreshold?: number;
   step: Step;
   executorInstalled: boolean;
   validatorInstalled: boolean;

@@ -10,10 +10,15 @@ import { SEMAPHORE_EXECUTOR_ADDRESS } from "./constants";
 import { semaphoreExecutorABI } from "./abi";
 import type { SemaphoreProofFix } from "./types";
 
-async function queryFunc({ client, funcName, funcArgs }: {
-  client: PublicClient,
-  funcName: "accountMemberCount" | "getAcctSeqNum" | "thresholds",
-  funcArgs: [Address] }): Promise<bigint> {
+async function queryFunc({
+  client,
+  funcName,
+  funcArgs,
+}: {
+  client: PublicClient;
+  funcName: "accountMemberCount" | "getAcctSeqNum" | "thresholds";
+  funcArgs: [Address];
+}): Promise<bigint> {
   try {
     const val = (await client.readContract({
       address: SEMAPHORE_EXECUTOR_ADDRESS,
@@ -35,7 +40,13 @@ export async function getMemberCount({ account, client }: { account: Account; cl
   return await queryFunc({ client, funcName: "accountMemberCount", funcArgs: [account.address] });
 }
 
-export async function getThreshold({ account, client }: { account: Account; client: PublicClient }): Promise<bigint> {
+export async function getAcctThreshold({
+  account,
+  client,
+}: {
+  account: Account;
+  client: PublicClient;
+}): Promise<bigint> {
   return await queryFunc({ client, funcName: "thresholds", funcArgs: [account.address] });
 }
 

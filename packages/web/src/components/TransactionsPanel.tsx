@@ -1,17 +1,32 @@
 import { useState, type MouseEvent, type FormEvent } from "react";
 import { Dialog, DialogPanel, DialogTitle, Fieldset, Field, Label, Input } from "@headlessui/react";
 
-import { type Address } from "viem";
+import { type Address, parseEther } from "viem";
+import { usePublicClient } from "wagmi";
 import clsx from "clsx";
+
+import { Group } from "@semaphore-protocol/group";
+import { generateProof } from "@semaphore-protocol/proof";
+
+import {
+  type SemaphoreProofFix,
+  getAcctSeqNum,
+  getTxHash,
+  getInitTxAction,
+  sendSemaphoreTransaction
+} from "@semaphore-msa-modules/lib";
 
 import { Button } from "./Button";
 import { generateRandomHex } from "@/utils";
+import { useAppContext } from "@/contexts/AppContext";
 import { type Transaction } from "@/types";
 
 const ACCT_THRESHOLD = 3;
 
 export function TransactionsPanel() {
   const [isOpen, setIsOpen] = useState(false);
+  const { appState } = useAppContext();
+  const publicClient = usePublicClient();
   const [transactions, setTransactions] = useState<Array<Transaction>>([]);
 
   const inputClassNames = clsx(
@@ -26,22 +41,42 @@ export function TransactionsPanel() {
     "data-[open]:bg-green-200 data-[focus]:outline-1 data-[focus]:outline-white text-sm"
   );
 
-  function submitTransfer(ev: FormEvent<HTMLElement>) {
+  async function submitTransfer(ev: FormEvent<HTMLElement>) {
     ev.preventDefault();
+
+    const { smartAccountClient, identity, commitments } = appState;
+    if (!smartAccountClient || !publicClient || !identity || !commitments) {
+      console.error("[smartAccountClient, publicClient, identity, commitment] at least one value is not set.");
+      return;
+    }
+
+    const { account } = smartAccountClient;
+
     const formData = new FormData(ev.target as HTMLFormElement);
     const recipient = formData.get("recipient") as Address;
-    const amount = Number(formData.get("amount"));
+    const amount = (formData.get("amount") || "") as string;
     console.log(`${recipient}: ${amount}`);
 
-    setTransactions([
-      ...transactions,
-      {
-        recipient,
-        amount,
-        txHash: generateRandomHex(),
-        signatureCnt: 1,
-      },
-    ]);
+    // Composse the initTxAction
+    const seqNum = await getAcctSeqNum({ account, client: publicClient });
+    const value = parseEther(amount);
+    const txHash = getTxHash(seqNum, recipient, value, "0x");
+    console.log(`txHash: ${txHash}`);
+
+    const smGroup = new Group(commitments);
+    console.log("commitments:", commitments);
+
+    const smProof = (await generateProof(identity, smGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
+    console.log("proof:", smProof);
+
+    const action = getInitTxAction(recipient, value, "0x" , smProof, false);
+    const receipt = await sendSemaphoreTransaction({
+      signer: identity,
+      account,
+      action,
+      publicClient,
+      bundlerClient: smartAccountClient,
+    });
 
     setIsOpen(false);
   }
