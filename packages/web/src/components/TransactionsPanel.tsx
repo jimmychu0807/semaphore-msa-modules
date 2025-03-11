@@ -65,7 +65,6 @@ export function TransactionsPanel() {
       const txHash = getTxHash(seqNum, recipient, value, "0x");
       const smGroup = new Group(commitments);
       const smProof = (await generateProof(identity, smGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
-      console.log("proof:", smProof);
 
       const action = getInitTxAction(recipient, value, "0x", smProof, false);
       const receipt = await sendSemaphoreTransaction({
@@ -113,7 +112,7 @@ export function TransactionsPanel() {
           <div key={tx.txHash} className="flex flex-row items-center w-full">
             <div className="w-3/4 text-xs">
               <div>tx hash: {tx.txHash}</div>
-              <div>recipient: {tx.recipient}</div>
+              <div>to: {tx.to}</div>
               <div>value: {tx.amount} ETH</div>
               <div>
                 signatures: {tx.signatureCnt}/{acctThreshold}

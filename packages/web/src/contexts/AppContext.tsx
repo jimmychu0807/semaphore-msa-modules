@@ -2,17 +2,25 @@
 
 import { type ReactNode, createContext, useContext, useReducer, useEffect, useState } from "react";
 import { type Address, type PublicClient, type WalletClient } from "viem";
-import { usePublicClient, useWalletClient } from "wagmi";
+import { usePublicClient, useWalletClient, useWatchContractEvent } from "wagmi";
 
 import { accountSaltNonce, getSmartAccountClient } from "@/utils";
 import { type TAppContext, type TAppState, type TAppAction, Step } from "@/types";
 import { Identity } from "@semaphore-protocol/identity";
-import { getSemaphoreExecutor, getSemaphoreValidator, getAcctThreshold } from "@semaphore-msa-modules/lib";
+import {
+  SEMAPHORE_EXECUTOR_ADDRESS,
+  getSemaphoreExecutor,
+  getSemaphoreValidator,
+  getAcctThreshold,
+  getExtCallCount,
+} from "@semaphore-msa-modules/lib";
+import { semaphoreExecutorABI } from "@semaphore-msa-modules/lib/abi";
 
 const unInitAppState: TAppState = {
   step: Step.SetIdentity,
   executorInstalled: false,
   validatorInstalled: false,
+  txs: [],
   status: "pending",
 };
 
@@ -98,17 +106,33 @@ function appStateReducer(appState: TAppState, action: TAppAction): TAppState {
     }
     // There are a few other state need to be cleared
     case "clearSmartAccountClient": {
-      // Need to remove 5 related properties: smartAccountClient, commitments, acctThreshold
-      //   validatorInstalled, executorInstalled
+      // Need to remove all smart account related properties:
+      //   smartAccountClient, commitments, acctThreshold
+      //   validatorInstalled, executorInstalled, txs
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { smartAccountClient, commitments, acctThreshold, ...newState } = appState;
-      return { ...newState, validatorInstalled: false, executorInstalled: false };
+      return { ...newState, txs: [], validatorInstalled: false, executorInstalled: false };
     }
     case "installExecutor": {
       return { ...appState, executorInstalled: true };
     }
     case "installValidator": {
       return { ...appState, validatorInstalled: true };
+    }
+    case "newTx": {
+      const { txs } = appState;
+      return {
+        ...appState,
+        txs: [...txs, { txHash: action.value }],
+      };
+    }
+    case "updateTx": {
+      const { txs } = appState;
+      const updatedTx = action.value;
+      return {
+        ...appState,
+        txs: txs.map((tx) => (tx.txHash === updatedTx.txHash ? updatedTx : tx)),
+      };
     }
     case "update": {
       return { ...appState, ...action.value };
@@ -125,6 +149,18 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const walletClient = useWalletClient();
   const publicClient = usePublicClient();
 
+  useWatchContractEvent({
+    address: SEMAPHORE_EXECUTOR_ADDRESS,
+    abi: semaphoreExecutorABI,
+    eventName: "InitiatedTx",
+    args: {
+      account: appState?.smartAccountClient?.account?.address,
+    },
+    onError: (err) => console.error(`watch event InitiatedTx error:`, err),
+    onLogs: (logs) => logs.forEach((log) => dispatch({ type: "newTx", value: log.args.txHash! })),
+  });
+
+  // For initial state handling
   useEffect(() => {
     let isMounted = true;
     const _initAppState = async () => {
@@ -132,7 +168,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       if (isInit) return;
 
       dispatch({ type: "init", value: await initAppState(publicClient, walletClient.data) });
-
       if (isMounted) {
         setInit(true);
       }
@@ -176,6 +211,35 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("commitments", JSON.stringify(appState.commitments.map((c) => c.toString())));
     }
   }, [appState]);
+
+  // Fetching transactions
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchTxs() {
+      for (const tx of appState.txs) {
+        if (tx.txHash === undefined || tx.to !== undefined) continue;
+
+        const ecc = await getExtCallCount(tx.txHash);
+        if (!isMounted) break;
+
+        dispatch({
+          type: "updateTx",
+          value: {
+            to: ecc.targetAddr,
+            amount: ecc.value,
+            txHash: tx.txHash,
+            signatureCnt: ecc.count,
+          },
+        });
+      }
+    }
+
+    fetchTxs();
+    return () => {
+      isMounted = false;
+    };
+  }, [appState.txs]);
 
   return <AppContext.Provider value={{ appState, dispatch }}>{children}</AppContext.Provider>;
 }

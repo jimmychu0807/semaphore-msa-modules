@@ -8,15 +8,24 @@ import { type ActionDispatch } from "react";
 export type AppSmartAccountClient = SmartAccountClient<Transport, Chain, ToSafeSmartAccountReturnType<"0.7">> &
   Erc7579Actions<ToSafeSmartAccountReturnType<"0.7">>;
 
+export type Transaction = {
+  to?: Address;
+  amount?: number;
+  txHash: Hex;
+  signatureCnt?: number;
+};
+
 export type TAppState = {
   identity?: Identity;
   step: Step;
+  status: "pending" | "ready";
+
   smartAccountClient?: AppSmartAccountClient;
   commitments?: bigint[];
   acctThreshold?: number;
   executorInstalled: boolean;
   validatorInstalled: boolean;
-  status: "pending" | "ready";
+  txs: Transaction[];
 };
 
 export type TAppAction =
@@ -28,6 +37,8 @@ export type TAppAction =
   | { type: "setStep"; value: Step }
   | { type: "installExecutor" }
   | { type: "installValidator" }
+  | { type: "newTx"; value: Hex }
+  | { type: "updateTx"; value: Transaction }
   | {
       type: "update";
       value: {
@@ -47,10 +58,3 @@ export enum Step {
   InstallModules,
   Transactions,
 }
-
-export type Transaction = {
-  recipient: Address;
-  amount: number;
-  txHash: Hex;
-  signatureCnt: number;
-};
