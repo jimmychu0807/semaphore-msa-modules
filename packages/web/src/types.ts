@@ -10,7 +10,7 @@ export type AppSmartAccountClient = SmartAccountClient<Transport, Chain, ToSafeS
 
 export type Transaction = {
   to?: Address;
-  amount?: number;
+  value?: bigint;
   txHash: Hex;
   signatureCnt?: number;
 };
@@ -39,6 +39,7 @@ export type TAppAction =
   | { type: "installValidator" }
   | { type: "newTx"; value: Hex }
   | { type: "updateTx"; value: Transaction }
+  | { type: "clearTxs" }
   | {
       type: "update";
       value: {

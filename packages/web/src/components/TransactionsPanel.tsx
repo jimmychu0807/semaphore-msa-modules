@@ -1,7 +1,7 @@
 import { useState, type MouseEvent, type FormEvent } from "react";
 import { Dialog, DialogPanel, DialogTitle, Fieldset, Field, Label, Input } from "@headlessui/react";
 
-import { type Address, parseEther } from "viem";
+import { type Address, parseEther, formatEther } from "viem";
 import { usePublicClient } from "wagmi";
 import clsx from "clsx";
 
@@ -24,7 +24,7 @@ import { type Transaction } from "@/types";
 export function TransactionsPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [isDialogBtnLoading, setDialogBtnLoading] = useState<boolean>(false);
-  const { appState } = useAppContext();
+  const { appState, dispatch } = useAppContext();
   const publicClient = usePublicClient();
   const [transactions, setTransactions] = useState<Array<Transaction>>([]);
 
@@ -40,7 +40,7 @@ export function TransactionsPanel() {
     "data-[open]:bg-green-200 data-[focus]:outline-1 data-[focus]:outline-white text-sm"
   );
 
-  const { acctThreshold } = appState;
+  const { acctThreshold, txs } = appState;
 
   async function submitTransfer(ev: FormEvent<HTMLElement>) {
     ev.preventDefault();
@@ -91,7 +91,7 @@ export function TransactionsPanel() {
 
   function resetTransactions(ev: MouseEvent<HTMLElement>) {
     ev.preventDefault();
-    setTransactions([]);
+    dispatch({ type: "clearTxs" });
   }
 
   function signTx(ev: MouseEvent<HTMLElement>) {
@@ -108,14 +108,20 @@ export function TransactionsPanel() {
     <>
       <div className="flex flex-col items-center gap-y-3 my-3">
         <h2>Pending Transactions</h2>
-        {transactions.map((tx: Transaction) => (
+        {txs.map((tx: Transaction) => (
           <div key={tx.txHash} className="flex flex-row items-center w-full">
             <div className="w-3/4 text-xs">
-              <div>tx hash: {tx.txHash}</div>
-              <div>to: {tx.to}</div>
-              <div>value: {tx.amount} ETH</div>
               <div>
-                signatures: {tx.signatureCnt}/{acctThreshold}
+                tx hash: <span className="font-semibold">{tx.txHash}</span>
+              </div>
+              <div>
+                to: <span className="font-semibold">{tx.to}</span>
+              </div>
+              <div>
+                value: <span className="font-semibold">{formatEther(tx.value!)}</span> ETH
+              </div>
+              <div>
+                signatures: {tx.signatureCnt} / {acctThreshold}
               </div>
             </div>
             <div className="w-1/4 flex flex-row justify-evenly">

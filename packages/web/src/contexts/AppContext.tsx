@@ -134,6 +134,9 @@ function appStateReducer(appState: TAppState, action: TAppAction): TAppState {
         txs: txs.map((tx) => (tx.txHash === updatedTx.txHash ? updatedTx : tx)),
       };
     }
+    case "clearTxs": {
+      return { ...appState, txs: [] };
+    }
     case "update": {
       return { ...appState, ...action.value };
     }
@@ -217,21 +220,33 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     let isMounted = true;
 
     async function fetchTxs() {
+      const { smartAccountClient } = appState;
+      if (!smartAccountClient || !smartAccountClient.account || !publicClient) return;
+
+      const { account } = smartAccountClient;
       for (const tx of appState.txs) {
         if (tx.txHash === undefined || tx.to !== undefined) continue;
 
-        const ecc = await getExtCallCount(tx.txHash);
-        if (!isMounted) break;
-
-        dispatch({
-          type: "updateTx",
-          value: {
-            to: ecc.targetAddr,
-            amount: ecc.value,
+        try {
+          const ecc = await getExtCallCount({
+            client: publicClient,
+            account,
             txHash: tx.txHash,
-            signatureCnt: ecc.count,
-          },
-        });
+          });
+          if (!isMounted) break;
+
+          dispatch({
+            type: "updateTx",
+            value: {
+              to: ecc.to,
+              value: ecc.value,
+              txHash: tx.txHash,
+              signatureCnt: ecc.count,
+            },
+          });
+        } catch (err) {
+          console.error("getExtCallCount error:", err);
+        }
       }
     }
 
