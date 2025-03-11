@@ -35,8 +35,8 @@ export function TransactionsPanel() {
   );
 
   const btnClassNames = clsx(
-    "inline-flex items-center gap-2 rounded-md bg-green-200 py-1.5 px-2 text-sm/6 font-semibold",
-    "text-green-800 shadow-inner focus:outline-none data-[hover]:bg-green-200",
+    "inline-flex items-center gap-2 rounded-md w-18 bg-green-200 py-1.5 px-2 text-sm/6 font-semibold",
+    "justify-center text-green-800 shadow-inner focus:outline-none data-[hover]:bg-green-200",
     "data-[open]:bg-green-200 data-[focus]:outline-1 data-[focus]:outline-white text-sm"
   );
 
@@ -110,7 +110,7 @@ export function TransactionsPanel() {
         <h2>Pending Transactions</h2>
         {txs.filter((t) => t.to).map((tx: Transaction) => (
           <div key={tx.txHash} className="flex flex-row items-center w-full">
-            <div className="w-3/4 text-xs">
+            <div className="w-3/4 text-xs overflow-y-scroll">
               <div>
                 tx hash: <span className="font-semibold">{tx.txHash}</span>
               </div>
@@ -124,7 +124,7 @@ export function TransactionsPanel() {
                 signatures: {tx.signatureCnt} / {acctThreshold}
               </div>
             </div>
-            <div className="w-1/4 flex flex-row justify-evenly">
+            <div className="w-1/4 flex flex-col items-center md:flex-row justify-evenly gap-2">
               <button className={btnClassNames} onClick={signTx}>
                 Sign
               </button>
