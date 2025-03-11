@@ -36,6 +36,7 @@ import {
   getInitTxAction,
   getSignTxAction,
   getExecuteTxAction,
+  getExtCallCount,
   sendSemaphoreTransaction,
 } from "@/index";
 import type { Erc7579SmartAccountClient, SemaphoreProofFix, User } from "@/types";
@@ -336,6 +337,9 @@ async function signTx({
     bundlerClient,
   });
   printUserOpReceipt(receipt, projectABIs);
+
+  const ecc = await getExtCallCount({ client: publicClient, account, txHash });
+  expect(ecc.count).to.equal(2);
 }
 
 async function executeTx({

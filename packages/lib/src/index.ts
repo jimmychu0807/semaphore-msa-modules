@@ -8,6 +8,7 @@ import {
   getInitTxAction,
   getSignTxAction,
   getExecuteTxAction,
+  getExtCallCount,
   getValidatorNonce,
 } from "./usage";
 import { getTxHash, sendSemaphoreTransaction } from "./helpers";
@@ -27,6 +28,7 @@ export {
   getInitTxAction,
   getSignTxAction,
   getExecuteTxAction,
+  getExtCallCount,
   getValidatorNonce,
   getTxHash,
   sendSemaphoreTransaction,
