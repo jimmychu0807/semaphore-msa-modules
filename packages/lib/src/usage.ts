@@ -8,7 +8,7 @@ import { type Execution, encodeValidatorNonce, getAccount } from "@rhinestone/mo
 import { getSemaphoreValidator } from "./installation";
 import { SEMAPHORE_EXECUTOR_ADDRESS } from "./constants";
 import { semaphoreExecutorABI } from "./abi";
-import type { SemaphoreProofFix } from "./types";
+import type { SemaphoreProofFix, ExtCallCount } from "./types";
 
 async function queryFunc({
   client,
@@ -66,8 +66,35 @@ export async function getGroupId({
     })) as [boolean, bigint];
 
     return res[0] ? res[1] : undefined;
-  } catch {
-    throw new Error("Failed to get account group ID");
+  } catch (err) {
+    throw new Error("Failed to get account group ID", { cause: err as Error });
+  }
+}
+
+export async function getExtCallCount({
+  client,
+  account,
+  txHash,
+}: {
+  client: PublicClient;
+  account: Account;
+  txHash: Hex;
+}): Promise<ExtCallCount> {
+  try {
+    const res = await client.readContract({
+      address: SEMAPHORE_EXECUTOR_ADDRESS,
+      abi: semaphoreExecutorABI,
+      functionName: "acctTxCount",
+      args: [account.address, txHash],
+    });
+    return {
+      to: res[0],
+      callData: res[1],
+      value: res[2],
+      count: res[3],
+    } as ExtCallCount;
+  } catch (err) {
+    throw new Error("Failed to get ExtCallCount object", { cause: err as Error });
   }
 }
 

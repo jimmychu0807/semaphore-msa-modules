@@ -1,4 +1,4 @@
-import type { Account } from "viem";
+import type { Account, Address, Hex } from "viem";
 import { Identity } from "@semaphore-protocol/identity";
 import { type SmartAccount } from "viem/account-abstraction";
 import { type SmartAccountClient } from "permissionless";
@@ -11,6 +11,13 @@ export type SemaphoreProofFix = {
   message: bigint;
   scope: bigint;
   points: readonly [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint];
+};
+
+export type ExtCallCount = {
+  to: Address;
+  callData: Hex;
+  value: bigint;
+  count: number;
 };
 
 export type User = {
