@@ -6,7 +6,7 @@ import { formatEther } from "@/utils";
 
 export function Connector({ requiredChainId }: { requiredChainId: number }) {
   const account = useAccount();
-  const { data: balance } = useBalance({ address: account.address });
+  const { data: balance } = useBalance({ address: account.address, query: { refetchInterval: 4000 } });
   const { connectors, connect } = useConnect();
   const { disconnect } = useDisconnect();
   const { switchChain } = useSwitchChain();

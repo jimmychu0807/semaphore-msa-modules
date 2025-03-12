@@ -14,6 +14,7 @@ import {
   getTxHash,
   getInitTxAction,
   getSignTxAction,
+  getExecuteTxAction,
   sendSemaphoreTransaction,
 } from "@semaphore-msa-modules/lib";
 
@@ -25,6 +26,7 @@ export function TransactionsPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [isDialogBtnLoading, setDialogBtnLoading] = useState<boolean>(false);
   const [signingTx, setSigningTx] = useState<Hex>();
+  const [executingTx, setExecutingTx] = useState<Hex>();
   const { appState, dispatch } = useAppContext();
   const publicClient = usePublicClient();
 
@@ -43,7 +45,7 @@ export function TransactionsPanel() {
 
   const { acctThreshold, txs } = appState;
 
-  async function submitTransfer(ev: FormEvent<HTMLElement>) {
+  async function initTx(ev: FormEvent<HTMLElement>) {
     ev.preventDefault();
 
     const { smartAccountClient, identity, commitments } = appState;
@@ -75,22 +77,20 @@ export function TransactionsPanel() {
         publicClient,
         bundlerClient: smartAccountClient,
       });
-
-      console.log("receipt:", receipt);
+      console.log("initTx receipt:", receipt);
     } catch (err) {
-      console.error("submitTransfer error:", err);
+      console.error("initTx error:", err);
     }
-
     setDialogBtnLoading(false);
     setIsOpen(false);
   }
 
-  function cancelTransfer(ev: MouseEvent<HTMLElement>) {
+  function cancelInitTx(ev: MouseEvent<HTMLElement>) {
     ev.preventDefault();
     setIsOpen(false);
   }
 
-  function resetTransactions(ev: MouseEvent<HTMLElement>) {
+  function resetTxs(ev: MouseEvent<HTMLElement>) {
     ev.preventDefault();
     dispatch({ type: "clearTxs" });
   }
@@ -116,17 +116,37 @@ export function TransactionsPanel() {
         publicClient,
         bundlerClient: smartAccountClient,
       });
-
-      console.log("receipt:", receipt);
+      console.log("signTx receipt:", receipt);
     } catch (err) {
       console.error("signTx error:", err);
     }
-
     setSigningTx(undefined);
   }
 
   async function executeTx(tx: Transaction) {
-    console.log("executeTx:", tx);
+    const { smartAccountClient, identity, commitments } = appState;
+    if (!smartAccountClient || !publicClient || !identity || !commitments) {
+      console.error("[smartAccountClient, publicClient, identity, commitment] at least one values are not set.");
+      return;
+    }
+
+    try {
+      const { txHash } = tx;
+      setExecutingTx(txHash);
+
+      const action = getExecuteTxAction(txHash);
+      const receipt = await sendSemaphoreTransaction({
+        signer: identity,
+        account: smartAccountClient.account,
+        action,
+        publicClient,
+        bundlerClient: smartAccountClient,
+      });
+      console.log("executeTx receipt:", receipt);
+    } catch (err) {
+      console.error("executeTx error:", err);
+    }
+    setExecutingTx(undefined);
   }
 
   return (
@@ -154,24 +174,30 @@ export function TransactionsPanel() {
                 buttonText="Sign"
                 className={btnClassNames}
                 isLoading={signingTx === tx.txHash}
-                disabled={signingTx && signingTx !== tx.txHash}
+                disabled={!!executingTx || (signingTx && signingTx !== tx.txHash)}
                 onClick={() => signTx(tx)}
               />
-              <Button buttonText="Execute" className={btnClassNames} onClick={() => executeTx(tx)} />
+              <Button
+                buttonText="Execute"
+                isLoading={executingTx === tx.txHash}
+                disabled={!!signingTx || (executingTx && executingTx !== tx.txHash)}
+                className={btnClassNames}
+                onClick={() => executeTx(tx)}
+              />
             </div>
           </div>
         ))}
       </div>
       <div className="flex flex-row justify-center gap-x-4">
         <Button buttonText="Initiate Tx" onClick={() => setIsOpen(true)} />
-        <Button buttonText="Reset Txs" onClick={resetTransactions} />
+        <Button buttonText="Reset Txs" onClick={resetTxs} />
       </div>
 
       <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">
         <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
           <DialogPanel className="max-w-lg space-y-4 border bg-white p-12">
             <DialogTitle className="font-bold">Transfer Balance</DialogTitle>
-            <form className="block w-full max-w-lg px-4" onSubmit={submitTransfer}>
+            <form className="block w-full max-w-lg px-4" onSubmit={initTx}>
               <Fieldset className="space-y-6 rounded-xl p-6">
                 <Field>
                   <Label className="text-sm/6 font-medium text-black">Recipient</Label>
@@ -184,7 +210,7 @@ export function TransactionsPanel() {
               </Fieldset>
               <div className="flex gap-4">
                 <Button isSubmit={true} buttonText="Transfer" isLoading={isDialogBtnLoading} onClick={() => {}} />
-                <Button buttonText="Cancel" disabled={isDialogBtnLoading} onClick={cancelTransfer} />
+                <Button buttonText="Cancel" disabled={isDialogBtnLoading} onClick={cancelInitTx} />
               </div>
             </form>
           </DialogPanel>
