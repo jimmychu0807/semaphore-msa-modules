@@ -6,7 +6,7 @@ import { useBalance, usePublicClient, useWalletClient } from "wagmi";
 import { Field, Label, Input } from "@headlessui/react";
 
 import { Button } from "./Button";
-import { accountSaltNonce, formatEther, getSmartAccountClient } from "@/utils";
+import { accountSaltNonce, formatEther, getCommitmentsSorted, getSmartAccountClient } from "@/utils";
 import { useAppContext } from "@/contexts/AppContext";
 import { Step } from "@/types";
 
@@ -58,6 +58,7 @@ export function SmartAccountPanel() {
     const formData = new FormData(ev.target as HTMLFormElement);
     const address = formData.get("address") as Address;
     const commitments: bigint[] = (formData.get("commitments") as string).split(" ").map((c) => BigInt(c));
+    const sortedComm = getCommitmentsSorted(commitments);
 
     const _smartAccountClient = await getSmartAccountClient({
       publicClient,
@@ -67,7 +68,7 @@ export function SmartAccountPanel() {
     });
 
     dispatch({ type: "setSmartAccountClient", value: _smartAccountClient });
-    dispatch({ type: "update", value: { commitments } });
+    dispatch({ type: "update", value: { commitments: sortedComm } });
     dispatch({ type: "setStep", value: Step.InstallModules });
 
     setClaimHandling(false);

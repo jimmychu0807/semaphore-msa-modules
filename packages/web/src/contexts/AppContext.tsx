@@ -205,7 +205,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     let isMounted = true;
 
     async function fetchTxs() {
-      const { smartAccountClient } = appState;
+      const smartAccountClient = appState.smartAccountClient;
       if (!smartAccountClient || !smartAccountClient.account || !publicClient) return;
 
       const { account } = smartAccountClient;
@@ -239,14 +239,14 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     return () => {
       isMounted = false;
     };
-  }, [appState, publicClient]);
+  }, [appState.smartAccountClient, appState.txs, publicClient]);
 
   // Fetching smartAccount related status
   useEffect(() => {
     let isMounted = true;
 
     async function fetchSmartAccount() {
-      const { smartAccountClient } = appState;
+      const smartAccountClient = appState.smartAccountClient;
       if (!publicClient || !smartAccountClient || !smartAccountClient.account) return;
 
       const { address } = smartAccountClient.account;
@@ -261,8 +261,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
           : undefined;
 
         if (isMounted) {
-          dispatch({ type: "installExecutor" });
-          dispatch({ type: "installValidator" });
+          if (executorInstalled) dispatch({ type: "installExecutor" });
+          if (validatorInstalled) dispatch({ type: "installValidator" });
           if (acctThreshold) dispatch({ type: "update", value: { acctThreshold: Number(acctThreshold) } });
           if (executorInstalled && validatorInstalled) dispatch({ type: "setStep", value: Step.Transactions });
         }
@@ -273,7 +273,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     return () => {
       isMounted = false;
     };
-  }, [appState, publicClient]);
+  }, [appState.smartAccountClient, publicClient]);
 
   return <AppContext.Provider value={{ appState, dispatch }}>{children}</AppContext.Provider>;
 }
