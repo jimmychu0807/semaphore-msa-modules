@@ -13,11 +13,11 @@ import {
   getAcctSeqNum,
   getTxHash,
   getInitTxAction,
+  getSignTxAction,
   sendSemaphoreTransaction,
 } from "@semaphore-msa-modules/lib";
 
 import { Button } from "./Button";
-import { generateRandomHex } from "@/utils";
 import { useAppContext } from "@/contexts/AppContext";
 import { type Transaction } from "@/types";
 
@@ -26,7 +26,6 @@ export function TransactionsPanel() {
   const [isDialogBtnLoading, setDialogBtnLoading] = useState<boolean>(false);
   const { appState, dispatch } = useAppContext();
   const publicClient = usePublicClient();
-  const [transactions, setTransactions] = useState<Array<Transaction>>([]);
 
   const inputClassNames = clsx(
     "mt-3 block w-full rounded-lg border-none bg-black/5 py-1.5 px-3 text-sm/6 text-black",
@@ -94,46 +93,69 @@ export function TransactionsPanel() {
     dispatch({ type: "clearTxs" });
   }
 
-  function signTx(ev: MouseEvent<HTMLElement>) {
-    ev.preventDefault();
-    console.log("signTx");
+  async function signTx(tx: Transaction) {
+    const { smartAccountClient, identity, commitments } = appState;
+    if (!smartAccountClient || !publicClient || !identity || !commitments) {
+      console.error("[smartAccountClient, publicClient, identity, commitment] at least one values are not set.");
+      return;
+    }
+
+    try {
+      const { txHash } = tx;
+      const smGroup = new Group(commitments);
+      const smProof = (await generateProof(identity, smGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
+
+      const action = getSignTxAction(txHash, smProof, false);
+      const receipt = await sendSemaphoreTransaction({
+        signer: identity,
+        account: smartAccountClient.account,
+        action,
+        publicClient,
+        bundlerClient: smartAccountClient,
+      });
+
+      console.log("receipt:", receipt);
+    } catch (err) {
+      console.error("signTx error:", err);
+    }
   }
 
-  function executeTx(ev: MouseEvent<HTMLElement>) {
-    ev.preventDefault();
-    console.log("executeTx");
+  async function executeTx(tx: Transaction) {
+    console.log("executeTx:", tx);
   }
 
   return (
     <>
       <div className="flex flex-col items-center gap-y-3 my-3">
         <h2>Pending Transactions</h2>
-        {txs.filter((t) => t.to).map((tx: Transaction) => (
-          <div key={tx.txHash} className="flex flex-row items-center w-full">
-            <div className="w-3/4 text-xs overflow-y-scroll">
-              <div>
-                tx hash: <span className="font-semibold">{tx.txHash}</span>
+        {txs
+          .filter((t) => t.to)
+          .map((tx: Transaction) => (
+            <div key={tx.txHash} className="flex flex-row items-center w-full">
+              <div className="w-3/4 text-xs overflow-y-scroll">
+                <div>
+                  tx hash: <span className="font-semibold">{tx.txHash}</span>
+                </div>
+                <div>
+                  to: <span className="font-semibold">{tx.to}</span>
+                </div>
+                <div>
+                  value: <span className="font-semibold">{formatEther(tx.value!)}</span> ETH
+                </div>
+                <div>
+                  signatures: {tx.signatureCnt} / {acctThreshold}
+                </div>
               </div>
-              <div>
-                to: <span className="font-semibold">{tx.to}</span>
-              </div>
-              <div>
-                value: <span className="font-semibold">{formatEther(tx.value!)}</span> ETH
-              </div>
-              <div>
-                signatures: {tx.signatureCnt} / {acctThreshold}
+              <div className="w-1/4 flex flex-col items-center md:flex-row justify-evenly gap-2">
+                <button className={btnClassNames} onClick={() => signTx(tx)}>
+                  Sign
+                </button>
+                <button className={btnClassNames} onClick={() => executeTx(tx)}>
+                  Execute
+                </button>
               </div>
             </div>
-            <div className="w-1/4 flex flex-col items-center md:flex-row justify-evenly gap-2">
-              <button className={btnClassNames} onClick={signTx}>
-                Sign
-              </button>
-              <button className={btnClassNames} onClick={executeTx}>
-                Execute
-              </button>
-            </div>
-          </div>
-        ))}
+          ))}
       </div>
       <div className="flex flex-row justify-center gap-x-4">
         <Button buttonText="Initiate Tx" onClick={() => setIsOpen(true)} />

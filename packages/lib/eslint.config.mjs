@@ -14,7 +14,14 @@ export default tseslint.config(
       globals: {
         ...globals.node, // Enables Node.js environment
       }
-    },
-    files: ["**/*.ts", "**/*.tsx"],
+    }
+  },
+  {
+    ignores: [
+      'dist/**',       // Build output
+      'node_modules/**',
+      'coverage/**',   // Test coverage
+      '.eslintrc.*'    // Old config files
+    ]
   }
 );

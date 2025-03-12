@@ -239,7 +239,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     return () => {
       isMounted = false;
     };
-  }, [appState.txs]);
+  }, [appState, publicClient]);
 
   // Fetching smartAccount related status
   useEffect(() => {
@@ -263,7 +263,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         if (isMounted) {
           dispatch({ type: "installExecutor" });
           dispatch({ type: "installValidator" });
-          if (acctThreshold) dispatch({ type:"update", value: { acctThreshold } });
+          if (acctThreshold) dispatch({ type: "update", value: { acctThreshold: Number(acctThreshold) } });
           if (executorInstalled && validatorInstalled) dispatch({ type: "setStep", value: Step.Transactions });
         }
       }
@@ -273,7 +273,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     return () => {
       isMounted = false;
     };
-  }, [appState.smartAccountClient]);
+  }, [appState, publicClient]);
 
   return <AppContext.Provider value={{ appState, dispatch }}>{children}</AppContext.Provider>;
 }

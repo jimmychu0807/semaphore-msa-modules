@@ -57,7 +57,7 @@ export function SmartAccountPanel() {
 
     const formData = new FormData(ev.target as HTMLFormElement);
     const address = formData.get("address") as Address;
-    const commitments: bigint[] = (formData.get("commitments") as string).split(" ").map(c => BigInt(c));
+    const commitments: bigint[] = (formData.get("commitments") as string).split(" ").map((c) => BigInt(c));
 
     const _smartAccountClient = await getSmartAccountClient({
       publicClient,
@@ -67,7 +67,7 @@ export function SmartAccountPanel() {
     });
 
     dispatch({ type: "setSmartAccountClient", value: _smartAccountClient });
-    dispatch({ type: "update", value: { commitments } })
+    dispatch({ type: "update", value: { commitments } });
     dispatch({ type: "setStep", value: Step.InstallModules });
 
     setClaimHandling(false);
