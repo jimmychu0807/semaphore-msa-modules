@@ -56,16 +56,18 @@ export function SmartAccountPanel() {
     setClaimHandling(true);
 
     const formData = new FormData(ev.target as HTMLFormElement);
-    const acctAddress = formData.get("acct-address") as Address;
+    const address = formData.get("address") as Address;
+    const commitments: bigint[] = (formData.get("commitments") as string).split(" ").map((c) => BigInt(c));
 
     const _smartAccountClient = await getSmartAccountClient({
       publicClient,
-      address: acctAddress,
+      address,
       saltNonce: accountSaltNonce,
       owners: [walletClient.data],
     });
 
     dispatch({ type: "setSmartAccountClient", value: _smartAccountClient });
+    dispatch({ type: "update", value: { commitments } });
     dispatch({ type: "setStep", value: Step.InstallModules });
 
     setClaimHandling(false);
@@ -88,12 +90,21 @@ export function SmartAccountPanel() {
         <>
           <Button buttonText="Create a Smart Account" onClick={createAccount} isLoading={isCreateHandling} />
           <div className="py-3">or</div>
-          <form className="w-2/3" onSubmit={claimAccount}>
+          <form className="w-3/4" onSubmit={claimAccount}>
             <Field className="py-3">
               <Label className="text-sm/6 font-medium text-black block">Claim an account</Label>
               <Input
-                name="acct-address"
+                name="address"
                 className="mt-3 block w-full rounded-lg border-none bg-black/5 py-1.5 px-3 text-sm/6 text-black"
+                required
+              />
+            </Field>
+            <Field className="py-3">
+              <Label className="text-sm/6 font-medium text-black block">Member commitments (space separated)</Label>
+              <Input
+                name="commitments"
+                className="mt-3 block w-full rounded-lg border-none bg-black/5 py-1.5 px-3 text-sm/6 text-black"
+                required
               />
             </Field>
             <div className="flex justify-center">

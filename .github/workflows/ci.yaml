@@ -36,7 +36,9 @@ jobs:
         run: "pnpm install"
 
       - name: "Run ci check"
-        run: "pnpm ci-check"
+        run: |
+          ln -s ../../.env.example packages/web/.env
+          pnpm ci-check
 
       - name: "Summary"
         run: |

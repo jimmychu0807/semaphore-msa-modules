@@ -55,29 +55,14 @@ async function initAppState(publicClient: PublicClient, walletClient: WalletClie
         address,
       });
       appState.smartAccountClient = smartAccountClient;
-
-      // Check if the two modules are installed
-      const isAcctInited = await publicClient.getCode({ address });
-      if (isAcctInited) {
-        const sme = getSemaphoreExecutor();
-        const smv = getSemaphoreValidator();
-        if (await smartAccountClient.isModuleInstalled(sme)) appState.executorInstalled = true;
-        if (await smartAccountClient.isModuleInstalled(smv)) appState.validatorInstalled = true;
-
-        if (appState.executorInstalled) {
-          appState.acctThreshold = Number(
-            await getAcctThreshold({ account: smartAccountClient.account, client: publicClient })
-          );
-        }
-
-        const commitments = window.localStorage.getItem("commitments");
-        if (commitments) {
-          appState.commitments = JSON.parse(commitments).map((c: string) => BigInt(c));
-        }
-      }
     } catch (err) {
       console.error("Restoring smart account client error:", err);
     }
+  }
+
+  const commitments = window.localStorage.getItem("commitments");
+  if (commitments) {
+    appState.commitments = JSON.parse(commitments).map((c: string) => BigInt(c));
   }
 
   return appState;
@@ -254,7 +239,41 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     return () => {
       isMounted = false;
     };
-  }, [appState.txs]);
+  }, [appState, publicClient]);
+
+  // Fetching smartAccount related status
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchSmartAccount() {
+      const { smartAccountClient } = appState;
+      if (!publicClient || !smartAccountClient || !smartAccountClient.account) return;
+
+      const { address } = smartAccountClient.account;
+
+      // Check if the two modules are installed
+      const isAcctInited = await publicClient.getCode({ address });
+      if (isAcctInited) {
+        const executorInstalled = await smartAccountClient.isModuleInstalled(getSemaphoreExecutor());
+        const validatorInstalled = await smartAccountClient.isModuleInstalled(getSemaphoreValidator());
+        const acctThreshold = executorInstalled
+          ? await getAcctThreshold({ account: smartAccountClient.account, client: publicClient })
+          : undefined;
+
+        if (isMounted) {
+          dispatch({ type: "installExecutor" });
+          dispatch({ type: "installValidator" });
+          if (acctThreshold) dispatch({ type: "update", value: { acctThreshold: Number(acctThreshold) } });
+          if (executorInstalled && validatorInstalled) dispatch({ type: "setStep", value: Step.Transactions });
+        }
+      }
+    }
+
+    fetchSmartAccount();
+    return () => {
+      isMounted = false;
+    };
+  }, [appState, publicClient]);
 
   return <AppContext.Provider value={{ appState, dispatch }}>{children}</AppContext.Provider>;
 }

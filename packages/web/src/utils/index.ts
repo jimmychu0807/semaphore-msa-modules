@@ -1,5 +1,5 @@
 import { createPaymasterClient, entryPoint07Address } from "viem/account-abstraction";
-import { type Address, type Hex, type PublicClient, type WalletClient, formatEther as viemFormatEther } from "viem";
+import { type Address, type PublicClient, type WalletClient, formatEther as viemFormatEther } from "viem";
 import { http, cookieStorage, createConfig, createStorage } from "wagmi";
 import { baseSepolia } from "wagmi/chains";
 import { injected } from "wagmi/connectors";
@@ -100,12 +100,6 @@ export async function getSmartAccountClient({
   }).extend(erc7579Actions());
 
   return smartAccountClient as unknown as AppSmartAccountClient;
-}
-
-export function generateRandomHex(byteLen: number = 32): Hex {
-  const array = new Uint8Array(byteLen);
-  crypto.getRandomValues(array);
-  return `0x${Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("")}`;
 }
 
 export function getCommitmentsSorted(cmts: bigint[]): Array<bigint> {
