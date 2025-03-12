@@ -38,6 +38,7 @@ export type TAppAction =
   | { type: "installExecutor" }
   | { type: "installValidator" }
   | { type: "newTx"; value: Hex }
+  | { type: "signTx"; value: Hex }
   | { type: "updateTx"; value: Transaction }
   | { type: "clearTxs" }
   | {
