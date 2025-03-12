@@ -604,31 +604,6 @@ export const abi = [
         internalType: "address",
       },
       {
-        name: "target",
-        type: "address",
-        indexed: true,
-        internalType: "address",
-      },
-      {
-        name: "value",
-        type: "uint256",
-        indexed: true,
-        internalType: "uint256",
-      },
-    ],
-    anonymous: false,
-  },
-  {
-    type: "event",
-    name: "ExecutedTx",
-    inputs: [
-      {
-        name: "account",
-        type: "address",
-        indexed: true,
-        internalType: "address",
-      },
-      {
         name: "txHash",
         type: "bytes32",
         indexed: true,

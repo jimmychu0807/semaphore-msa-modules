@@ -127,6 +127,13 @@ function appStateReducer(appState: TAppState, action: TAppAction): TAppState {
         txs: txs.map((tx) => (tx.txHash === updatedTx.txHash ? updatedTx : tx)),
       };
     }
+    case "clearTx": {
+      const txHash = action.value;
+      return {
+        ...appState,
+        txs: appState.txs.filter((tx) => tx.txHash !== txHash),
+      };
+    }
     case "clearTxs": {
       return { ...appState, txs: [] };
     }
@@ -152,7 +159,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     args: {
       account: appState?.smartAccountClient?.account?.address,
     },
-    onError: (err) => console.error(`watch event InitiatedTx error:`, err),
+    onError: (err) => console.error(`watching InitiatedTx event error:`, err),
     onLogs: (logs) => logs.forEach((log) => dispatch({ type: "newTx", value: log.args.txHash! })),
   });
 
@@ -163,8 +170,19 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     args: {
       account: appState?.smartAccountClient?.account?.address,
     },
-    onError: (err) => console.error(`watch event SignedTx error:`, err),
+    onError: (err) => console.error(`watching SignedTx event error:`, err),
     onLogs: (logs) => logs.forEach((log) => dispatch({ type: "signTx", value: log.args.txHash! })),
+  });
+
+  useWatchContractEvent({
+    address: SEMAPHORE_EXECUTOR_ADDRESS,
+    abi: semaphoreExecutorABI,
+    eventName: "ExecutedTx",
+    args: {
+      account: appState?.smartAccountClient?.account?.address,
+    },
+    onError: (err) => console.error(`watching ExecutedTx event error:`, err),
+    onLogs: (logs) => logs.forEach((log) => dispatch({ type: "clearTx", value: log.args.txHash! })),
   });
 
   // For initial state handling

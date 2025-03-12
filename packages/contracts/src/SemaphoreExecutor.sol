@@ -58,7 +58,6 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     event SemaphoreExecutorInitialized(address indexed account);
     event SemaphoreExecutorUninitialized(address indexed account);
     event SetSemaphoreValidator(address indexed target);
-    event ExecutedTx(address indexed account, address indexed target, uint256 indexed value);
     event AddedMembers(address indexed, uint8 indexed length);
     event RemovedMember(address indexed, uint256 indexed commitment);
     event ThresholdSet(address indexed account, uint8 indexed threshold);
