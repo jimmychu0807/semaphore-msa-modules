@@ -1,7 +1,7 @@
 import { useState, type MouseEvent, type FormEvent } from "react";
 import { Dialog, DialogPanel, DialogTitle, Fieldset, Field, Label, Input } from "@headlessui/react";
 
-import { type Address, parseEther, formatEther } from "viem";
+import { type Address, type Hex, parseEther, formatEther } from "viem";
 import { usePublicClient } from "wagmi";
 import clsx from "clsx";
 
@@ -24,6 +24,7 @@ import { type Transaction } from "@/types";
 export function TransactionsPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [isDialogBtnLoading, setDialogBtnLoading] = useState<boolean>(false);
+  const [signingTx, setSigningTx] = useState<Hex>();
   const { appState, dispatch } = useAppContext();
   const publicClient = usePublicClient();
 
@@ -34,9 +35,10 @@ export function TransactionsPanel() {
   );
 
   const btnClassNames = clsx(
-    "inline-flex items-center gap-2 rounded-md w-18 bg-green-200 py-1.5 px-2 text-sm/6 font-semibold",
-    "justify-center text-green-800 shadow-inner focus:outline-none data-[hover]:bg-green-200",
-    "data-[open]:bg-green-200 data-[focus]:outline-1 data-[focus]:outline-white text-sm"
+    "inline-flex items-center gap-2 rounded-md w-18 h-9 bg-green-200 py-1.5 px-2 text-sm/6 font-semibold",
+    "justify-center text-green-800 shadow-inner focus:outline-none hover:bg-green-300",
+    "disabled:bg-gray-300 disabled:text-black",
+    "focus:outline-1 focus:outline-white text-sm"
   );
 
   const { acctThreshold, txs } = appState;
@@ -102,6 +104,7 @@ export function TransactionsPanel() {
 
     try {
       const { txHash } = tx;
+      setSigningTx(txHash);
       const smGroup = new Group(commitments);
       const smProof = (await generateProof(identity, smGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
 
@@ -118,6 +121,8 @@ export function TransactionsPanel() {
     } catch (err) {
       console.error("signTx error:", err);
     }
+
+    setSigningTx(undefined);
   }
 
   async function executeTx(tx: Transaction) {
@@ -128,34 +133,34 @@ export function TransactionsPanel() {
     <>
       <div className="flex flex-col items-center gap-y-3 my-3">
         <h2>Pending Transactions</h2>
-        {txs
-          .filter((t) => t.to)
-          .map((tx: Transaction) => (
-            <div key={tx.txHash} className="flex flex-row items-center w-full">
-              <div className="w-3/4 text-xs overflow-y-scroll">
-                <div>
-                  tx hash: <span className="font-semibold">{tx.txHash}</span>
-                </div>
-                <div>
-                  to: <span className="font-semibold">{tx.to}</span>
-                </div>
-                <div>
-                  value: <span className="font-semibold">{formatEther(tx.value!)}</span> ETH
-                </div>
-                <div>
-                  signatures: {tx.signatureCnt} / {acctThreshold}
-                </div>
+        {txs.map((tx: Transaction) => (
+          <div key={tx.txHash} className="flex flex-row items-center w-full">
+            <div className="w-3/4 text-xs overflow-y-scroll">
+              <div>
+                tx hash: <span className="font-semibold">{tx.txHash}</span>
               </div>
-              <div className="w-1/4 flex flex-col items-center md:flex-row justify-evenly gap-2">
-                <button className={btnClassNames} onClick={() => signTx(tx)}>
-                  Sign
-                </button>
-                <button className={btnClassNames} onClick={() => executeTx(tx)}>
-                  Execute
-                </button>
+              <div>
+                to: <span className="font-semibold">{tx?.to}</span>
+              </div>
+              <div>
+                value: <span className="font-semibold">{formatEther(tx?.value ?? BigInt(0))}</span> ETH
+              </div>
+              <div>
+                signatures: {tx.signatureCnt ?? 0} / {acctThreshold}
               </div>
             </div>
-          ))}
+            <div className="w-1/4 flex flex-col items-center md:flex-row justify-evenly gap-2">
+              <Button
+                buttonText="Sign"
+                className={btnClassNames}
+                isLoading={signingTx === tx.txHash}
+                disabled={signingTx && signingTx !== tx.txHash}
+                onClick={() => signTx(tx)}
+              />
+              <Button buttonText="Execute" className={btnClassNames} onClick={() => executeTx(tx)} />
+            </div>
+          </div>
+        ))}
       </div>
       <div className="flex flex-row justify-center gap-x-4">
         <Button buttonText="Initiate Tx" onClick={() => setIsOpen(true)} />
