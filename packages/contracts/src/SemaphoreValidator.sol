@@ -218,23 +218,8 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
         return sel == INITIATETX_SEL || sel == SIGNTX_SEL || sel == EXECUTETX_SEL;
     }
 
-    function _isMockSignature(bytes calldata signature) internal view returns (bool) {
-        uint256 chainId = block.chainid;
-        // Mock signature is only allowed in testnet
-        uint256[4] memory allowedChains = [
-            uint256(11_155_111), // sepolia
-            84_532, // base sepolia
-            31_337, // anvil
-            11_155_420 // OP sepolia
-        ];
-
-        for (uint256 i = 0; i < allowedChains.length; ++i) {
-            if (allowedChains[i] == chainId && LibBytes.eq(signature[64:], MOCK_SIG_P2)) {
-                return true;
-            }
-        }
-
-        return false;
+    function _isMockSignature(bytes calldata signature) internal pure returns (bool) {
+        return LibBytes.eq(signature[64:], MOCK_SIG_P2);
     }
 
     /*//////////////////////////////////////////////////////////////////////////
