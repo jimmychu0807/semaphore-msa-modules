@@ -15,7 +15,10 @@ export function SmartAccountPanel() {
   const { appState, dispatch } = useAppContext();
 
   const { smartAccountClient } = appState;
-  const { data: balance } = useBalance({ address: smartAccountClient?.account?.address });
+  const { data: balance } = useBalance({
+    address: smartAccountClient?.account?.address,
+    query: { refetchInterval: 4000 },
+  });
 
   const [isCreateHandling, setCreateHandling] = useState(false);
   const [isClaimHandling, setClaimHandling] = useState(false);
@@ -41,9 +44,8 @@ export function SmartAccountPanel() {
       });
 
       dispatch({ type: "setSmartAccountClient", value: _smartAccountClient });
-      dispatch({ type: "update", value: { saltNonce } });
       dispatch({ type: "setStep", value: Step.InstallModules });
-    } catch(err) {
+    } catch (err) {
       console.error("createAccount error:", err);
     }
 
@@ -66,7 +68,6 @@ export function SmartAccountPanel() {
 
     const formData = new FormData(ev.target as HTMLFormElement);
     const address = formData.get("address") as Address;
-    const saltNonce = BigInt((formData.get("saltNonce") ?? 0) as number);
     const commitments: bigint[] = (formData.get("commitments") as string).split(" ").map((c) => BigInt(c));
     const sortedComm = getCommitmentsSorted(commitments);
 
@@ -74,14 +75,13 @@ export function SmartAccountPanel() {
       const _smartAccountClient = await getSmartAccountClient({
         publicClient,
         address,
-        saltNonce,
         owners: [walletClient.data],
       });
 
       dispatch({ type: "setSmartAccountClient", value: _smartAccountClient });
-      dispatch({ type: "update", value: { commitments: sortedComm, saltNonce } });
+      dispatch({ type: "update", value: { commitments: sortedComm } });
       dispatch({ type: "setStep", value: Step.InstallModules });
-    } catch(err) {
+    } catch (err) {
       console.error("claimAccount error:", err);
     }
     setClaimHandling(false);
@@ -109,8 +109,10 @@ export function SmartAccountPanel() {
               <Legend className="text-base/4 font-semibold text-black">Create Smart Account</Legend>
               <Field>
                 <Label className="text-sm/6 font-medium text-black">Salt Nonce</Label>
-                <Description className="text-sm text-black/50">Same owner and salt nonce will always result in the same account address.</Description>
-                <Input name="saltNonce" type="number" min="0" placeholder="0" required className={inputClass}/>
+                <Description className="text-xs text-black/50">
+                  Same owner and salt nonce will always result in the same account address
+                </Description>
+                <Input name="saltNonce" type="number" min="0" placeholder="0" required className={inputClass} />
               </Field>
             </Fieldset>
             <Button buttonText="Create" isSubmit={true} isLoading={isCreateHandling} onClick={() => {}} />
@@ -124,10 +126,6 @@ export function SmartAccountPanel() {
               <Field>
                 <Label className="text-sm/6 font-medium text-black block">Address</Label>
                 <Input name="address" required className={inputClass} />
-              </Field>
-              <Field>
-                <Label className="text-sm/6 font-medium text-black">Salt Nonce</Label>
-                <Input name="saltNonce" type="number" min="0" placeholder="0" required className={inputClass}/>
               </Field>
               <Field>
                 <Label className="text-sm/6 font-medium text-black block">Member Commitments (space separated)</Label>

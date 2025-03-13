@@ -166,7 +166,7 @@ export function TransactionsPanel() {
                 value: <span className="font-semibold">{formatEther(tx?.value ?? BigInt(0))}</span> ETH
               </div>
               <div>
-                signatures: {tx.signatureCnt ?? 0} / {acctThreshold}
+                proofs: {tx.signatureCnt ?? 0} / {acctThreshold}
               </div>
             </div>
             <div className="w-1/4 flex flex-col items-center md:flex-row justify-evenly gap-2">
