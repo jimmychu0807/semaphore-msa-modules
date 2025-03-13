@@ -39,16 +39,16 @@ export function Steps() {
       <TabGroup className="w-full" selectedIndex={selectedTab} onChange={setSelectedTab}>
         <TabList className="flex justify-center gap-2">
           <Tab key="identityTab" className={tabClassNames}>
-            1. Set Identity
+            1. Identity
           </Tab>
           {step !== undefined && step >= Step.SetSmartAccount && (
             <Tab key="smartAccountTab" className={tabClassNames}>
-              2. Set Smart Account
+              2. Smart Account
             </Tab>
           )}
           {step !== undefined && step >= Step.InstallModules && (
             <Tab key="installModuleTab" className={tabClassNames}>
-              3. Install Modules
+              3. Account Modules
             </Tab>
           )}
           {step !== undefined && step >= Step.Transactions && (

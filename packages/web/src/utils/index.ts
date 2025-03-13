@@ -15,7 +15,6 @@ import {
 
 import { AppSmartAccountClient } from "@/types";
 
-export const accountSaltNonce = BigInt(process.env.NEXT_PUBLIC_ACCOUNT_SALT_NONCE || 0);
 export const pimlicoBaseSepoliaUrl = `https://api.pimlico.io/v2/${baseSepolia.id}/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`;
 
 // TODO: change back when deploying on BaseSepolia

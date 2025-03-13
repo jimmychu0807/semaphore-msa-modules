@@ -21,6 +21,7 @@ export type TAppState = {
   status: "pending" | "ready";
 
   smartAccountClient?: AppSmartAccountClient;
+  saltNonce?: bigint;
   commitments?: bigint[];
   acctThreshold?: number;
   executorInstalled: boolean;
@@ -47,6 +48,7 @@ export type TAppAction =
       value: {
         acctThreshold?: number;
         commitments?: bigint[];
+        saltNonce?: bigint;
       };
     };
 

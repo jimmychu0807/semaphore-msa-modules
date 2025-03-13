@@ -45,12 +45,13 @@ async function initAppState(publicClient: PublicClient, walletClient: WalletClie
   }
 
   const address = window.localStorage.getItem("smartAccountAddr") as Address;
+  const saltNonce = BigInt(window.localStorage.getItem("saltNonce") ?? 0);
   if (address) {
     // Restore the smart account client
     try {
       const smartAccountClient = await getSmartAccountClient({
         publicClient,
-        saltNonce: accountSaltNonce,
+        saltNonce,
         owners: [walletClient],
         address,
       });
@@ -95,7 +96,7 @@ function appStateReducer(appState: TAppState, action: TAppAction): TAppState {
       //   smartAccountClient, commitments, acctThreshold
       //   validatorInstalled, executorInstalled, txs
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { smartAccountClient, commitments, acctThreshold, ...newState } = appState;
+      const { smartAccountClient, commitments, acctThreshold, saltNonce, ...newState } = appState;
       return { ...newState, txs: [], validatorInstalled: false, executorInstalled: false };
     }
     case "installExecutor": {
@@ -229,11 +230,18 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("smartAccountAddr", appState.smartAccountClient.account.address);
     }
 
-    // Save the commitments
+    // Member commitments
     if (appState.commitments === undefined) {
       localStorage.removeItem("commitments");
     } else {
       localStorage.setItem("commitments", JSON.stringify(appState.commitments.map((c) => c.toString())));
+    }
+
+    // saltNonce
+    if (appState.saltNonce === undefined) {
+      localStorage.removeItem("saltNonce");
+    } else {
+      localStorage.setItem("saltNonce", appState.saltNonce.toString());
     }
   }, [appState]);
 

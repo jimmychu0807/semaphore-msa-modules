@@ -37,17 +37,17 @@ export function IdentityPanel() {
         <div>loading...</div>
       ) : identity ? (
         <>
-          <div className="py-3 w-full">
-            <div className="text-center">Your Identity Commitment</div>
-            <div className="text-sm overflow-x-scroll w-full px-3 py-1.5 bg-black/5 rounded-sm">
+          <div className="py-3 w-3/4">
+            <div className="text-center my-2 font-semibold">Your Identity Commitment</div>
+            <div className="text-sm overflow-x-scroll w-full px-3 py-1.5 my-2 bg-black/5 rounded-sm">
               {identity.commitment.toString()}
             </div>
           </div>
           <Button buttonText="Forget Identity" onClick={forgetIdentity} />
         </>
       ) : (
-        <div className="py-4 mx-auto">
-          <Button buttonText="Create an Identity" onClick={createIdentity} />
+        <div className="py-3 mx-auto">
+          <Button buttonText="Create Identity" onClick={createIdentity} />
         </div>
       )}
     </div>
