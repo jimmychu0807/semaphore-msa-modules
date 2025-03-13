@@ -19,9 +19,9 @@ pnpm run test
 ## Deployment
 
 **Base Sepolia**
-- Semaphore: [`0xB3aa1503DF73004D8aCC8b6F57AFEFC3104e9803`](https://sepolia.basescan.org/address/0xb3aa1503df73004d8acc8b6f57afefc3104e9803)
-- Semaphore Executor: [`0x535Ad4971d810da00981888BAd90D41b95e1E4E4`](https://sepolia.basescan.org/address/0x535ad4971d810da00981888bad90d41b95e1e4e4)
-- Semaphore Validator: [`0x0a5ddd51A3b31a0C89E6B13db18b123BCC7D8eBc`](https://sepolia.basescan.org/address/0x0a5ddd51A3b31a0C89E6B13db18b123BCC7D8eBc)
+- Semaphore: [`0xca6e4DE27E172Ccd1a9dDe3c0B0B3a2C58750C7c`](https://sepolia.basescan.org/address/0xca6e4DE27E172Ccd1a9dDe3c0B0B3a2C58750C7c)
+- Semaphore Executor: [`0x17E41692Fd38520dEcBCBc764A5E2EbFfE6DdC20`](https://sepolia.basescan.org/address/0x17E41692Fd38520dEcBCBc764A5E2EbFfE6DdC20)
+- Semaphore Validator: [`0x166AA8925e641f0D2dD108ef2a69F30EA3eE1e0c`](https://sepolia.basescan.org/address/0x166AA8925e641f0D2dD108ef2a69F30EA3eE1e0c)
 
 ## Developer Documentation
 
@@ -105,24 +105,3 @@ The module is also compatible with:
 ### Testing
 
 The testing code relies on [Foundry FFI](https://book.getfoundry.sh/cheatcodes/ffi) to call Semaphore typescript API to generate zero-knowledge proof and EdDSA signature.
-
-## Relevant Information
-
-### ERC-4337 Lifecycle on Validation
-
-![ERC-4337 Lifecycle](../../docs/contracts-assets/4337-lifecycle.svg)
-
-*Source: [ERC-4337 website](https://www.erc4337.io/docs/understanding-ERC-4337/architecture)*
-
-- [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337):  [overview](https://www.erc4337.io/)
-- [ERC-7579](https://eips.ethereum.org/EIPS/eip-7579): [overview](https://erc7579.com/)
-- [ERC-7780](https://eips.ethereum.org/EIPS/eip-7780)
-
-## Acknowledgement
-
-Thanks to the following folks on discussing about this project and helps along: 
-
-- [Saleel P](https://github.com/saleel) on initiating this idea with [Semaphore Wallet](https://github.com/saleel/semaphore-wallet), showing me that the idea is feasible.
-- [Cedoor](https://github.com/cedoor) and [Vivian Plasencia](https://github.com/vplasencia) on Semaphore development and their opinions.
-- [John Guilding](https://github.com/JohnGuilding) on the discussion, support, and review of the project.
-- [Konrad Kopp](https://github.com/kopy-kat) on the support of using [ModuleKit](https://github.com/rhinestonewtf/modulekit) framework which this module is built upon, and answering my question on some details of ERC-4337 standard.

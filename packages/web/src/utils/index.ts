@@ -15,12 +15,6 @@ import {
 
 import { AppSmartAccountClient } from "@/types";
 
-export const pimlicoBaseSepoliaUrl = `https://api.pimlico.io/v2/${baseSepolia.id}/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`;
-
-// TODO: change back when deploying on BaseSepolia
-// export const ethRpcUrl = "https://sepolia.base.org";
-// export const bundlerUrl = pimlicoBaseSepoliaUrl;
-// export const paymasterUrl = pimlicoBaseSepoliaUrl;
 export const ethRpcUrl = process.env.NEXT_PUBLIC_ETH_RPC_URL;
 export const bundlerUrl = process.env.NEXT_PUBLIC_BUNDLER_URL;
 export const paymasterUrl = process.env.NEXT_PUBLIC_PAYMASTER_URL;
