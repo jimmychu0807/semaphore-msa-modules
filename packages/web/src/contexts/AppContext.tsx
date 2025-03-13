@@ -4,7 +4,7 @@ import { type ReactNode, createContext, useContext, useReducer, useEffect, useSt
 import { type Address, type PublicClient, type WalletClient } from "viem";
 import { usePublicClient, useWalletClient, useWatchContractEvent } from "wagmi";
 
-import { accountSaltNonce, getSmartAccountClient } from "@/utils";
+import { getSmartAccountClient } from "@/utils";
 import { type TAppContext, type TAppState, type TAppAction, Step } from "@/types";
 import { Identity } from "@semaphore-protocol/identity";
 import {
@@ -50,7 +50,6 @@ async function initAppState(publicClient: PublicClient, walletClient: WalletClie
     try {
       const smartAccountClient = await getSmartAccountClient({
         publicClient,
-        saltNonce: accountSaltNonce,
         owners: [walletClient],
         address,
       });
@@ -229,7 +228,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("smartAccountAddr", appState.smartAccountClient.account.address);
     }
 
-    // Save the commitments
+    // Member commitments
     if (appState.commitments === undefined) {
       localStorage.removeItem("commitments");
     } else {
