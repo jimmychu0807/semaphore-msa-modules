@@ -19,7 +19,7 @@ Please refer to the project packages READMEs:
 
 ## Relevant Information
 
-![ERC-4337 Lifecycle](../../docs/contracts-assets/4337-lifecycle.svg)
+![ERC-4337 Lifecycle](./docs/contracts-assets/4337-lifecycle.svg)
 
 *Source: [ERC-4337 website](https://www.erc4337.io/docs/understanding-ERC-4337/architecture)*
 
