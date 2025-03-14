@@ -87,7 +87,7 @@ The `userOpHash` is 32-byte long, it is a **keccak256()** of sequence number, ta
 
 For the UserOp calldata passing to `getExecOps()` in testing, it is:
 
-<img src="../../docs/contracts-assets/userop-calldata.svg" alt="UserOp Signature" width="70%"/>
+<img src="../../docs/contracts-assets/userop-calldata.svg" alt="UserOp Calldata" width="70%"/>
 
 Now, when decoding the calldata from **PackedUserOperation** object in **validateUserOp()**, the above calldata is combined with other information and what we are interested started from the 100th byte, as shown below.
 
