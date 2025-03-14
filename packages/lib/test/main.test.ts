@@ -8,7 +8,7 @@ import debug from "debug";
 const info = debug("test:main");
 
 const deployerSk = (process.env.DEPLOYER_SK ?? "0x") as Hex;
-const saltNonce = BigInt(process.env.ACCOUNT_SALT_NONCE ?? 0);
+const saltNonce = BigInt(1);
 const rpcUrl = process.env.ETH_RPC_URL as string;
 const bundlerUrl = process.env.BUNDLER_URL as string;
 const paymasterUrl = process.env.PAYMASTER_URL as string;
