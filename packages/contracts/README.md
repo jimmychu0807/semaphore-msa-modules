@@ -91,7 +91,7 @@ For the UserOp calldata passing to `getExecOps()` in testing, it is:
 
 Now, when decoding the calldata from **PackedUserOperation** object in **validateUserOp()**, the above calldata is combined with other information and what we are interested started from the 100th byte, as shown below.
 
-![calldata-packedUserOp](./docs/assets/calldata-packedUserOp.svg)
+![calldata-packedUserOp](../../docs/contracts-assets/calldata-packedUserOp.svg)
 
 ### Verifying EdDSA Signature
 
