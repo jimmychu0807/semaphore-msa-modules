@@ -19,9 +19,13 @@ pnpm run test
 ## Deployment
 
 **Base Sepolia**
-- Semaphore: [`0xca6e4DE27E172Ccd1a9dDe3c0B0B3a2C58750C7c`](https://sepolia.basescan.org/address/0xca6e4DE27E172Ccd1a9dDe3c0B0B3a2C58750C7c)
-- Semaphore Executor: [`0x17E41692Fd38520dEcBCBc764A5E2EbFfE6DdC20`](https://sepolia.basescan.org/address/0x17E41692Fd38520dEcBCBc764A5E2EbFfE6DdC20)
-- Semaphore Validator: [`0x166AA8925e641f0D2dD108ef2a69F30EA3eE1e0c`](https://sepolia.basescan.org/address/0x166AA8925e641f0D2dD108ef2a69F30EA3eE1e0c)
+
+
+| Contract    |Address | Etherscan  | Sourcify | Blockscout |
+| -------- | ------- | ------------ | --------- | --------- |
+| Semaphore  | [`0xca6e4DE27E172Ccd1a9dDe3c0B0B3a2C58750C7c`](https://sepolia.basescan.org/address/0xca6e4DE27E172Ccd1a9dDe3c0B0B3a2C58750C7c)     |     | [✅](https://repo.sourcify.dev/contracts/full_match/84532/0xca6e4DE27E172Ccd1a9dDe3c0B0B3a2C58750C7c/) | [✅](https://base-sepolia.blockscout.com/address/0xca6e4DE27E172Ccd1a9dDe3c0B0B3a2C58750C7c?tab=contract)   |
+| Semaphore Executor | [`0x17E41692Fd38520dEcBCBc764A5E2EbFfE6DdC20`](https://sepolia.basescan.org/address/0x17E41692Fd38520dEcBCBc764A5E2EbFfE6DdC20) |   | [✅](https://repo.sourcify.dev/contracts/full_match/84532/0x17E41692Fd38520dEcBCBc764A5E2EbFfE6DdC20/)  |  [✅](https://base-sepolia.blockscout.com/address/0x17E41692Fd38520dEcBCBc764A5E2EbFfE6DdC20?tab=contract)  |
+| Semaphore Validator  | [`0x166AA8925e641f0D2dD108ef2a69F30EA3eE1e0c`](https://sepolia.basescan.org/address/0x166AA8925e641f0D2dD108ef2a69F30EA3eE1e0c)  |   | [✅](https://repo.sourcify.dev/contracts/full_match/84532/0x166AA8925e641f0D2dD108ef2a69F30EA3eE1e0c/)  |  [✅](https://base-sepolia.blockscout.com/address/0x166AA8925e641f0D2dD108ef2a69F30EA3eE1e0c?tab=contract)  |
 
 ## Developer Documentation
 
