@@ -14,7 +14,7 @@ export function Footer() {
       </a>
       <a
         className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-        href="https://jimmychu0807.hk/"
+        href="https://jimmychu0807.hk/semaphore-msa-modules"
         target="_blank"
         rel="noopener noreferrer"
       >
