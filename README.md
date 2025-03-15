@@ -1,5 +1,11 @@
 # Semaphore Modular Smart Account Modules
 
+## Project Artifacts
+
+- 👩🏻‍💻 [Project demo UI](https://semaphore-msa-modules.jimmychu0807.hk/) (please connect to Base Sepolia)
+- 🎥 [Project demo UI video](https://www.loom.com/share/9775b4fcf71b46418483f34761c03d0e?sid=cb9a32bb-b4ce-4f5a-b1a7-4f9182f59cff)
+- 📜 [Writeup about the project](https://jimmychu0807.hk/semaphore-msa-modules)
+
 ## Overview
 
 This project mainly consists of [a validator and an executor modules](https://eips.ethereum.org/EIPS/eip-7579#validators) adheres to [**ERC-7579**](https://eips.ethereum.org/EIPS/eip-7579) standard that uses [Semaphore](https://semaphore.pse.dev/) for proof validation. Smart accounts incorporate these modules gain the following benefits:
