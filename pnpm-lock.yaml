@@ -10,17 +10,17 @@ catalogs:
       specifier: ^0.2.4
       version: 0.2.4
     '@semaphore-protocol/contracts':
-      specifier: github:jimmychu0807/semaphore#identity-cli&path:/packages/contracts/contracts
-      version: 4.8.2
+      specifier: github:jimmychu0807/semaphore#lib-cli&path:/packages/contracts/contracts
+      version: 4.9.1
     '@semaphore-protocol/group':
-      specifier: github:jimmychu0807/semaphore#identity-cli&path:/packages/group
-      version: 4.8.2
+      specifier: github:jimmychu0807/semaphore#lib-cli&path:/packages/group
+      version: 4.9.1
     '@semaphore-protocol/identity':
-      specifier: github:jimmychu0807/semaphore#identity-cli&path:/packages/identity
-      version: 4.8.2
+      specifier: github:jimmychu0807/semaphore#lib-cli&path:/packages/identity
+      version: 4.9.1
     '@semaphore-protocol/proof':
-      specifier: github:jimmychu0807/semaphore#identity-cli&path:/packages/proof
-      version: 4.8.2
+      specifier: github:jimmychu0807/semaphore#lib-cli&path:/packages/proof
+      version: 4.9.1
     '@tanstack/react-query':
       specifier: ^5.0.0
       version: 5.66.9
@@ -61,10 +61,10 @@ importers:
     devDependencies:
       '@ERC4337/account-abstraction':
         specifier: github:kopy-kat/account-abstraction#develop
-        version: accountabstraction@https://codeload.github.com/kopy-kat/account-abstraction/tar.gz/c5887153fbfe3ed09b2637cac39873f96d676f38(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10)
+        version: accountabstraction@https://codeload.github.com/kopy-kat/account-abstraction/tar.gz/c5887153fbfe3ed09b2637cac39873f96d676f38(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10)
       '@ERC4337/account-abstraction-v0.6':
         specifier: github:eth-infinitism/account-abstraction#v0.6.0
-        version: accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/7174d6d845618dbd11cee68eefa715f5263690b6(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10)
+        version: accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/7174d6d845618dbd11cee68eefa715f5263690b6(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10)
       '@openzeppelin/contracts':
         specifier: ^5.2.0
         version: 5.2.0
@@ -73,25 +73,25 @@ importers:
         version: 4.1.0
       '@rhinestone/erc4337-validation':
         specifier: ^0.0.5
-        version: 0.0.5(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10)
+        version: 0.0.5(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10)
       '@rhinestone/modulekit':
-        specifier: github:jimmychu0807/rhinestonewtf-modulekit#semaphore-msa-modules
-        version: https://codeload.github.com/jimmychu0807/rhinestonewtf-modulekit/tar.gz/20228012c6f23e7525741d5e09a02c84594427a8(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10)
+        specifier: ^0.5.9
+        version: 0.5.9(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10)
       '@rhinestone/sentinellist':
         specifier: github:rhinestonewtf/sentinellist
         version: https://codeload.github.com/rhinestonewtf/sentinellist/tar.gz/e722c5cc68c570d535bc3c9f85b3ce90cdc38807
       '@semaphore-protocol/contracts':
         specifier: 'catalog:'
-        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3#path:/packages/contracts/contracts
+        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/contracts/contracts
       '@semaphore-protocol/group':
         specifier: 'catalog:'
-        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3#path:/packages/group
+        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/group
       '@semaphore-protocol/identity':
         specifier: 'catalog:'
-        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3#path:/packages/identity
+        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/identity
       '@semaphore-protocol/proof':
         specifier: 'catalog:'
-        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3#path:/packages/proof(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/proof(@semaphore-protocol/group@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/group)(@semaphore-protocol/identity@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/identity)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@zk-kit/lean-imt.sol':
         specifier: ^2.0.0
         version: 2.0.0
@@ -127,13 +127,13 @@ importers:
         version: 0.2.4(viem@2.22.23(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10))
       '@semaphore-protocol/group':
         specifier: 'catalog:'
-        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3#path:/packages/group
+        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/group
       '@semaphore-protocol/identity':
         specifier: 'catalog:'
-        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3#path:/packages/identity
+        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/identity
       '@semaphore-protocol/proof':
         specifier: 'catalog:'
-        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3#path:/packages/proof(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/proof(@semaphore-protocol/group@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/group)(@semaphore-protocol/identity@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/identity)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       debug:
         specifier: ^4.4.0
         version: 4.4.0(supports-color@8.1.1)
@@ -200,13 +200,13 @@ importers:
         version: link:../lib
       '@semaphore-protocol/group':
         specifier: 'catalog:'
-        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3#path:/packages/group
+        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/group
       '@semaphore-protocol/identity':
         specifier: 'catalog:'
-        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3#path:/packages/identity
+        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/identity
       '@semaphore-protocol/proof':
         specifier: 'catalog:'
-        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3#path:/packages/proof(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/proof(@semaphore-protocol/group@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/group)(@semaphore-protocol/identity@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/identity)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.66.9(react@19.0.0)
@@ -525,17 +525,32 @@ packages:
   '@ethersproject/abi@5.7.0':
     resolution: {integrity: sha512-351ktp42TiRcYB3H1OP8yajPeAQstMW/yCFokj/AthP9bLHzQFPlOrxOcwYEDkUAICmOHljvN4K39OMTMUa9RA==}
 
+  '@ethersproject/abi@5.8.0':
+    resolution: {integrity: sha512-b9YS/43ObplgyV6SlyQsG53/vkSal0MNA1fskSC4mbnCMi8R+NkcH8K9FPYNESf6jUefBUniE4SOKms0E/KK1Q==}
+
   '@ethersproject/abstract-provider@5.7.0':
     resolution: {integrity: sha512-R41c9UkchKCpAqStMYUpdunjo3pkEvZC3FAwZn5S5MGbXoMQOHIdHItezTETxAO5bevtMApSyEhn9+CHcDsWBw==}
+
+  '@ethersproject/abstract-provider@5.8.0':
+    resolution: {integrity: sha512-wC9SFcmh4UK0oKuLJQItoQdzS/qZ51EJegK6EmAWlh+OptpQ/npECOR3QqECd8iGHC0RJb4WKbVdSfif4ammrg==}
 
   '@ethersproject/abstract-signer@5.7.0':
     resolution: {integrity: sha512-a16V8bq1/Cz+TGCkE2OPMTOUDLS3grCpdjoJCYNnVBbdYEMSgKrU0+B90s8b6H+ByYTBZN7a3g76jdIJi7UfKQ==}
 
+  '@ethersproject/abstract-signer@5.8.0':
+    resolution: {integrity: sha512-N0XhZTswXcmIZQdYtUnd79VJzvEwXQw6PK0dTl9VoYrEBxxCPXqS0Eod7q5TNKRxe1/5WUMuR0u0nqTF/avdCA==}
+
   '@ethersproject/address@5.7.0':
     resolution: {integrity: sha512-9wYhYt7aghVGo758POM5nqcOMaE168Q6aRLJZwUmiqSrAungkG74gSSeKEIR7ukixesdRZGPgVqme6vmxs1fkA==}
 
+  '@ethersproject/address@5.8.0':
+    resolution: {integrity: sha512-GhH/abcC46LJwshoN+uBNoKVFPxUuZm6dA257z0vZkKmU1+t8xTn8oK7B9qrj8W2rFRMch4gbJl6PmVxjxBEBA==}
+
   '@ethersproject/base64@5.7.0':
     resolution: {integrity: sha512-Dr8tcHt2mEbsZr/mwTPIQAf3Ai0Bks/7gTw9dSqk1mQvhW3XvRlmDJr/4n+wg1JmCl16NZue17CDh8xb/vZ0sQ==}
+
+  '@ethersproject/base64@5.8.0':
+    resolution: {integrity: sha512-lN0oIwfkYj9LbPx4xEkie6rAMJtySbpOAFXSDVQaBnAzYfB4X2Qr+FXJGxMoc3Bxp2Sm8OwvzMrywxyw0gLjIQ==}
 
   '@ethersproject/basex@5.7.0':
     resolution: {integrity: sha512-ywlh43GwZLv2Voc2gQVTKBoVQ1mti3d8HK5aMxsfu/nRDnMmNqaSJ3r3n85HBByT8OpoY96SXM1FogC533T4zw==}
@@ -543,17 +558,29 @@ packages:
   '@ethersproject/bignumber@5.7.0':
     resolution: {integrity: sha512-n1CAdIHRWjSucQO3MC1zPSVgV/6dy/fjL9pMrPP9peL+QxEg9wOsVqwD4+818B6LUEtaXzVHQiuivzRoxPxUGw==}
 
+  '@ethersproject/bignumber@5.8.0':
+    resolution: {integrity: sha512-ZyaT24bHaSeJon2tGPKIiHszWjD/54Sz8t57Toch475lCLljC6MgPmxk7Gtzz+ddNN5LuHea9qhAe0x3D+uYPA==}
+
   '@ethersproject/bytes@5.7.0':
     resolution: {integrity: sha512-nsbxwgFXWh9NyYWo+U8atvmMsSdKJprTcICAkvbBffT75qDocbuggBU0SJiVK2MuTrp0q+xvLkTnGMPK1+uA9A==}
 
+  '@ethersproject/bytes@5.8.0':
+    resolution: {integrity: sha512-vTkeohgJVCPVHu5c25XWaWQOZ4v+DkGoC42/TS2ond+PARCxTJvgTFUNDZovyQ/uAQ4EcpqqowKydcdmRKjg7A==}
+
   '@ethersproject/constants@5.7.0':
     resolution: {integrity: sha512-DHI+y5dBNvkpYUMiRQyxRBYBefZkJfo70VUkUAsRjcPs47muV9evftfZ0PJVCXYbAiCgght0DtcF9srFQmIgWA==}
+
+  '@ethersproject/constants@5.8.0':
+    resolution: {integrity: sha512-wigX4lrf5Vu+axVTIvNsuL6YrV4O5AXl5ubcURKMEME5TnWBouUh0CDTWxZ2GpnRn1kcCgE7l8O5+VbV9QTTcg==}
 
   '@ethersproject/contracts@5.7.0':
     resolution: {integrity: sha512-5GJbzEU3X+d33CdfPhcyS+z8MzsTrBGk/sc+G+59+tPa9yFkl6HQ9D6L0QMgNTA9q8dT0XKxxkyp883XsQvbbg==}
 
   '@ethersproject/hash@5.7.0':
     resolution: {integrity: sha512-qX5WrQfnah1EFnO5zJv1v46a8HW0+E5xuBBDTwMFZLuVTx0tbU2kkx15NqdjxecrLGatQN9FGQKpb1FKdHCt+g==}
+
+  '@ethersproject/hash@5.8.0':
+    resolution: {integrity: sha512-ac/lBcTbEWW/VGJij0CNSw/wPcw9bSRgCB0AIBz8CvED/jfvDoV9hsIIiWfvWmFEi8RcXtlNwp2jv6ozWOsooA==}
 
   '@ethersproject/hdnode@5.7.0':
     resolution: {integrity: sha512-OmyYo9EENBPPf4ERhR7oj6uAtUAhYGqOnIS+jE5pTXvdKBS99ikzq1E7Iv0ZQZ5V36Lqx1qZLeak0Ra16qpeOg==}
@@ -564,17 +591,29 @@ packages:
   '@ethersproject/keccak256@5.7.0':
     resolution: {integrity: sha512-2UcPboeL/iW+pSg6vZ6ydF8tCnv3Iu/8tUmLLzWWGzxWKFFqOBQFLo6uLUv6BDrLgCDfN28RJ/wtByx+jZ4KBg==}
 
+  '@ethersproject/keccak256@5.8.0':
+    resolution: {integrity: sha512-A1pkKLZSz8pDaQ1ftutZoaN46I6+jvuqugx5KYNeQOPqq+JZ0Txm7dlWesCHB5cndJSu5vP2VKptKf7cksERng==}
+
   '@ethersproject/logger@5.7.0':
     resolution: {integrity: sha512-0odtFdXu/XHtjQXJYA3u9G0G8btm0ND5Cu8M7i5vhEcE8/HmF4Lbdqanwyv4uQTr2tx6b7fQRmgLrsnpQlmnig==}
 
+  '@ethersproject/logger@5.8.0':
+    resolution: {integrity: sha512-Qe6knGmY+zPPWTC+wQrpitodgBfH7XoceCGL5bJVejmH+yCS3R8jJm8iiWuvWbG76RUmyEG53oqv6GMVWqunjA==}
+
   '@ethersproject/networks@5.7.1':
     resolution: {integrity: sha512-n/MufjFYv3yFcUyfhnXotyDlNdFb7onmkSy8aQERi2PjNcnWQ66xXxa3XlS8nCcA8aJKJjIIMNJTC7tu80GwpQ==}
+
+  '@ethersproject/networks@5.8.0':
+    resolution: {integrity: sha512-egPJh3aPVAzbHwq8DD7Po53J4OUSsA1MjQp8Vf/OZPav5rlmWUaFLiq8cvQiGK0Z5K6LYzm29+VA/p4RL1FzNg==}
 
   '@ethersproject/pbkdf2@5.7.0':
     resolution: {integrity: sha512-oR/dBRZR6GTyaofd86DehG72hY6NpAjhabkhxgr3X2FpJtJuodEl2auADWBZfhDHgVCbu3/H/Ocq2uC6dpNjjw==}
 
   '@ethersproject/properties@5.7.0':
     resolution: {integrity: sha512-J87jy8suntrAkIZtecpxEPxY//szqr1mlBaYlQ0r4RCaiD2hjheqF9s1LVE8vVuJCXisjIP+JgtK/Do54ej4Sw==}
+
+  '@ethersproject/properties@5.8.0':
+    resolution: {integrity: sha512-PYuiEoQ+FMaZZNGrStmN7+lWjlsoufGIHdww7454FIaGdbe/p5rnaCXTr5MtBYl3NkeoVhHZuyzChPeGeKIpQw==}
 
   '@ethersproject/providers@5.7.2':
     resolution: {integrity: sha512-g34EWZ1WWAVgr4aptGlVBF8mhl3VWjv+8hoAnzStu8Ah22VHBsuGzP17eb6xDVRzw895G4W7vvx60lFFur/1Rg==}
@@ -585,11 +624,17 @@ packages:
   '@ethersproject/rlp@5.7.0':
     resolution: {integrity: sha512-rBxzX2vK8mVF7b0Tol44t5Tb8gomOHkj5guL+HhzQ1yBh/ydjGnpw6at+X6Iw0Kp3OzzzkcKp8N9r0W4kYSs9w==}
 
+  '@ethersproject/rlp@5.8.0':
+    resolution: {integrity: sha512-LqZgAznqDbiEunaUvykH2JAoXTT9NV0Atqk8rQN9nx9SEgThA/WMx5DnW8a9FOufo//6FZOCHZ+XiClzgbqV9Q==}
+
   '@ethersproject/sha2@5.7.0':
     resolution: {integrity: sha512-gKlH42riwb3KYp0reLsFTokByAKoJdgFCwI+CCiX/k+Jm2mbNs6oOaCjYQSlI1+XBVejwH2KrmCbMAT/GnRDQw==}
 
   '@ethersproject/signing-key@5.7.0':
     resolution: {integrity: sha512-MZdy2nL3wO0u7gkB4nA/pEf8lu1TlFswPNmy8AiYkfKTdO6eXBJyUdmHO/ehm/htHw9K/qF8ujnTyUAD+Ry54Q==}
+
+  '@ethersproject/signing-key@5.8.0':
+    resolution: {integrity: sha512-LrPW2ZxoigFi6U6aVkFN/fa9Yx/+4AtIUe4/HACTvKJdhm0eeb107EVCIQcrLZkxaSIgc/eCrX8Q1GtbH+9n3w==}
 
   '@ethersproject/solidity@5.7.0':
     resolution: {integrity: sha512-HmabMd2Dt/raavyaGukF4XxizWKhKQ24DoLtdNbBmNKUOPqwjsKQSdV9GQtj9CBEea9DlzETlVER1gYeXXBGaA==}
@@ -597,8 +642,14 @@ packages:
   '@ethersproject/strings@5.7.0':
     resolution: {integrity: sha512-/9nu+lj0YswRNSH0NXYqrh8775XNyEdUQAuf3f+SmOrnVewcJ5SBNAjF7lpgehKi4abvNNXyf+HX86czCdJ8Mg==}
 
+  '@ethersproject/strings@5.8.0':
+    resolution: {integrity: sha512-qWEAk0MAvl0LszjdfnZ2uC8xbR2wdv4cDabyHiBh3Cldq/T8dPH3V4BbBsAYJUeonwD+8afVXld274Ls+Y1xXg==}
+
   '@ethersproject/transactions@5.7.0':
     resolution: {integrity: sha512-kmcNicCp1lp8qanMTC3RIikGgoJ80ztTyvtsFvCYpSCfkjhD0jZ2LOrnbcuxuToLIUYYf+4XwD1rP+B/erDIhQ==}
+
+  '@ethersproject/transactions@5.8.0':
+    resolution: {integrity: sha512-UglxSDjByHG0TuU17bDfCemZ3AnKO2vYrL5/2n2oXvKzvb7Cz+W9gOWXKARjp2URVwcWlQlPOEQyAviKwT4AHg==}
 
   '@ethersproject/units@5.7.0':
     resolution: {integrity: sha512-pD3xLMy3SJu9kG5xDGI7+xhTEmGXlEqXU4OfNapmfnxLVY4EMSSRp7j1k7eezutBPH7RBN/7QPnwR7hzNlEFeg==}
@@ -608,6 +659,9 @@ packages:
 
   '@ethersproject/web@5.7.1':
     resolution: {integrity: sha512-Gueu8lSvyjBWL4cYsWsjh6MtMwM0+H4HvqFPZfB6dV8ctbP9zFAO73VG1cMWae0FLPCtz0peKPpZY8/ugJJX2w==}
+
+  '@ethersproject/web@5.8.0':
+    resolution: {integrity: sha512-j7+Ksi/9KfGviws6Qtf9Q7KCqRhpwrYKQPs+JBA/rKVFF/yaWLHJEH3zfVP2plVu+eys0d2DlFmhoQJayFewcw==}
 
   '@ethersproject/wordlists@5.7.0':
     resolution: {integrity: sha512-S2TFNJNfHWVHNE6cNDjbVlZ6MgE17MIxMbMg2zv3wn+3XSJGosL1m9ZVv3GXCf/2ymSsQ+hRI5IzoMJTG6aoVA==}
@@ -1117,6 +1171,7 @@ packages:
 
   '@paulmillr/qr@0.2.1':
     resolution: {integrity: sha512-IHnV6A+zxU7XwmKFinmYjUcwlyK9+xkG3/s9KcQhI9BjQKycrJ1JRO+FbNYPwZiPKW3je/DR0k7w8/gLa5eaxQ==}
+    deprecated: 'The package is now available as "qr": npm install qr'
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -1179,9 +1234,8 @@ packages:
     peerDependencies:
       viem: ^2.0.0
 
-  '@rhinestone/modulekit@https://codeload.github.com/jimmychu0807/rhinestonewtf-modulekit/tar.gz/20228012c6f23e7525741d5e09a02c84594427a8':
-    resolution: {tarball: https://codeload.github.com/jimmychu0807/rhinestonewtf-modulekit/tar.gz/20228012c6f23e7525741d5e09a02c84594427a8}
-    version: 0.5.7
+  '@rhinestone/modulekit@0.5.9':
+    resolution: {integrity: sha512-Zc5Qo3dkyVhBo7OQRKOltYd+jlGCtV18TWSmpSvIdXKwUgo5xj8zL73wAwFKTww00zt/wXMbW6Z6ysIQWH3Ezw==}
 
   '@rhinestone/sentinellist@https://codeload.github.com/rhinestonewtf/sentinellist/tar.gz/e722c5cc68c570d535bc3c9f85b3ce90cdc38807':
     resolution: {tarball: https://codeload.github.com/rhinestonewtf/sentinellist/tar.gz/e722c5cc68c570d535bc3c9f85b3ce90cdc38807}
@@ -1227,33 +1281,30 @@ packages:
   '@scure/bip39@1.5.4':
     resolution: {integrity: sha512-TFM4ni0vKvCfBpohoh+/lY05i9gRbSwXWngAsF4CABQxoaOHijxuaZ2R6cStDQ5CHtHO9aGJTr4ksVJASRRyMA==}
 
-  '@semaphore-protocol/contracts@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3#path:/packages/contracts/contracts':
-    resolution: {path: /packages/contracts/contracts, tarball: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3}
-    version: 4.8.2
+  '@semaphore-protocol/contracts@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/contracts/contracts':
+    resolution: {path: /packages/contracts/contracts, tarball: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0}
+    version: 4.9.1
 
-  '@semaphore-protocol/group@4.8.2':
-    resolution: {integrity: sha512-nhjcB3MP32lq47cBSyxVnOYE1P9p8a13rxUzJ51X2NVzqbjhpkM1FsPxPRe3bZRTJA3zG0u6Js0Ffydxa3lkng==}
-
-  '@semaphore-protocol/group@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3#path:/packages/group':
-    resolution: {path: /packages/group, tarball: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3}
-    version: 4.8.2
+  '@semaphore-protocol/group@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/group':
+    resolution: {path: /packages/group, tarball: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0}
+    version: 4.9.1
     hasBin: true
 
-  '@semaphore-protocol/identity@4.8.2':
-    resolution: {integrity: sha512-hb6V20KiPdkIk7C0e2rWj+zuY5Z2Rerr2sbo+goKdX/vlgHoaw1y407ZGarR5eVNEhwkvPMixKZWLuLf/D/82g==}
-
-  '@semaphore-protocol/identity@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3#path:/packages/identity':
-    resolution: {path: /packages/identity, tarball: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3}
-    version: 4.8.2
+  '@semaphore-protocol/identity@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/identity':
+    resolution: {path: /packages/identity, tarball: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0}
+    version: 4.9.1
     hasBin: true
 
-  '@semaphore-protocol/proof@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3#path:/packages/proof':
-    resolution: {path: /packages/proof, tarball: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3}
-    version: 4.8.2
+  '@semaphore-protocol/proof@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/proof':
+    resolution: {path: /packages/proof, tarball: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0}
+    version: 4.9.1
     hasBin: true
+    peerDependencies:
+      '@semaphore-protocol/group': 4.9.1
+      '@semaphore-protocol/identity': 4.9.1
 
-  '@semaphore-protocol/utils@4.8.2':
-    resolution: {integrity: sha512-GAJwDJVic+7P4RnCc6kFMXuHzbkcXwiqNe2WsnycILhkmNB0q0bQHiQAAYyXFeJVcAWvv1SJiYMbfJkgIJsJDQ==}
+  '@semaphore-protocol/utils@4.9.1':
+    resolution: {integrity: sha512-fhiVW/CL+zU/DvKAibBh3thEg2GKTMvNEl2V+fcJYbiyjxjZPfwvVHS/tP2wxBibU8bvtfcuqAk3WFdJXYFG2A==}
 
   '@sentry/core@5.30.0':
     resolution: {integrity: sha512-TmfrII8w1PQZSZgPpUESqjB+jC6MvZJZdLtE/0hZ+SrnKhW3x5WlYLvTXZpcWePYBku7rl2wn1RZu6uT0qCTeg==}
@@ -1526,8 +1577,8 @@ packages:
   '@types/node@20.17.17':
     resolution: {integrity: sha512-/WndGO4kIfMicEQLTi/mDANUu/iVUhT7KboZPdEqqHQ4aTS+3qT3U5gIqWDFV+XouorjfgGqvKILJeHhuQgFYg==}
 
-  '@types/node@22.13.4':
-    resolution: {integrity: sha512-ywP2X0DYtX3y08eFVx5fNIw7/uIv8hYUKgXoK8oayJlLnKcRfEYCxWMVE1XagUdVtCJlZT1AU4LXEABW+L1Peg==}
+  '@types/node@22.13.14':
+    resolution: {integrity: sha512-Zs/Ollc1SJ8nKUAgc7ivOEdIBM8JAKgrqqUYi2J997JuKO7/tpQC+WCetQ1sypiKCQWHdvdg9wBNpUPEWZae7w==}
 
   '@types/node@22.7.5':
     resolution: {integrity: sha512-jML7s2NAzMWc//QSJ1a3prpk78cOPchGvXJsC3C6R6PSMoooztvRVQEz89gmBTBY1SPMaqo5teB4uNHPdetShQ==}
@@ -1764,11 +1815,14 @@ packages:
   '@zk-kit/lean-imt.sol@2.0.0':
     resolution: {integrity: sha512-e9pAm+IXveLPy7b1h05ipIo6U44vp8g/2E+Ocx3PIloMu7lgTXFkIeZj/qZ/iLgEMsF74T0dsg7aVIT0B0nsDA==}
 
-  '@zk-kit/lean-imt@2.2.2':
-    resolution: {integrity: sha512-rscIPEgBBcu9vP/DJ3J+3187G/ObKETl343G5enPawNT81oeQSdHx3e2ZapTC+GfrZ/AS2AHHUOpRS1FfdSwjg==}
+  '@zk-kit/lean-imt@2.2.3':
+    resolution: {integrity: sha512-T6NXLzMuwFjp+hg6WJZqzJ2qyyTmbS9JmxiWW/lmp+VxxJLAO9byAvqd5p/7616AXdHyTbwku0tdX0JDq9Pkng==}
 
   '@zk-kit/utils@1.2.1':
     resolution: {integrity: sha512-H2nTsyWdicVOyvqC5AjgU7tsTgmR6PDrruFJNmlmdhKp7RxEia/E1B1swMZjaasYa2QMp4Zc6oB7cWchty7B2Q==}
+
+  '@zk-kit/utils@1.3.0':
+    resolution: {integrity: sha512-Gqsq5KLDf2WPuZSsNc2KZy25XeK5d5UV9hwLaPEM5wq+GD2qCi1ZBFzNs0OptiJ9GRGtP2J/xptrszWri+pRqQ==}
 
   abbrev@1.0.9:
     resolution: {integrity: sha512-LEyx4aLEC3x6T0UguF6YILf+ntvmOaWsVfENmIW0E9H09vKlLDGelMjjSm0jkDHALj8A8quZ/HapKNigzwge+Q==}
@@ -1803,6 +1857,11 @@ packages:
 
   acorn@8.14.0:
     resolution: {integrity: sha512-cl669nCJTZBsL97OF4kUQm5g5hC2uihk0NxY3WENAC0TYdILVkAyHymAntgxGkl7K+t0cXIrH5siy5S4XkFycA==}
+    engines: {node: '>=0.4.0'}
+    hasBin: true
+
+  acorn@8.14.1:
+    resolution: {integrity: sha512-OvQ/2pUDKmgfCg++xsTX1wGxfTaszcHVcTctW4UJB4hibJx2HXxxO5UmVgyjMa+ZDsiaf5wWLXYpRWMmBI0QHg==}
     engines: {node: '>=0.4.0'}
     hasBin: true
 
@@ -2550,11 +2609,6 @@ packages:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
     engines: {node: '>=10'}
 
-  escodegen@1.14.3:
-    resolution: {integrity: sha512-qFcX0XJkdg+PB3xjZZG/wKSuT1PnQWx57+TVSjIMmILd2yC/6ByYElPwJnslDsuWuSAp4AwJGumarAAmJch5Kw==}
-    engines: {node: '>=4.0'}
-    hasBin: true
-
   escodegen@1.8.1:
     resolution: {integrity: sha512-yhi5S+mNTOuRvyW4gWlg5W1byMaQGWWSYHXsuFZ7GBo7tpyOwi2EdzMP/QWxh9hwkD2m+wDVHJsxhRIj+v/b/A==}
     engines: {node: '>=0.12.0'}
@@ -2686,10 +2740,6 @@ packages:
   estraverse@1.9.3:
     resolution: {integrity: sha512-25w1fMXQrGdoquWnScXZGckOv+Wes+JDnuN/+7ex3SauFRS72r2lFDec0EKPt2YD1wUJ/IrfEex+9yp4hfSOJA==}
     engines: {node: '>=0.10.0'}
-
-  estraverse@4.3.0:
-    resolution: {integrity: sha512-39nnKffWz8xN1BU/2c79n9nB9HDzo0niYUqx6xyqUnyoAnQyyWpOTdZEeiCch8BBu515t4wp9ZmgVfVhn9EBpw==}
-    engines: {node: '>=4.0'}
 
   estraverse@5.3.0:
     resolution: {integrity: sha512-MMdARuVEQziNTeJD8DgMqmhwR11BRQ/cBP+pLtYdSTnf3MIO8fFeiINEbX36ZdNlfU/7A9f3gUw49B3oQsvwBA==}
@@ -2880,13 +2930,13 @@ packages:
     resolution: {integrity: sha512-Ld2g8rrAyMYFXBhEqMz8ZAHBi4J4uS1i/CxGMDnjyFWddMXLVcDp051DZfu+t7+ab7Wv6SMqpWmyFIj5UbfFvg==}
     engines: {node: '>=14'}
 
+  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/6853b9ec7df5dc0c213b05ae67785ad4f4baa0ea:
+    resolution: {tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/6853b9ec7df5dc0c213b05ae67785ad4f4baa0ea}
+    version: 1.9.6
+
   forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/8a225d81aa8e2e013580564588c79abb65eacc9e:
     resolution: {tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/8a225d81aa8e2e013580564588c79abb65eacc9e}
     version: 1.9.3
-
-  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/8ba9031ffcbe25aa0d1224d3ca263a995026e477:
-    resolution: {tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/8ba9031ffcbe25aa0d1224d3ca263a995026e477}
-    version: 1.9.6
 
   forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/b93cf4bc34ff214c099dc970b153f85ade8c9f66:
     resolution: {tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/b93cf4bc34ff214c099dc970b153f85ade8c9f66}
@@ -4018,6 +4068,9 @@ packages:
   preact@10.26.2:
     resolution: {integrity: sha512-0gNmv4qpS9HaN3+40CLBAnKe0ZfyE4ZWo5xKlC1rVrr0ckkEvJvAQqKaHANdFKsGstoxrY4AItZ7kZSGVoVjgg==}
 
+  preact@10.26.4:
+    resolution: {integrity: sha512-KJhO7LBFTjP71d83trW+Ilnjbo+ySsaAgCfXOXUlmGzJ4ygYPWmysm77yg4emwfmoz3b22yvH5IsVFHbhUaH5w==}
+
   prelude-ls@1.1.2:
     resolution: {integrity: sha512-ESF23V4SKG6lVSGZgYNpbsiaAkdab6ZgOxe52p7+Kid3W3u3bxR4Vfd/o21dmN7jSt0IwgZ4v5MUd26FEtXE9w==}
     engines: {node: '>= 0.8.0'}
@@ -4373,9 +4426,9 @@ packages:
   solady@0.0.287:
     resolution: {integrity: sha512-Cti/U83eqIB0e3UNxZvmkwrFrQCT9YLY1vhVguaWnOVLKzv/OU5tQbKLGpamUzMtcLSxaBjBdhaTlmiciGfhHg==}
 
-  solady@https://codeload.github.com/vectorized/solady/tar.gz/09cdd7c8d4b4d83ab7b0c1e313df05310c4fc920:
-    resolution: {tarball: https://codeload.github.com/vectorized/solady/tar.gz/09cdd7c8d4b4d83ab7b0c1e313df05310c4fc920}
-    version: 0.1.10
+  solady@https://codeload.github.com/vectorized/solady/tar.gz/9959042031c380bb4d8e336d021efce59b6d4dfe:
+    resolution: {tarball: https://codeload.github.com/vectorized/solady/tar.gz/9959042031c380bb4d8e336d021efce59b6d4dfe}
+    version: 0.1.12
 
   solarray@https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684:
     resolution: {tarball: https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684}
@@ -4575,8 +4628,8 @@ packages:
   thread-stream@0.15.2:
     resolution: {integrity: sha512-UkEhKIg2pD+fjkHQKyJO3yoIvAP3N6RlNFt2dUhcS1FGvCD1cQa1M/PGknCLFIyZdtJOWQjejp7bdNqmN7zwdA==}
 
-  tinyglobby@0.2.11:
-    resolution: {integrity: sha512-32TmKeeKUahv0Go8WmQgiEp9Y21NuxjwjqiRC1nrUB51YacfSwuB44xgXD+HdIppmMRgjQNPdrHyA6vIybYZ+g==}
+  tinyglobby@0.2.12:
+    resolution: {integrity: sha512-qkf4trmKSIiMTs/E63cxH+ojC2unam7rJ0WrauAzpT3ECNTxGRMlaXxVbfxMUC/w0LaYk6jQ4y/nGR9uBO3tww==}
     engines: {node: '>=12.0.0'}
 
   tmp@0.0.33:
@@ -4741,8 +4794,8 @@ packages:
   undici-types@6.20.0:
     resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
 
-  undici@5.28.5:
-    resolution: {integrity: sha512-zICwjrDrcrUE0pyyJc1I2QzBkLM8FINsgOrt6WjA+BgajVq9Nxu2PbFFXUrAggLfDXlZGZBVZYw7WNV5KiBiBA==}
+  undici@5.29.0:
+    resolution: {integrity: sha512-raqeBD6NQK4SkWhQzeYKd1KmIG6dllBOTt55Rmkt4HtI9mwdWtJljnrXjAFUBLTSN67HWrOIZ3EPF4kjUw80Bg==}
     engines: {node: '>=14.0'}
 
   universalify@0.1.2:
@@ -5121,7 +5174,7 @@ snapshots:
       eth-json-rpc-filters: 6.0.1
       eventemitter3: 5.0.1
       keccak: 3.0.4
-      preact: 10.26.2
+      preact: 10.26.4
       sha.js: 2.4.11
     transitivePeerDependencies:
       - supports-color
@@ -5295,6 +5348,18 @@ snapshots:
       '@ethersproject/properties': 5.7.0
       '@ethersproject/strings': 5.7.0
 
+  '@ethersproject/abi@5.8.0':
+    dependencies:
+      '@ethersproject/address': 5.8.0
+      '@ethersproject/bignumber': 5.8.0
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/constants': 5.8.0
+      '@ethersproject/hash': 5.8.0
+      '@ethersproject/keccak256': 5.8.0
+      '@ethersproject/logger': 5.8.0
+      '@ethersproject/properties': 5.8.0
+      '@ethersproject/strings': 5.8.0
+
   '@ethersproject/abstract-provider@5.7.0':
     dependencies:
       '@ethersproject/bignumber': 5.7.0
@@ -5305,6 +5370,16 @@ snapshots:
       '@ethersproject/transactions': 5.7.0
       '@ethersproject/web': 5.7.1
 
+  '@ethersproject/abstract-provider@5.8.0':
+    dependencies:
+      '@ethersproject/bignumber': 5.8.0
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/logger': 5.8.0
+      '@ethersproject/networks': 5.8.0
+      '@ethersproject/properties': 5.8.0
+      '@ethersproject/transactions': 5.8.0
+      '@ethersproject/web': 5.8.0
+
   '@ethersproject/abstract-signer@5.7.0':
     dependencies:
       '@ethersproject/abstract-provider': 5.7.0
@@ -5312,6 +5387,14 @@ snapshots:
       '@ethersproject/bytes': 5.7.0
       '@ethersproject/logger': 5.7.0
       '@ethersproject/properties': 5.7.0
+
+  '@ethersproject/abstract-signer@5.8.0':
+    dependencies:
+      '@ethersproject/abstract-provider': 5.8.0
+      '@ethersproject/bignumber': 5.8.0
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/logger': 5.8.0
+      '@ethersproject/properties': 5.8.0
 
   '@ethersproject/address@5.7.0':
     dependencies:
@@ -5321,9 +5404,21 @@ snapshots:
       '@ethersproject/logger': 5.7.0
       '@ethersproject/rlp': 5.7.0
 
+  '@ethersproject/address@5.8.0':
+    dependencies:
+      '@ethersproject/bignumber': 5.8.0
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/keccak256': 5.8.0
+      '@ethersproject/logger': 5.8.0
+      '@ethersproject/rlp': 5.8.0
+
   '@ethersproject/base64@5.7.0':
     dependencies:
       '@ethersproject/bytes': 5.7.0
+
+  '@ethersproject/base64@5.8.0':
+    dependencies:
+      '@ethersproject/bytes': 5.8.0
 
   '@ethersproject/basex@5.7.0':
     dependencies:
@@ -5336,13 +5431,27 @@ snapshots:
       '@ethersproject/logger': 5.7.0
       bn.js: 5.2.1
 
+  '@ethersproject/bignumber@5.8.0':
+    dependencies:
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/logger': 5.8.0
+      bn.js: 5.2.1
+
   '@ethersproject/bytes@5.7.0':
     dependencies:
       '@ethersproject/logger': 5.7.0
 
+  '@ethersproject/bytes@5.8.0':
+    dependencies:
+      '@ethersproject/logger': 5.8.0
+
   '@ethersproject/constants@5.7.0':
     dependencies:
       '@ethersproject/bignumber': 5.7.0
+
+  '@ethersproject/constants@5.8.0':
+    dependencies:
+      '@ethersproject/bignumber': 5.8.0
 
   '@ethersproject/contracts@5.7.0':
     dependencies:
@@ -5368,6 +5477,18 @@ snapshots:
       '@ethersproject/logger': 5.7.0
       '@ethersproject/properties': 5.7.0
       '@ethersproject/strings': 5.7.0
+
+  '@ethersproject/hash@5.8.0':
+    dependencies:
+      '@ethersproject/abstract-signer': 5.8.0
+      '@ethersproject/address': 5.8.0
+      '@ethersproject/base64': 5.8.0
+      '@ethersproject/bignumber': 5.8.0
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/keccak256': 5.8.0
+      '@ethersproject/logger': 5.8.0
+      '@ethersproject/properties': 5.8.0
+      '@ethersproject/strings': 5.8.0
 
   '@ethersproject/hdnode@5.7.0':
     dependencies:
@@ -5405,11 +5526,22 @@ snapshots:
       '@ethersproject/bytes': 5.7.0
       js-sha3: 0.8.0
 
+  '@ethersproject/keccak256@5.8.0':
+    dependencies:
+      '@ethersproject/bytes': 5.8.0
+      js-sha3: 0.8.0
+
   '@ethersproject/logger@5.7.0': {}
+
+  '@ethersproject/logger@5.8.0': {}
 
   '@ethersproject/networks@5.7.1':
     dependencies:
       '@ethersproject/logger': 5.7.0
+
+  '@ethersproject/networks@5.8.0':
+    dependencies:
+      '@ethersproject/logger': 5.8.0
 
   '@ethersproject/pbkdf2@5.7.0':
     dependencies:
@@ -5419,6 +5551,10 @@ snapshots:
   '@ethersproject/properties@5.7.0':
     dependencies:
       '@ethersproject/logger': 5.7.0
+
+  '@ethersproject/properties@5.8.0':
+    dependencies:
+      '@ethersproject/logger': 5.8.0
 
   '@ethersproject/providers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
@@ -5456,6 +5592,11 @@ snapshots:
       '@ethersproject/bytes': 5.7.0
       '@ethersproject/logger': 5.7.0
 
+  '@ethersproject/rlp@5.8.0':
+    dependencies:
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/logger': 5.8.0
+
   '@ethersproject/sha2@5.7.0':
     dependencies:
       '@ethersproject/bytes': 5.7.0
@@ -5469,6 +5610,15 @@ snapshots:
       '@ethersproject/properties': 5.7.0
       bn.js: 5.2.1
       elliptic: 6.5.4
+      hash.js: 1.1.7
+
+  '@ethersproject/signing-key@5.8.0':
+    dependencies:
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/logger': 5.8.0
+      '@ethersproject/properties': 5.8.0
+      bn.js: 5.2.1
+      elliptic: 6.6.1
       hash.js: 1.1.7
 
   '@ethersproject/solidity@5.7.0':
@@ -5486,6 +5636,12 @@ snapshots:
       '@ethersproject/constants': 5.7.0
       '@ethersproject/logger': 5.7.0
 
+  '@ethersproject/strings@5.8.0':
+    dependencies:
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/constants': 5.8.0
+      '@ethersproject/logger': 5.8.0
+
   '@ethersproject/transactions@5.7.0':
     dependencies:
       '@ethersproject/address': 5.7.0
@@ -5497,6 +5653,18 @@ snapshots:
       '@ethersproject/properties': 5.7.0
       '@ethersproject/rlp': 5.7.0
       '@ethersproject/signing-key': 5.7.0
+
+  '@ethersproject/transactions@5.8.0':
+    dependencies:
+      '@ethersproject/address': 5.8.0
+      '@ethersproject/bignumber': 5.8.0
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/constants': 5.8.0
+      '@ethersproject/keccak256': 5.8.0
+      '@ethersproject/logger': 5.8.0
+      '@ethersproject/properties': 5.8.0
+      '@ethersproject/rlp': 5.8.0
+      '@ethersproject/signing-key': 5.8.0
 
   '@ethersproject/units@5.7.0':
     dependencies:
@@ -5529,6 +5697,14 @@ snapshots:
       '@ethersproject/logger': 5.7.0
       '@ethersproject/properties': 5.7.0
       '@ethersproject/strings': 5.7.0
+
+  '@ethersproject/web@5.8.0':
+    dependencies:
+      '@ethersproject/base64': 5.8.0
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/logger': 5.8.0
+      '@ethersproject/properties': 5.8.0
+      '@ethersproject/strings': 5.8.0
 
   '@ethersproject/wordlists@5.7.0':
     dependencies:
@@ -6060,14 +6236,14 @@ snapshots:
       '@nomicfoundation/solidity-analyzer-linux-x64-musl': 0.1.2
       '@nomicfoundation/solidity-analyzer-win32-x64-msvc': 0.1.2
 
-  '@nomiclabs/hardhat-etherscan@2.1.8(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))':
+  '@nomiclabs/hardhat-etherscan@2.1.8(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))':
     dependencies:
       '@ethersproject/abi': 5.7.0
       '@ethersproject/address': 5.7.0
       cbor: 5.2.0
       debug: 4.4.0(supports-color@8.1.1)
       fs-extra: 7.0.1
-      hardhat: 2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10)
+      hardhat: 2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10)
       node-fetch: 2.7.0
       semver: 6.3.1
     transitivePeerDependencies:
@@ -6142,15 +6318,15 @@ snapshots:
     dependencies:
       react: 19.0.0
 
-  '@rhinestone/erc4337-validation@0.0.5(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10)':
+  '@rhinestone/erc4337-validation@0.0.5(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10)':
     dependencies:
       '@openzeppelin/contracts': 5.0.1
-      account-abstraction: accountabstraction@https://codeload.github.com/kopy-kat/account-abstraction/tar.gz/c5887153fbfe3ed09b2637cac39873f96d676f38(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10)
-      account-abstraction-v0.6: accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/7174d6d845618dbd11cee68eefa715f5263690b6(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10)
+      account-abstraction: accountabstraction@https://codeload.github.com/kopy-kat/account-abstraction/tar.gz/c5887153fbfe3ed09b2637cac39873f96d676f38(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10)
+      account-abstraction-v0.6: accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/7174d6d845618dbd11cee68eefa715f5263690b6(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10)
       ds-test: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0
       forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/8a225d81aa8e2e013580564588c79abb65eacc9e
       prettier: 2.8.8
-      solady: https://codeload.github.com/vectorized/solady/tar.gz/09cdd7c8d4b4d83ab7b0c1e313df05310c4fc920
+      solady: https://codeload.github.com/vectorized/solady/tar.gz/9959042031c380bb4d8e336d021efce59b6d4dfe
     transitivePeerDependencies:
       - bufferutil
       - encoding
@@ -6167,17 +6343,17 @@ snapshots:
       tslib: 2.8.1
       viem: 2.22.23(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)
 
-  '@rhinestone/modulekit@https://codeload.github.com/jimmychu0807/rhinestonewtf-modulekit/tar.gz/20228012c6f23e7525741d5e09a02c84594427a8(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10)':
+  '@rhinestone/modulekit@0.5.9(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10)':
     dependencies:
-      '@ERC4337/account-abstraction': accountabstraction@https://codeload.github.com/kopy-kat/account-abstraction/tar.gz/c5887153fbfe3ed09b2637cac39873f96d676f38(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10)
-      '@ERC4337/account-abstraction-v0.6': accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/7174d6d845618dbd11cee68eefa715f5263690b6(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10)
+      '@ERC4337/account-abstraction': accountabstraction@https://codeload.github.com/kopy-kat/account-abstraction/tar.gz/c5887153fbfe3ed09b2637cac39873f96d676f38(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10)
+      '@ERC4337/account-abstraction-v0.6': accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/7174d6d845618dbd11cee68eefa715f5263690b6(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10)
       '@prb/math': 4.1.0
-      '@rhinestone/erc4337-validation': 0.0.5(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10)
+      '@rhinestone/erc4337-validation': 0.0.5(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10)
       '@rhinestone/sentinellist': https://codeload.github.com/rhinestonewtf/sentinellist/tar.gz/e722c5cc68c570d535bc3c9f85b3ce90cdc38807
       ds-test: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0
       excessively-safe-call: '@nomad-xyz/excessively-safe-call@https://codeload.github.com/nomad-xyz/ExcessivelySafeCall/tar.gz/81cd99ce3e69117d665d7601c330ea03b97acce0'
-      forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/b93cf4bc34ff214c099dc970b153f85ade8c9f66
-      solady: https://codeload.github.com/vectorized/solady/tar.gz/09cdd7c8d4b4d83ab7b0c1e313df05310c4fc920
+      forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/6853b9ec7df5dc0c213b05ae67785ad4f4baa0ea
+      solady: https://codeload.github.com/vectorized/solady/tar.gz/9959042031c380bb4d8e336d021efce59b6d4dfe
       solarray: https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684
       solhint: 5.0.5(typescript@5.7.3)
     transitivePeerDependencies:
@@ -6193,7 +6369,7 @@ snapshots:
 
   '@rhinestone/sentinellist@https://codeload.github.com/rhinestonewtf/sentinellist/tar.gz/e722c5cc68c570d535bc3c9f85b3ce90cdc38807':
     dependencies:
-      forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/8ba9031ffcbe25aa0d1224d3ca263a995026e477
+      forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/6853b9ec7df5dc0c213b05ae67785ad4f4baa0ea
 
   '@rtsao/scc@1.1.0': {}
 
@@ -6258,55 +6434,40 @@ snapshots:
       '@noble/hashes': 1.7.1
       '@scure/base': 1.2.4
 
-  '@semaphore-protocol/contracts@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3#path:/packages/contracts/contracts':
+  '@semaphore-protocol/contracts@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/contracts/contracts':
     dependencies:
       '@zk-kit/lean-imt.sol': 2.0.0
 
-  '@semaphore-protocol/group@4.8.2':
+  '@semaphore-protocol/group@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/group':
     dependencies:
-      '@zk-kit/lean-imt': 2.2.2
-      '@zk-kit/utils': 1.2.1
-      poseidon-lite: 0.3.0
-
-  '@semaphore-protocol/group@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3#path:/packages/group':
-    dependencies:
-      '@zk-kit/lean-imt': 2.2.2
-      '@zk-kit/utils': 1.2.1
+      '@zk-kit/lean-imt': 2.2.3
+      '@zk-kit/utils': 1.3.0
       commander: 12.1.0
       poseidon-lite: 0.3.0
 
-  '@semaphore-protocol/identity@4.8.2':
+  '@semaphore-protocol/identity@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/identity':
     dependencies:
       '@zk-kit/baby-jubjub': 1.0.3
       '@zk-kit/eddsa-poseidon': 1.0.4
-      '@zk-kit/utils': 1.2.1
-      poseidon-lite: 0.3.0
-
-  '@semaphore-protocol/identity@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3#path:/packages/identity':
-    dependencies:
-      '@zk-kit/baby-jubjub': 1.0.3
-      '@zk-kit/eddsa-poseidon': 1.0.4
-      '@zk-kit/utils': 1.2.1
+      '@zk-kit/utils': 1.3.0
       commander: 12.1.0
       poseidon-lite: 0.3.0
-      tsx: 4.19.2
 
-  '@semaphore-protocol/proof@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/764ad43a3587b8e6f7f8c5b946efd83a6b6b58c3#path:/packages/proof(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
+  '@semaphore-protocol/proof@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/proof(@semaphore-protocol/group@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/group)(@semaphore-protocol/identity@https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/identity)(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
-      '@semaphore-protocol/group': 4.8.2
-      '@semaphore-protocol/identity': 4.8.2
-      '@semaphore-protocol/utils': 4.8.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@semaphore-protocol/group': https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/group
+      '@semaphore-protocol/identity': https://codeload.github.com/jimmychu0807/semaphore/tar.gz/fd04bf1a818df86aeeea0f2966a5f48e2652dad0#path:/packages/identity
+      '@semaphore-protocol/utils': 4.9.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@zk-kit/artifacts': 1.8.0
-      '@zk-kit/utils': 1.2.1
+      '@zk-kit/utils': 1.3.0
       commander: 12.1.0
       ethers: 6.13.4(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       snarkjs: 0.7.4
-      tsx: 4.19.2
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@semaphore-protocol/utils@4.8.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
+  '@semaphore-protocol/utils@4.9.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
       ethers: 6.13.4(bufferutil@4.0.9)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
@@ -6563,10 +6724,10 @@ snapshots:
   '@tsconfig/node16@1.0.4':
     optional: true
 
-  '@typechain/hardhat@2.3.1(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))':
+  '@typechain/hardhat@2.3.1(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))':
     dependencies:
       fs-extra: 9.1.0
-      hardhat: 2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10)
+      hardhat: 2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10)
       lodash: 4.17.21
       typechain: 5.2.0(typescript@5.7.3)
 
@@ -6613,7 +6774,7 @@ snapshots:
     dependencies:
       undici-types: 6.19.8
 
-  '@types/node@22.13.4':
+  '@types/node@22.13.14':
     dependencies:
       undici-types: 6.20.0
     optional: true
@@ -7214,11 +7375,15 @@ snapshots:
     dependencies:
       poseidon-solidity: 0.0.5
 
-  '@zk-kit/lean-imt@2.2.2':
+  '@zk-kit/lean-imt@2.2.3':
     dependencies:
-      '@zk-kit/utils': 1.2.1
+      '@zk-kit/utils': 1.3.0
 
   '@zk-kit/utils@1.2.1':
+    dependencies:
+      buffer: 6.0.3
+
+  '@zk-kit/utils@1.3.0':
     dependencies:
       buffer: 6.0.3
 
@@ -7228,19 +7393,19 @@ snapshots:
     optionalDependencies:
       typescript: 5.7.3
 
-  accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/7174d6d845618dbd11cee68eefa715f5263690b6(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10):
+  accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/7174d6d845618dbd11cee68eefa715f5263690b6(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10):
     dependencies:
       '@gnosis.pm/safe-contracts': 1.3.0(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))
-      '@nomiclabs/hardhat-etherscan': 2.1.8(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))
+      '@nomiclabs/hardhat-etherscan': 2.1.8(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))
       '@openzeppelin/contracts': 4.9.6
       '@thehubbleproject/bls': 0.5.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@typechain/hardhat': 2.3.1(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
+      '@typechain/hardhat': 2.3.1(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
       '@types/mocha': 9.1.1
       ethereumjs-util: 7.1.5
       ethereumjs-wallet: 1.0.2
       hardhat-deploy: 0.11.45(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      hardhat-deploy-ethers: 0.3.0-beta.13(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))
-      solidity-coverage: 0.8.14(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))
+      hardhat-deploy-ethers: 0.3.0-beta.13(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))
+      solidity-coverage: 0.8.14(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))
       source-map-support: 0.5.21
       table: 6.9.0
       typescript: 4.9.5
@@ -7254,20 +7419,20 @@ snapshots:
       - typechain
       - utf-8-validate
 
-  accountabstraction@https://codeload.github.com/kopy-kat/account-abstraction/tar.gz/c5887153fbfe3ed09b2637cac39873f96d676f38(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10):
+  accountabstraction@https://codeload.github.com/kopy-kat/account-abstraction/tar.gz/c5887153fbfe3ed09b2637cac39873f96d676f38(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(utf-8-validate@5.0.10):
     dependencies:
-      '@nomiclabs/hardhat-etherscan': 2.1.8(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))
+      '@nomiclabs/hardhat-etherscan': 2.1.8(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))
       '@openzeppelin/contracts': 5.2.0
       '@thehubbleproject/bls': 0.5.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@typechain/hardhat': 2.3.1(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
+      '@typechain/hardhat': 2.3.1(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))
       '@types/debug': 4.1.12
       '@types/mocha': 9.1.1
       debug: 4.4.0(supports-color@8.1.1)
       ethereumjs-util: 7.1.5
       ethereumjs-wallet: 1.0.2
       hardhat-deploy: 0.11.45(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      hardhat-deploy-ethers: 0.3.0-beta.13(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))
-      solidity-coverage: 0.8.14(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))
+      hardhat-deploy-ethers: 0.3.0-beta.13(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))
+      solidity-coverage: 0.8.14(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))
       source-map-support: 0.5.21
       table: 6.9.0
       typescript: 4.9.5
@@ -7287,10 +7452,13 @@ snapshots:
 
   acorn-walk@8.3.4:
     dependencies:
-      acorn: 8.14.0
+      acorn: 8.14.1
     optional: true
 
   acorn@8.14.0: {}
+
+  acorn@8.14.1:
+    optional: true
 
   adm-zip@0.4.16: {}
 
@@ -8158,15 +8326,6 @@ snapshots:
 
   escape-string-regexp@4.0.0: {}
 
-  escodegen@1.14.3:
-    dependencies:
-      esprima: 4.0.1
-      estraverse: 4.3.0
-      esutils: 2.0.3
-      optionator: 0.8.3
-    optionalDependencies:
-      source-map: 0.6.1
-
   escodegen@1.8.1:
     dependencies:
       esprima: 2.7.3
@@ -8376,8 +8535,6 @@ snapshots:
       estraverse: 5.3.0
 
   estraverse@1.9.3: {}
-
-  estraverse@4.3.0: {}
 
   estraverse@5.3.0: {}
 
@@ -8658,9 +8815,9 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
-  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/8a225d81aa8e2e013580564588c79abb65eacc9e: {}
+  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/6853b9ec7df5dc0c213b05ae67785ad4f4baa0ea: {}
 
-  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/8ba9031ffcbe25aa0d1224d3ca263a995026e477: {}
+  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/8a225d81aa8e2e013580564588c79abb65eacc9e: {}
 
   forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/b93cf4bc34ff214c099dc970b153f85ade8c9f66: {}
 
@@ -8878,10 +9035,10 @@ snapshots:
     optionalDependencies:
       uglify-js: 3.19.3
 
-  hardhat-deploy-ethers@0.3.0-beta.13(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10)):
+  hardhat-deploy-ethers@0.3.0-beta.13(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10)):
     dependencies:
       ethers: 5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      hardhat: 2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10)
+      hardhat: 2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10)
 
   hardhat-deploy@0.11.45(bufferutil@4.0.9)(utf-8-validate@5.0.10):
     dependencies:
@@ -8914,9 +9071,9 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10):
+  hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10):
     dependencies:
-      '@ethersproject/abi': 5.7.0
+      '@ethersproject/abi': 5.8.0
       '@metamask/eth-sig-util': 4.0.1
       '@nomicfoundation/edr': 0.7.0
       '@nomicfoundation/ethereumjs-common': 4.0.4
@@ -8955,13 +9112,13 @@ snapshots:
       solc: 0.8.26(debug@4.4.0)
       source-map-support: 0.5.21
       stacktrace-parser: 0.1.11
-      tinyglobby: 0.2.11
+      tinyglobby: 0.2.12
       tsort: 0.0.1
-      undici: 5.28.5
+      undici: 5.29.0
       uuid: 8.3.2
       ws: 7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10)
     optionalDependencies:
-      ts-node: 10.9.2(@types/node@22.13.4)(typescript@5.7.3)
+      ts-node: 10.9.2(@types/node@22.13.14)(typescript@5.7.3)
       typescript: 5.7.3
     transitivePeerDependencies:
       - bufferutil
@@ -9927,6 +10084,8 @@ snapshots:
 
   preact@10.26.2: {}
 
+  preact@10.26.4: {}
+
   prelude-ls@1.1.2: {}
 
   prelude-ls@1.2.1: {}
@@ -10357,7 +10516,7 @@ snapshots:
 
   solady@0.0.287: {}
 
-  solady@https://codeload.github.com/vectorized/solady/tar.gz/09cdd7c8d4b4d83ab7b0c1e313df05310c4fc920: {}
+  solady@https://codeload.github.com/vectorized/solady/tar.gz/9959042031c380bb4d8e336d021efce59b6d4dfe: {}
 
   solarray@https://codeload.github.com/sablier-labs/solarray/tar.gz/6bf10cb34cdace52a3ba5fe437e78cc82df92684: {}
 
@@ -10398,7 +10557,7 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  solidity-coverage@0.8.14(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10)):
+  solidity-coverage@0.8.14(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10)):
     dependencies:
       '@ethersproject/abi': 5.7.0
       '@solidity-parser/parser': 0.19.0
@@ -10409,7 +10568,7 @@ snapshots:
       ghost-testrpc: 0.0.2
       global-modules: 2.0.0
       globby: 10.0.2
-      hardhat: 2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10)
+      hardhat: 2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10)
       jsonschema: 1.5.0
       lodash: 4.17.21
       mocha: 10.8.2
@@ -10457,7 +10616,7 @@ snapshots:
 
   static-eval@2.0.2:
     dependencies:
-      escodegen: 1.14.3
+      escodegen: 1.8.1
 
   statuses@2.0.1: {}
 
@@ -10605,7 +10764,7 @@ snapshots:
     dependencies:
       real-require: 0.1.0
 
-  tinyglobby@0.2.11:
+  tinyglobby@0.2.12:
     dependencies:
       fdir: 6.4.3(picomatch@4.0.2)
       picomatch: 4.0.2
@@ -10632,15 +10791,15 @@ snapshots:
     dependencies:
       typescript: 5.7.3
 
-  ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3):
+  ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.11
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
-      '@types/node': 22.13.4
-      acorn: 8.14.0
+      '@types/node': 22.13.14
+      acorn: 8.14.1
       acorn-walk: 8.3.4
       arg: 4.1.3
       create-require: 1.1.1
@@ -10790,7 +10949,7 @@ snapshots:
   undici-types@6.20.0:
     optional: true
 
-  undici@5.28.5:
+  undici@5.29.0:
     dependencies:
       '@fastify/busboy': 2.1.1
 
