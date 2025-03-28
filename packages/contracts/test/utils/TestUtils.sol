@@ -116,9 +116,9 @@ library IdentityLib {
 
     function getSempahoreProof(
         Identity self,
-        uint256 groupId,
         uint256[] memory members,
-        bytes32 hash
+        bytes32 scope,
+        string calldata message
     )
         public
         returns (ISemaphore.SemaphoreProof memory proof)
@@ -129,8 +129,8 @@ library IdentityLib {
         cmd[2] = "gen-proof";
         cmd[3] = vm.toString(Identity.unwrap(self));
         cmd[4] = IdentityLib._uint256ArrToString(members);
-        cmd[5] = LibString.toString(groupId);
-        cmd[6] = LibString.toHexString(uint256(hash));
+        cmd[5] = LibString.toHexString(uint256(scope));
+        cmd[6] = message;
 
         bytes memory outBytes = vm.ffi(cmd);
         string memory outStr = string(outBytes);

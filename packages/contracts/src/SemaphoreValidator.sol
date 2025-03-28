@@ -13,8 +13,8 @@ import { Identity } from "src/utils/Identity.sol";
 import {
     SIGNATURE_LEN,
     MIN_TARGET_CALLDATA_LEN,
-    SEMAPHORE_EXECUTOR,
-    SEMAPHORE_VALIDATOR,
+    SEMAPHORE_EXECUTOR_NAME,
+    SEMAPHORE_VALIDATOR_NAME,
     VERSION
 } from "src/utils/Constants.sol";
 
@@ -39,7 +39,7 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
     /**
      * Storage
      */
-    ISemaphoreExecutor public immutable semaphoreExecutor;
+    ISemaphoreExecutor public immutable SEMAPHORE_EXECUTOR;
     mapping(address account => bool installed) public acctInstalled;
 
     // Ensure the following match with the 3 function calls.
@@ -49,24 +49,24 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
 
     constructor(ISemaphoreExecutor _semaphoreExecutor) {
         if (
-            !LibBytes.eq(bytes(_semaphoreExecutor.name()), bytes(SEMAPHORE_EXECUTOR))
+            !LibBytes.eq(bytes(_semaphoreExecutor.name()), bytes(SEMAPHORE_EXECUTOR_NAME))
                 || !_semaphoreExecutor.isModuleType(TYPE_EXECUTOR)
         ) {
             revert NotValidSemaphoreExecutor(address(_semaphoreExecutor));
         }
-        semaphoreExecutor = _semaphoreExecutor;
+        SEMAPHORE_EXECUTOR = _semaphoreExecutor;
     }
 
     /**
      * Config
      */
     function isInitialized(address account) external view override returns (bool) {
-        return acctInstalled[account] && semaphoreExecutor.isInitialized(account);
+        return acctInstalled[account] && SEMAPHORE_EXECUTOR.isInitialized(account);
     }
 
     function onInstall(bytes calldata) external override {
         address account = msg.sender;
-        if (!semaphoreExecutor.isInitialized(account)) {
+        if (!SEMAPHORE_EXECUTOR.isInitialized(account)) {
             revert SemaphoreExecutorNotInitialized(account);
         }
 
@@ -179,7 +179,7 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
     {
         // you want to exclude initiateTx, signTx, executeTx from needing tx count.
         // you just need to ensure they are a valid proof from the semaphore group members
-        (bool found,) = semaphoreExecutor.getGroupId(account);
+        (bool found,) = SEMAPHORE_EXECUTOR.getGroupId(account);
         if (!found) revert NoSemaphoreModuleInstalled(account);
 
         // The userOp.signature is 160 bytes containing:
@@ -193,7 +193,7 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
         // Verify if the identity commitment is one of the semaphore group members
         bytes memory pubKey = signature[0:64];
         uint256 cmt = Identity.getCommitment(pubKey);
-        if (!semaphoreExecutor.accountHasMember(account, cmt)) {
+        if (!SEMAPHORE_EXECUTOR.accountHasMember(account, cmt)) {
             revert MemberNotExists(account, pubKey);
         }
 
@@ -206,7 +206,7 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
         address target = address(bytes20(targetCallData[0:20]));
         bytes4 funcSel = bytes4(targetCallData[52:56]);
 
-        if (target != address(semaphoreExecutor)) revert InvalidTargetAddress(target);
+        if (target != address(SEMAPHORE_EXECUTOR)) revert InvalidTargetAddress(target);
 
         // We only allow calls to `initiateTx()`, `signTx()`, and `executeTx()` to pass,
         //   and reject the rest.
@@ -227,7 +227,7 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
      * @return name The name of the module
      */
     function name() external pure returns (string memory) {
-        return SEMAPHORE_VALIDATOR;
+        return SEMAPHORE_VALIDATOR_NAME;
     }
 
     /**

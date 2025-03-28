@@ -13,8 +13,8 @@ import { ISemaphoreExecutor } from "src/interfaces/ISemaphoreExecutor.sol";
 import {
     CMT_BYTELEN,
     MAX_MEMBERS,
-    SEMAPHORE_VALIDATOR,
-    SEMAPHORE_EXECUTOR,
+    SEMAPHORE_VALIDATOR_NAME,
+    SEMAPHORE_EXECUTOR_NAME,
     VERSION
 } from "src/utils/Constants.sol";
 import { SentinelList4337Lib, SENTINEL } from "sentinellist/SentinelList4337.sol";
@@ -68,8 +68,8 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     /**
      * Storage
      */
-    ISemaphore public immutable semaphore;
-    ISemaphoreGroups public immutable groups;
+    ISemaphore public immutable SEMAPHORE;
+    ISemaphoreGroups public immutable GROUPS;
     address public semaphoreValidatorAddr;
 
     mapping(address account => uint256 groupId) public groupMapping;
@@ -84,8 +84,8 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     mapping(address account => uint256 seqNum) public acctSeqNum;
 
     constructor(ISemaphore _semaphore) {
-        semaphore = _semaphore;
-        groups = ISemaphoreGroups(address(_semaphore));
+        SEMAPHORE = _semaphore;
+        GROUPS = ISemaphoreGroups(address(_semaphore));
     }
 
     modifier moduleInstalled() {
@@ -128,11 +128,11 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         // Completed all checks by this point. Write to the storage.
         thresholds[account] = threshold;
 
-        uint256 groupId = semaphore.createGroup();
+        uint256 groupId = SEMAPHORE.createGroup();
         groupMapping[account] = groupId;
 
         // Add members to the group
-        semaphore.addMembers(groupId, cmts);
+        SEMAPHORE.addMembers(groupId, cmts);
         acctMembers.init(account);
         for (uint256 i = 0; i < cmts.length; i++) {
             // TODO: update this to uint256
@@ -206,7 +206,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
 
         ISemaphoreValidator val = ISemaphoreValidator(target);
         if (
-            !LibBytes.eq(bytes(val.name()), bytes(SEMAPHORE_VALIDATOR))
+            !LibBytes.eq(bytes(val.name()), bytes(SEMAPHORE_VALIDATOR_NAME))
                 || !val.isModuleType(TYPE_VALIDATOR)
         ) {
             revert InvalidSemaphoreValidator(target);
@@ -240,10 +240,10 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
 
         for (uint256 i = 0; i < cmts.length; ++i) {
             if (cmts[i] == uint256(0)) revert InvalidCommitment(account);
-            if (groups.hasMember(groupId, cmts[i])) revert IsMemberAlready(account, cmts[i]);
+            if (GROUPS.hasMember(groupId, cmts[i])) revert IsMemberAlready(account, cmts[i]);
         }
 
-        semaphore.addMembers(groupId, cmts);
+        SEMAPHORE.addMembers(groupId, cmts);
         for (uint256 i = 0; i < cmts.length; i++) {
             // TODO: update to uint256
             acctMembers.push(account, address(uint160(cmts[i])));
@@ -266,11 +266,11 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         if (memberCount == thresholds[account]) revert MemberCntReachesThreshold(account);
 
         uint256 groupId = groupMapping[account];
-        if (!groups.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
+        if (!GROUPS.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
 
         // TODO: update acctMembers to support uint256
         acctMembers.pop(account, address(uint160(prevCmt)), address(uint160(cmt)));
-        semaphore.removeMember(groupId, cmt, merkleProofSiblings);
+        SEMAPHORE.removeMember(groupId, cmt, merkleProofSiblings);
 
         emit RemovedMember(account, cmt);
     }
@@ -304,7 +304,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         if (ecc.count != 0) revert TxHasBeenInitiated(account, txHash);
 
         // finally, check semaphore proof
-        try semaphore.validateProof(groupId, proof) {
+        try SEMAPHORE.validateProof(groupId, proof) {
             // By this point, the proof also passed semaphore check. Start writing to the storage
             acctSeqNum[account] += 1;
             ecc.targetAddr = target;
@@ -339,7 +339,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         ExtCallCount storage ecc = acctTxCount[account][txHash];
         if (ecc.count == 0) revert TxNotFound(account, txHash);
 
-        try semaphore.validateProof(groupId, proof) {
+        try SEMAPHORE.validateProof(groupId, proof) {
             ecc.count += 1;
             emit SignedTx(account, txHash);
 
@@ -403,7 +403,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
      * @return name The name of the module
      */
     function name() external pure returns (string memory) {
-        return SEMAPHORE_EXECUTOR;
+        return SEMAPHORE_EXECUTOR_NAME;
     }
 
     /**

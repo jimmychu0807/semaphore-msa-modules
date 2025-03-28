@@ -55,10 +55,9 @@ contract IntegrationTest is SharedTestSetup {
         txHash = keccak256(abi.encodePacked(seq, target, value, txCallData));
 
         // Compose Semaphore proof
-        (, uint256 groupId) = semaphoreExecutor.getGroupId(smartAcct.account);
         uint8 memberCnt = semaphoreExecutor.accountMemberCount(smartAcct.account);
         ISemaphore.SemaphoreProof memory smProof =
-            signer.getSempahoreProof(groupId, _getMemberCmts(memberCnt), txHash);
+            signer.getSempahoreProof(_getMemberCmts(memberCnt), txHash, "approved");
 
         // Compose UserOpData
         userOpData = _getSemaphoreUserOpData(
@@ -161,7 +160,7 @@ contract IntegrationTest is SharedTestSetup {
 
         // Compose a Semaphore proof
         ISemaphore.SemaphoreProof memory smProof2 =
-            signer2.getSempahoreProof(0, _getMemberCmts(NUM_MEMBERS), txHash);
+            signer2.getSempahoreProof(_getMemberCmts(NUM_MEMBERS), txHash, "approved");
 
         // Compose UserOpData
         UserOpData memory userOpData2 = _getSemaphoreUserOpData(

@@ -245,12 +245,11 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         address target = address(0);
         uint256 value = 100;
         bytes memory txCallData = "";
-        uint256 gId = 0;
 
         // Compose txHash and semaphore proof
         bytes32 txHash = keccak256(abi.encodePacked(uint256(0), target, value, txCallData));
         ISemaphore.SemaphoreProof memory smProof =
-            self.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
+            self.getSempahoreProof(_getMemberCmts(NUM_MEMBERS), txHash, "approved");
 
         // Test: should fail as target is null
         vm.startPrank(smartAcct.account);
@@ -270,12 +269,11 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         address target = $users[1].addr;
         uint256 value = 100;
         bytes memory txCallData = "";
-        uint256 gId = 0;
 
         // Compose txHash and semaphore proof. Then mess with the proof
         bytes32 txHash = keccak256(abi.encodePacked(uint256(0), target, value, txCallData));
         ISemaphore.SemaphoreProof memory smProof =
-            self.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
+            self.getSempahoreProof(_getMemberCmts(NUM_MEMBERS), txHash, "approved");
         smProof.points[0] = 1;
 
         // Test: should fail as proof has been forged
@@ -289,12 +287,11 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         address target = $users[1].addr;
         uint256 value = 100;
         bytes memory txCallData = hex"deadbeef";
-        uint256 gId = 0;
 
         // Compose txHash and semaphore proof.
         bytes32 txHash = keccak256(abi.encodePacked(uint256(0), target, value, txCallData));
         ISemaphore.SemaphoreProof memory smProof =
-            self.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
+            self.getSempahoreProof(_getMemberCmts(NUM_MEMBERS), txHash, "approved");
 
         vm.startPrank(smartAcct.account);
         // Test: InitiatedTx event is emitted
@@ -320,7 +317,6 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         address target = $users[1].addr;
         uint256 value = 1 ether;
         bytes memory txCallData = "";
-        uint256 gId = 0;
 
         uint256 receiverBefore = target.balance;
         uint256 senderBefore = smartAcct.account.balance;
@@ -328,7 +324,7 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         // Compose txHash and semaphore proof.
         bytes32 txHash = keccak256(abi.encodePacked(uint256(0), target, value, txCallData));
         ISemaphore.SemaphoreProof memory smProof =
-            self.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
+            self.getSempahoreProof(_getMemberCmts(NUM_MEMBERS), txHash, "approved");
 
         // Test: expect the tx is signed and immediately call executeTx()
         vm.startPrank(smartAcct.account);
@@ -355,12 +351,11 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         address target = $users[1].addr;
         uint256 value = 100;
         bytes memory txCallData = "";
-        uint256 gId = 0;
 
         // Compose txHash and semaphore proof.
         bytes32 txHash = keccak256(abi.encodePacked(uint256(0), target, value, txCallData));
         ISemaphore.SemaphoreProof memory smProof =
-            self.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
+            self.getSempahoreProof(_getMemberCmts(NUM_MEMBERS), txHash, "approved");
 
         // Test: expect the tx is reverted
         vm.startPrank(smartAcct.account);
@@ -377,15 +372,14 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         address target = $users[1].addr;
         uint256 value = 100;
         bytes memory txCallData = "";
-        uint256 gId = 0;
         uint256 seq = 0;
 
         // Compose txHash and semaphore proof.
         bytes32 txHash = keccak256(abi.encodePacked(seq, target, value, txCallData));
         ISemaphore.SemaphoreProof memory smProof1 =
-            user1.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
+            user1.getSempahoreProof(_getMemberCmts(NUM_MEMBERS), txHash, "approved");
         ISemaphore.SemaphoreProof memory smProof2 =
-            user2.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
+            user2.getSempahoreProof(_getMemberCmts(NUM_MEMBERS), txHash, "approved");
 
         vm.startPrank(smartAcct.account);
         semaphoreExecutor.initiateTx(target, value, txCallData, smProof1, true);
@@ -408,13 +402,12 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         address target = $users[1].addr;
         uint256 value = 100;
         bytes memory txCallData = "";
-        uint256 gId = 0;
         uint256 seq = 0;
 
         // Compose txHash and semaphore proof.
         bytes32 txHash = keccak256(abi.encodePacked(seq, target, value, txCallData));
         ISemaphore.SemaphoreProof memory smProof1 =
-            user1.getSempahoreProof(gId, _getMemberCmts(NUM_MEMBERS), txHash);
+            user1.getSempahoreProof(_getMemberCmts(NUM_MEMBERS), txHash, "approved");
 
         vm.startPrank(smartAcct.account);
         semaphoreExecutor.initiateTx(target, value, txCallData, smProof1, true);
@@ -433,7 +426,6 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         address target = $users[1].addr;
         uint256 value = 1 ether;
         bytes memory txCallData = "";
-        uint256 gId = 0;
         uint256 seq = 0;
 
         uint256 receiverBefore = target.balance;
@@ -441,7 +433,7 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         // Compose txHash and semaphore proof.
         bytes32 txHash = keccak256(abi.encodePacked(seq, target, value, txCallData));
         ISemaphore.SemaphoreProof memory smProof1 =
-            user1.getSempahoreProof(gId, _getMemberCmts(1), txHash);
+            user1.getSempahoreProof(_getMemberCmts(1), txHash, "approved");
 
         vm.startPrank(smartAcct.account);
         semaphoreExecutor.initiateTx(target, value, txCallData, smProof1, false);
