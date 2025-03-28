@@ -42,7 +42,7 @@ export async function sendSemaphoreTransaction({
     account,
     calls: [action],
     nonce,
-    // note: we set the three gas type here so it doesn't call esestimateUserOperationGas and
+    // note: we set the three gas type here so it doesn't call estimateUserOperationGas and
     //   check for the signature
     callGasLimit: BigInt(2e6),
     preVerificationGas: BigInt(3e5),
