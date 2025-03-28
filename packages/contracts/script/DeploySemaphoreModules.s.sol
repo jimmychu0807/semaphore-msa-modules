@@ -16,7 +16,7 @@ import { ModuleType, RegistryDeployer } from "modulekit/deployment/registry/Regi
 /* solhint-disable no-console */
 
 // Passing SALT parameter to use CREATE2 for deterministic contract address
-bytes32 constant SALT = bytes32(hex"01");
+bytes32 constant SALT = bytes32(hex"02");
 bool constant REGISTER_MODULE = true;
 bool constant ATTEST_MODULE = true;
 

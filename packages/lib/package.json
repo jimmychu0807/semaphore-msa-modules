@@ -47,7 +47,6 @@
     "@semaphore-protocol/group": "catalog:",
     "@semaphore-protocol/identity": "catalog:",
     "@semaphore-protocol/proof": "catalog:",
-    "debug": "^4.4.0",
     "dotenv": "catalog:",
     "permissionless": "catalog:",
     "viem": "catalog:"
