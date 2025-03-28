@@ -13,7 +13,7 @@ import {
 } from "modulekit/accounts/common/interfaces/IERC7579Module.sol";
 import { ModuleType, RegistryDeployer } from "modulekit/deployment/registry/RegistryDeployer.sol";
 
-/* solhint-disable no-console */
+/* solhint-disable no-console,gas-custom-errors */
 
 // Passing SALT parameter to use CREATE2 for deterministic contract address
 bytes32 constant SALT = bytes32(hex"02");
