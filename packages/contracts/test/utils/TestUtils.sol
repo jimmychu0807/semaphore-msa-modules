@@ -5,7 +5,6 @@ import { Vm } from "forge-std/Vm.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 import { ISemaphore } from "src/interfaces/Semaphore.sol";
 import { LibString } from "solady/Milady.sol";
-import { MOCK_SIG_P2 } from "src/utils/Constants.sol";
 
 // https://github.com/foundry-rs/forge-std/blob/master/src/Base.sol#L9
 address constant VM_ADDRESS = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D;
@@ -54,8 +53,8 @@ function getGroupRmMerkleProof(
     returns (uint256[] memory merkleProof, uint256 root)
 {
     string[] memory cmd = new string[](5);
-    cmd[0] = "pnpm";
-    cmd[1] = "semaphore-group";
+    cmd[0] = "node";
+    cmd[1] = "node_modules/@semaphore-protocol/group/dist/cli.js";
     cmd[2] = "remove-member";
     cmd[3] = joinUint(members);
     cmd[4] = LibString.toString(removal);
@@ -99,8 +98,8 @@ library IdentityLib {
     function commitment(Identity self) public returns (uint256 cmt) {
         // This is using the identity-cli javascript call, instead of identity
         string[] memory cmd = new string[](4);
-        cmd[0] = "pnpm";
-        cmd[1] = "semaphore-identity";
+        cmd[0] = "node";
+        cmd[1] = "node_modules/@semaphore-protocol/identity/dist/cli.js";
         cmd[2] = "get-commitment";
         cmd[3] = vm.toString(Identity.unwrap(self));
 
@@ -115,11 +114,6 @@ library IdentityLib {
         return abi.encodePacked(pub, hashSig);
     }
 
-    function mockSignature(Identity self) public returns (bytes memory signature) {
-        uint256[2] memory pub = IdentityLib._publicKey(self);
-        return abi.encodePacked(pub, MOCK_SIG_P2);
-    }
-
     function getSempahoreProof(
         Identity self,
         uint256 groupId,
@@ -130,8 +124,8 @@ library IdentityLib {
         returns (ISemaphore.SemaphoreProof memory proof)
     {
         string[] memory cmd = new string[](7);
-        cmd[0] = "pnpm";
-        cmd[1] = "semaphore-proof";
+        cmd[0] = "node";
+        cmd[1] = "node_modules/@semaphore-protocol/proof/dist/cli.js";
         cmd[2] = "gen-proof";
         cmd[3] = vm.toString(Identity.unwrap(self));
         cmd[4] = IdentityLib._uint256ArrToString(members);
@@ -177,8 +171,8 @@ library IdentityLib {
 
     function _publicKey(Identity self) internal returns (uint256[2] memory pubUint) {
         string[] memory cmd = new string[](4);
-        cmd[0] = "pnpm";
-        cmd[1] = "semaphore-identity";
+        cmd[0] = "node";
+        cmd[1] = "node_modules/@semaphore-protocol/identity/dist/cli.js";
         cmd[2] = "get-public-key";
         cmd[3] = vm.toString(Identity.unwrap(self));
 
@@ -192,8 +186,8 @@ library IdentityLib {
 
     function _signHash(Identity self, bytes32 hash) internal returns (bytes memory signature) {
         string[] memory cmd = new string[](5);
-        cmd[0] = "pnpm";
-        cmd[1] = "semaphore-identity";
+        cmd[0] = "node";
+        cmd[1] = "node_modules/@semaphore-protocol/identity/dist/cli.js";
         cmd[2] = "sign";
         cmd[3] = vm.toString(Identity.unwrap(self));
         cmd[4] = vm.toString(hash);
