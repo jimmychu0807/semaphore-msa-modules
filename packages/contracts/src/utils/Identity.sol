@@ -17,25 +17,6 @@ library Identity {
         cmt = PoseidonT3.hash([pkX, pkY]);
     }
 
-    // function verifySignatureFFI(bytes32 message, bytes memory signature) public returns (bool) {
-    //     (uint256 pkX, uint256 pkY, uint256 s0, uint256 s1, uint256 s2) =
-    //         abi.decode(signature, (uint256, uint256, uint256, uint256, uint256));
-
-    //     Vm constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
-
-    //     string[] memory inputs = new string[](6);
-    //     inputs[0] = "pnpm";
-    //     inputs[1] = "semaphore-identity";
-    //     inputs[2] = "verify";
-    //     inputs[3] = vm.toString(abi.encodePacked(pkX, pkY));
-    //     inputs[4] = vm.toString(message);
-    //     inputs[5] = vm.toString(abi.encodePacked(s0, s1, s2));
-
-    //     bytes memory res = vm.ffi(inputs);
-    //     string memory resStr = string(res);
-    //     return LibString.eq(resStr, "true");
-    // }
-
     function verifySignature(bytes32 message, bytes memory signature) public view returns (bool) {
         // Implement eddsa-poseidon verifySignature() method in solidity.
         // https://github.com/privacy-scaling-explorations/zk-kit/blob/388f72b7a029a14bf5c20861d5f54bdaa98b3ac7/packages/eddsa-poseidon/src/eddsa-poseidon-factory.ts#L127-L158

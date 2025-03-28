@@ -15,7 +15,6 @@ import {
     MIN_TARGET_CALLDATA_LEN,
     SEMAPHORE_EXECUTOR,
     SEMAPHORE_VALIDATOR,
-    MOCK_SIG_P2,
     VERSION
 } from "src/utils/Constants.sol";
 
@@ -187,7 +186,7 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
         //   (uint256 pubX (32 bytes), uint256 pubY (32 bytes), bytes[96] signature (96 bytes))
         if (signature.length != SIGNATURE_LEN) revert InvalidSignature(account, signature);
 
-        if (!_isMockSignature(signature) && !Identity.verifySignature(hash, signature)) {
+        if (!Identity.verifySignature(hash, signature)) {
             revert InvalidSignature(account, signature);
         }
 
@@ -216,10 +215,6 @@ contract SemaphoreValidator is ERC7579ValidatorBase {
 
     function _isAllowedSelector(bytes4 sel) internal pure returns (bool) {
         return sel == INITIATETX_SEL || sel == SIGNTX_SEL || sel == EXECUTETX_SEL;
-    }
-
-    function _isMockSignature(bytes calldata signature) internal pure returns (bool) {
-        return LibBytes.eq(signature[64:], MOCK_SIG_P2);
     }
 
     /*//////////////////////////////////////////////////////////////////////////
