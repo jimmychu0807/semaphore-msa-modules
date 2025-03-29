@@ -24,7 +24,7 @@
     "@tanstack/react-query": "^5.0.0",
     "clsx": "^2.1.1",
     "dotenv": "catalog:",
-    "next": "15.1.6",
+    "next": "^15.2.3",
     "permissionless": "catalog:",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
