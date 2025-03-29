@@ -76,7 +76,7 @@ importers:
         version: 0.5.9(bufferutil@4.0.9)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(hardhat@2.22.18(bufferutil@4.0.9)(ts-node@10.9.2(@types/node@22.13.14)(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10))(lodash@4.17.21)(typechain@5.2.0(typescript@5.7.3))(typescript@5.7.3)(utf-8-validate@5.0.10)
       '@rhinestone/sentinellist':
         specifier: github:jimmychu0807/rhinestonewtf-sentinellist#feat/4337Bytes32
-        version: https://codeload.github.com/jimmychu0807/rhinestonewtf-sentinellist/tar.gz/e722c5cc68c570d535bc3c9f85b3ce90cdc38807
+        version: https://codeload.github.com/jimmychu0807/rhinestonewtf-sentinellist/tar.gz/65cdaf1a41c3300b457ba4848fa3175a82bf3514
       '@semaphore-protocol/contracts':
         specifier: 'catalog:'
         version: https://codeload.github.com/jimmychu0807/semaphore/tar.gz/2b7003c84f2e3b1f5294309f6bbf1e1b37d829b9#path:/packages/contracts/contracts
@@ -1231,8 +1231,8 @@ packages:
   '@rhinestone/modulekit@0.5.9':
     resolution: {integrity: sha512-Zc5Qo3dkyVhBo7OQRKOltYd+jlGCtV18TWSmpSvIdXKwUgo5xj8zL73wAwFKTww00zt/wXMbW6Z6ysIQWH3Ezw==}
 
-  '@rhinestone/sentinellist@https://codeload.github.com/jimmychu0807/rhinestonewtf-sentinellist/tar.gz/e722c5cc68c570d535bc3c9f85b3ce90cdc38807':
-    resolution: {tarball: https://codeload.github.com/jimmychu0807/rhinestonewtf-sentinellist/tar.gz/e722c5cc68c570d535bc3c9f85b3ce90cdc38807}
+  '@rhinestone/sentinellist@https://codeload.github.com/jimmychu0807/rhinestonewtf-sentinellist/tar.gz/65cdaf1a41c3300b457ba4848fa3175a82bf3514':
+    resolution: {tarball: https://codeload.github.com/jimmychu0807/rhinestonewtf-sentinellist/tar.gz/65cdaf1a41c3300b457ba4848fa3175a82bf3514}
     version: 1.0.1
 
   '@rhinestone/sentinellist@https://codeload.github.com/rhinestonewtf/sentinellist/tar.gz/e722c5cc68c570d535bc3c9f85b3ce90cdc38807':
@@ -6365,7 +6365,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@rhinestone/sentinellist@https://codeload.github.com/jimmychu0807/rhinestonewtf-sentinellist/tar.gz/e722c5cc68c570d535bc3c9f85b3ce90cdc38807':
+  '@rhinestone/sentinellist@https://codeload.github.com/jimmychu0807/rhinestonewtf-sentinellist/tar.gz/65cdaf1a41c3300b457ba4848fa3175a82bf3514':
     dependencies:
       forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/841c3a3e8b7612f76599797b93da5a61899c2aa8
 
@@ -6735,7 +6735,7 @@ snapshots:
 
   '@types/bn.js@4.11.6':
     dependencies:
-      '@types/node': 20.17.17
+      '@types/node': 22.13.14
 
   '@types/bn.js@5.1.6':
     dependencies:
@@ -6779,7 +6779,6 @@ snapshots:
   '@types/node@22.13.14':
     dependencies:
       undici-types: 6.20.0
-    optional: true
 
   '@types/node@22.7.5':
     dependencies:
@@ -8345,7 +8344,7 @@ snapshots:
       '@typescript-eslint/parser': 8.23.0(eslint@9.19.0(jiti@2.4.2))(typescript@5.7.3)
       eslint: 9.19.0(jiti@2.4.2)
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.7.0(eslint-plugin-import@2.31.0)(eslint@9.19.0(jiti@2.4.2))
+      eslint-import-resolver-typescript: 3.7.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.23.0(eslint@9.19.0(jiti@2.4.2))(typescript@5.7.3))(eslint@9.19.0(jiti@2.4.2)))(eslint@9.19.0(jiti@2.4.2))
       eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.23.0(eslint@9.19.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-typescript@3.7.0)(eslint@9.19.0(jiti@2.4.2))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.19.0(jiti@2.4.2))
       eslint-plugin-react: 7.37.4(eslint@9.19.0(jiti@2.4.2))
@@ -8365,7 +8364,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0)(eslint@9.19.0(jiti@2.4.2)):
+  eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.23.0(eslint@9.19.0(jiti@2.4.2))(typescript@5.7.3))(eslint@9.19.0(jiti@2.4.2)))(eslint@9.19.0(jiti@2.4.2)):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.0(supports-color@8.1.1)
@@ -8381,14 +8380,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.23.0(eslint@9.19.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0)(eslint@9.19.0(jiti@2.4.2)):
+  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.23.0(eslint@9.19.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.23.0(eslint@9.19.0(jiti@2.4.2))(typescript@5.7.3))(eslint@9.19.0(jiti@2.4.2)))(eslint@9.19.0(jiti@2.4.2)))(eslint@9.19.0(jiti@2.4.2)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 8.23.0(eslint@9.19.0(jiti@2.4.2))(typescript@5.7.3)
       eslint: 9.19.0(jiti@2.4.2)
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.7.0(eslint-plugin-import@2.31.0)(eslint@9.19.0(jiti@2.4.2))
+      eslint-import-resolver-typescript: 3.7.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.23.0(eslint@9.19.0(jiti@2.4.2))(typescript@5.7.3))(eslint@9.19.0(jiti@2.4.2)))(eslint@9.19.0(jiti@2.4.2))
     transitivePeerDependencies:
       - supports-color
 
@@ -8403,7 +8402,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.19.0(jiti@2.4.2)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.23.0(eslint@9.19.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0)(eslint@9.19.0(jiti@2.4.2))
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.23.0(eslint@9.19.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.23.0(eslint@9.19.0(jiti@2.4.2))(typescript@5.7.3))(eslint@9.19.0(jiti@2.4.2)))(eslint@9.19.0(jiti@2.4.2)))(eslint@9.19.0(jiti@2.4.2))
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -10948,8 +10947,7 @@ snapshots:
 
   undici-types@6.19.8: {}
 
-  undici-types@6.20.0:
-    optional: true
+  undici-types@6.20.0: {}
 
   undici@5.29.0:
     dependencies:
