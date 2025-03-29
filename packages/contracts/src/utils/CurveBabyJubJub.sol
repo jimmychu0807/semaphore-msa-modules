@@ -3,6 +3,7 @@ pragma solidity >=0.8.23 <=0.8.29;
 
 // ref: https://github.com/yondonfu/sol-baby-jubjub
 //   with PR#1: https://github.com/yondonfu/sol-baby-jubjub/pull/1
+// ref: https://github.com/HarryR/ethsnarks/blob/master/contracts/JubJub.sol
 
 library CurveBabyJubJub {
     // Curve parameters
@@ -11,9 +12,16 @@ library CurveBabyJubJub {
     uint256 public constant A = 0x292FC;
     // D = 168696
     uint256 public constant D = 0x292F8;
-    // curve order
+    // elliptic curve prime field
     uint256 public constant Q =
         21_888_242_871_839_275_222_246_405_745_257_275_088_548_364_400_416_034_343_698_204_186_575_808_495_617;
+    uint256 public constant COFACTOR = 8;
+    // L * COFACTOR = Curve Order
+    uint256 public constant L =
+        2_736_030_358_979_909_402_780_800_718_157_159_386_076_813_972_158_567_259_200_215_660_948_447_373_041;
+    uint256 public constant CURVE_ORDER =
+        21_888_242_871_839_275_222_246_405_745_257_275_088_614_511_777_268_538_073_601_725_287_587_578_984_328;
+
     // Base8 point
     //   ref:
     // https://github.com/privacy-scaling-explorations/zk-kit/blob/31c83b644857ed30983120baeff912f69a11f2e9/packages/baby-jubjub/src/baby-jubjub.ts#L19-L22

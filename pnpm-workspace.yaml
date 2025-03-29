@@ -7,7 +7,6 @@ catalog:
   "@semaphore-protocol/group": github:jimmychu0807/semaphore#lib-cli&path:/packages/group
   "@semaphore-protocol/identity": github:jimmychu0807/semaphore#lib-cli&path:/packages/identity
   "@semaphore-protocol/proof": github:jimmychu0807/semaphore#lib-cli&path:/packages/proof
-  "@tanstack/react-query": ^5.0.0
   dotenv: ^16.4.5
   permissionless: ^0.2.34
   rimraf: ^5.0.10

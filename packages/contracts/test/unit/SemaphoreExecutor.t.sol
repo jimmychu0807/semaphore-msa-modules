@@ -170,10 +170,6 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         Identity rmIdentity = $users[0].identity;
         uint256 rmCmt = rmIdentity.commitment();
 
-        // We have to first find the prev Cmt (outsdie of the code). Also note that
-        // sentinellist is a reversed linked list
-        uint256 prevCmt = uint256(uint160(SENTINEL));
-
         (uint256[] memory merkleProof,) = getGroupRmMerkleProof(cmts, rmCmt);
 
         // Test: remove member
@@ -181,7 +177,7 @@ contract SemaphoreExecutorTest is SharedTestSetup {
         vm.expectEmit(true, true, true, true, address(semaphoreExecutor));
         emit SemaphoreExecutor.RemovedMember(smartAcct.account, rmCmt);
 
-        semaphoreExecutor.removeMember(prevCmt, rmCmt, merkleProof);
+        semaphoreExecutor.removeMember(uint256(SENTINEL), rmCmt, merkleProof);
 
         vm.stopPrank();
 

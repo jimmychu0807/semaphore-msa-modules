@@ -17,7 +17,7 @@ import {
     SEMAPHORE_EXECUTOR_NAME,
     VERSION
 } from "src/utils/Constants.sol";
-import { SentinelList4337Lib, SENTINEL } from "sentinellist/SentinelList4337.sol";
+import { SentinelList4337Bytes32Lib, SENTINEL } from "sentinellist/SentinelList4337Bytes32.sol";
 
 struct ExtCallCount {
     address targetAddr;
@@ -28,7 +28,7 @@ struct ExtCallCount {
 
 contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     using LibSort for *;
-    using SentinelList4337Lib for SentinelList4337Lib.SentinelList;
+    using SentinelList4337Bytes32Lib for SentinelList4337Bytes32Lib.SentinelList;
 
     /**
      * Errors
@@ -74,7 +74,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
 
     mapping(address account => uint256 groupId) public groupMapping;
     mapping(address account => uint8 threshold) public thresholds;
-    SentinelList4337Lib.SentinelList private acctMembers;
+    SentinelList4337Bytes32Lib.SentinelList private acctMembers;
 
     // smart account -> txHash -> valid proof count
     mapping(address account => mapping(bytes32 txHash => ExtCallCount callDataCount)) public
@@ -135,8 +135,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         SEMAPHORE.addMembers(groupId, cmts);
         acctMembers.init(account);
         for (uint256 i = 0; i < cmts.length; i++) {
-            // TODO: update this to uint256
-            acctMembers.push(account, address(uint160(cmts[i])));
+            acctMembers.push(account, bytes32(cmts[i]));
         }
 
         emit SemaphoreExecutorInitialized(account);
@@ -189,13 +188,13 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
     }
 
     function accountMemberCount(address account) public view returns (uint8) {
-        (address[] memory arr,) = acctMembers.getEntriesPaginated(account, SENTINEL, MAX_MEMBERS);
-        return uint8(arr.length);
+        (bytes32[] memory entries,) =
+            acctMembers.getEntriesPaginated(account, SENTINEL, MAX_MEMBERS);
+        return uint8(entries.length);
     }
 
     function accountHasMember(address account, uint256 cmt) external view returns (bool) {
-        // TODO: update this to uint256
-        return acctMembers.contains(account, address(uint160(cmt)));
+        return acctMembers.contains(account, bytes32(cmt));
     }
 
     /**
@@ -245,8 +244,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
 
         SEMAPHORE.addMembers(groupId, cmts);
         for (uint256 i = 0; i < cmts.length; i++) {
-            // TODO: update to uint256
-            acctMembers.push(account, address(uint160(cmts[i])));
+            acctMembers.push(account, bytes32(cmts[i]));
         }
 
         emit AddedMembers(account, uint8(cmts.length));
@@ -268,8 +266,7 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
         uint256 groupId = groupMapping[account];
         if (!GROUPS.hasMember(groupId, cmt)) revert MemberNotExists(account, cmt);
 
-        // TODO: update acctMembers to support uint256
-        acctMembers.pop(account, address(uint160(prevCmt)), address(uint160(cmt)));
+        acctMembers.pop(account, bytes32(prevCmt), bytes32(cmt));
         SEMAPHORE.removeMember(groupId, cmt, merkleProofSiblings);
 
         emit RemovedMember(account, cmt);

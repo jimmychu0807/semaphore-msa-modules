@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@rhinestone/modulekit": "^0.5.9",
-    "@rhinestone/sentinellist": "github:rhinestonewtf/sentinellist",
+    "@rhinestone/sentinellist": "github:jimmychu0807/rhinestonewtf-sentinellist#feat/4337Bytes32",
     "@rhinestone/erc4337-validation": "^0.0.5",
     "@ERC4337/account-abstraction": "github:kopy-kat/account-abstraction#develop",
     "@ERC4337/account-abstraction-v0.6": "github:eth-infinitism/account-abstraction#v0.6.0",
