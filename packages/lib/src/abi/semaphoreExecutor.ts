@@ -12,6 +12,32 @@ export const abi = [
   },
   {
     type: "function",
+    name: "GROUPS",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "contract ISemaphoreGroups",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "SEMAPHORE",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "contract ISemaphore",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "accountHasMember",
     inputs: [
       {
@@ -253,19 +279,6 @@ export const abi = [
   },
   {
     type: "function",
-    name: "groups",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "contract ISemaphoreGroups",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
     name: "initiateTx",
     inputs: [
       {
@@ -434,19 +447,6 @@ export const abi = [
     ],
     outputs: [],
     stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "semaphore",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "contract ISemaphore",
-      },
-    ],
-    stateMutability: "view",
   },
   {
     type: "function",
@@ -851,8 +851,8 @@ export const abi = [
     inputs: [
       {
         name: "entry",
-        type: "address",
-        internalType: "address",
+        type: "bytes32",
+        internalType: "bytes32",
       },
     ],
   },
@@ -862,8 +862,8 @@ export const abi = [
     inputs: [
       {
         name: "entry",
-        type: "address",
-        internalType: "address",
+        type: "bytes32",
+        internalType: "bytes32",
       },
     ],
   },
