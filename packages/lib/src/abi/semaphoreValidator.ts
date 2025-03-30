@@ -38,6 +38,19 @@ export const abi = [
   },
   {
     type: "function",
+    name: "SEMAPHORE_EXECUTOR",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "contract ISemaphoreExecutor",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "SIGNTX_SEL",
     inputs: [],
     outputs: [
@@ -173,19 +186,6 @@ export const abi = [
     ],
     outputs: [],
     stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "semaphoreExecutor",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "contract ISemaphoreExecutor",
-      },
-    ],
-    stateMutability: "view",
   },
   {
     type: "function",
