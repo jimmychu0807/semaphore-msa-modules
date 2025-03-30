@@ -16,7 +16,7 @@ import { ModuleType, RegistryDeployer } from "modulekit/deployment/registry/Regi
 /* solhint-disable no-console,gas-custom-errors */
 
 // Passing SALT parameter to use CREATE2 for deterministic contract address
-bytes32 constant SALT = bytes32(hex"02");
+bytes32 constant SALT = bytes32(hex"00");
 bool constant REGISTER_MODULE = true;
 bool constant ATTEST_MODULE = true;
 
@@ -78,6 +78,7 @@ contract DeploySemaphoreModules is Script, RegistryDeployer {
             resolverContext: ""
         });
 
+        console.log("SemaphoreVerifier contract: %s", address(semaphoreVerifier));
         console.log("Semaphore contract: %s", address(semaphore));
         console.log("SemaphoreExecutor contract: %s", address(semaphoreExecutor));
         console.log("SemaphoreValidator contract: %s", address(semaphoreValidator));
