@@ -1,4 +1,4 @@
-import { type Address, type Hex } from "viem";
+import { type Address } from "viem";
 import "dotenv/config";
 
 export const SEMAPHORE_EXECUTOR_ADDRESS = (process.env.SEMAPHORE_EXECUTOR_ADDRESS ??
