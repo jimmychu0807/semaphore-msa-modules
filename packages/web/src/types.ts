@@ -16,7 +16,8 @@ export type Transaction = {
 };
 
 export type TAppState = {
-  identity?: Identity;
+  identities: Array<{ key: string; identity: Identity }>;
+  nextId: number;
   step: Step;
   status: "pending" | "ready";
 
@@ -25,13 +26,15 @@ export type TAppState = {
   acctThreshold?: number;
   executorInstalled: boolean;
   validatorInstalled: boolean;
+
   txs: Transaction[];
 };
 
 export type TAppAction =
   | { type: "init"; value: TAppState }
-  | { type: "setIdentity"; value: Identity }
-  | { type: "clearIdentity" }
+  | { type: "insertIdentity"; value: { key: string; identity: Identity } }
+  | { type: "clearIdentity"; value: string }
+  | { type: "clearAllIdentities" }
   | { type: "setSmartAccountClient"; value: AppSmartAccountClient }
   | { type: "clearSmartAccountClient" }
   | { type: "setStep"; value: Step }
@@ -47,6 +50,7 @@ export type TAppAction =
       value: {
         acctThreshold?: number;
         commitments?: bigint[];
+        nextId?: number;
       };
     };
 

@@ -17,12 +17,16 @@ export function Steps() {
 
   const { appState } = useAppContext();
   const { step = Step.SetIdentity } = appState;
-
-  const [selectedTab, setSelectedTab] = useState(Number(step));
+  const [selectedTab, setSelectedTab] = useState(Step.SetIdentity);
+  const [initTab, setInitTab] = useState(false);
 
   useEffect(() => {
+    if (initTab || appState.status !== "ready") return;
+
+    // This action only perform once
     setSelectedTab(Number(step));
-  }, [step]);
+    setInitTab(true);
+  }, [step, appState.status, initTab]);
 
   const tabClassNames =
     "rounded-full py-1 px-3 font-semibold text-sm/6 focus:outline-none data-[selected]:bg-black/10 data-[hover]:bg-black/5 data-[selected]:data-[hover]:bg-black/10 data-[focus]:outline-1 data-[focus]:outline-black";
