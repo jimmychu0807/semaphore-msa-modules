@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { type FormEvent, type ChangeEvent, useState } from "react";
 import { Description, Field, Fieldset, Input, Label, Legend, Select } from "@headlessui/react";
 import clsx from "clsx";
 
@@ -12,10 +12,11 @@ import { getSemaphoreExecutor, getSemaphoreValidator } from "@semaphore-msa-modu
 
 export function InstallModulesPanel() {
   const { appState, dispatch } = useAppContext();
-  const { executorInstalled, validatorInstalled } = appState;
+  const { identities, executorInstalled, validatorInstalled, smartAccountClient } = appState;
 
   const [installingExecutor, setInstallingExecutor] = useState<boolean>(false);
   const [installingValidator, setInstallingValidator] = useState<boolean>(false);
+  const [selectedCmts, setSelectedCmts] = useState<string[]>([]);
 
   async function installExecutorModule(ev: FormEvent<HTMLElement>) {
     ev.preventDefault();
@@ -25,12 +26,18 @@ export function InstallModulesPanel() {
     }
 
     const { smartAccountClient } = appState;
-    setInstallingExecutor(true);
 
     const formData = new FormData(ev.target as HTMLFormElement);
-    const commitmentsStr = formData.get("commitments") as string;
-    const semaphoreCommitments = getCommitmentsSorted(commitmentsStr.split(" ").map((c) => BigInt(c)));
+    const commitments = selectedCmts.map((key) => identities.find((id) => id.key === key)!.identity.commitment);
+    const semaphoreCommitments = getCommitmentsSorted(commitments.map((c) => BigInt(c)));
     const threshold = Number(formData.get("threshold"));
+
+    if (threshold > semaphoreCommitments.length) {
+      console.error("threshold value should be less than or equal to the number of selected members.");
+      return;
+    }
+
+    setInstallingExecutor(true);
 
     try {
       const semaphoreExecutor = await getSemaphoreExecutor({
@@ -81,16 +88,22 @@ export function InstallModulesPanel() {
     }
   }
 
+  function updateSelectedCmts(ev: ChangeEvent<HTMLSelectElement>) {
+    const selectedOptions = Array.from(ev.target.options)
+      .filter((op) => op.selected)
+      .map((op) => op.value);
+
+    setSelectedCmts(selectedOptions);
+  }
+
   const inputClassNames = clsx(
     "mt-3 block w-full rounded-lg border-none bg-black/5 py-1.5 px-3 text-sm/6 text-black",
     "focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25"
   );
 
-  if (!appState.smartAccountClient) {
+  if (!smartAccountClient) {
     return <div>Please setup a smart account first.</div>;
   }
-
-  const { smartAccountClient } = appState;
 
   return (
     <div className="flex flex-col justify-center items-center">
@@ -102,18 +115,23 @@ export function InstallModulesPanel() {
             <Field>
               <Label className="text-sm/6 font-medium text-black">Account Members</Label>
               <Description className="text-xs text-black/50">
-                Hold ctrl/cmd key to select multiple commitments
+                Hold ctrl/cmd key to select multiple members&nbsp; (
+                <span className="font-semibold">{selectedCmts.length}</span>
+                &nbsp;{selectedCmts.length > 1 ? "identities" : "identity"} selected)
               </Description>
               <Select
-                className="w-full rounded-md border-none bg-black/5 py-1.5 px-2 my-2 text-sm/6 text-black"
+                className="w-full rounded-md border-none bg-black/5 py-1.5 px-2 mt-2 mb-1 text-sm text-black overflow-x-scroll"
                 name="commitments"
                 aria-label="Member commitments"
+                onChange={updateSelectedCmts}
                 multiple
               >
-                <option value="active">Active</option>
-                <option value="paused">Paused</option>
-                <option value="delayed">Delayed</option>
-                <option value="canceled">Canceled</option>
+                {" "}
+                {identities.map(({ key, identity }) => (
+                  <option className="py-1" key={key} value={key}>
+                    {key} ({identity.commitment})
+                  </option>
+                ))}
               </Select>
             </Field>
             <Field>

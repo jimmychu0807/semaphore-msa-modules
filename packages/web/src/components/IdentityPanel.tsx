@@ -9,7 +9,7 @@ import { Identity } from "@semaphore-protocol/identity";
 
 export function IdentityPanel() {
   const { appState, dispatch } = useAppContext();
-  const { identities, nextId } = appState;
+  const { identities, nextId, step } = appState;
 
   function createIdentity() {
     const identity = new Identity();
@@ -21,10 +21,13 @@ export function IdentityPanel() {
       type: "update",
       value: { nextId: nextId + 1 },
     });
-    dispatch({
-      type: "setStep",
-      value: Step.SetSmartAccount,
-    });
+
+    if (step < Step.SetSmartAccount) {
+      dispatch({
+        type: "setStep",
+        value: Step.SetSmartAccount,
+      });
+    }
   }
 
   function clearAllIdentities() {

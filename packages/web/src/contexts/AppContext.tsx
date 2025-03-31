@@ -2,7 +2,7 @@
 
 import { type ReactNode, createContext, useContext, useReducer, useEffect, useState } from "react";
 import { type Address, type PublicClient } from "viem";
-import { usePublicClient, useWatchContractEvent } from "wagmi";
+import { usePublicClient, useWalletClient, useWatchContractEvent } from "wagmi";
 
 import { getSmartAccountClient } from "@/utils";
 import { type TAppContext, type TAppState, type TAppAction, Step } from "@/types";
@@ -47,12 +47,15 @@ async function initAppState(publicClient: PublicClient | undefined): Promise<TAp
 
   appState.step = Number(window.localStorage.getItem("step") ?? "0") as Step;
 
+  appState.saltNonce = BigInt(window.localStorage.getItem("saltNonce") ?? "0");
+
   const address = window.localStorage.getItem("smartAccountAddr") as Address;
   if (address && publicClient) {
     // Restore the smart account client
     try {
       const smartAccountClient = await getSmartAccountClient({
         publicClient,
+        saltNonce: appState.saltNonce,
         address,
       });
       appState.smartAccountClient = smartAccountClient;
@@ -98,7 +101,7 @@ function appStateReducer(appState: TAppState, action: TAppAction): TAppState {
       //   smartAccountClient, commitments, acctThreshold
       //   validatorInstalled, executorInstalled, txs
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { smartAccountClient, commitments, acctThreshold, ...newState } = appState;
+      const { smartAccountClient, commitments, saltNonce, acctThreshold, ...newState } = appState;
       return { ...newState, txs: [], validatorInstalled: false, executorInstalled: false };
     }
     case "installExecutor": {
@@ -152,6 +155,7 @@ function appStateReducer(appState: TAppState, action: TAppAction): TAppState {
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [appState, dispatch] = useReducer(appStateReducer, unInitAppState);
   const [isInit, setInit] = useState(false);
+  const walletClient = useWalletClient();
   const publicClient = usePublicClient();
 
   useWatchContractEvent({
@@ -192,9 +196,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     let isMounted = true;
     (async () => {
       if (!window || isInit) return;
-
       dispatch({ type: "init", value: await initAppState(publicClient) });
-
       if (isMounted) setInit(true);
     })();
 
@@ -202,6 +204,36 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       isMounted = false;
     };
   }, [isInit, setInit, publicClient]);
+
+  // Update the smart account client wallet client setting when user connected with its wallet
+  useEffect(() => {
+    const address = window.localStorage.getItem("smartAccountAddr") as Address;
+
+    if (!address || !publicClient || !walletClient?.data) return;
+
+    let isMounted = true;
+    const saltNonce = BigInt(window.localStorage.getItem("saltNonce") ?? "0");
+
+    (async () => {
+      try {
+        const smartAccountClient = await getSmartAccountClient({
+          publicClient,
+          owners: [walletClient.data],
+          saltNonce,
+          address,
+        });
+        if (isMounted) appState.smartAccountClient = smartAccountClient;
+      } catch (err) {
+        console.error("Update smart account client with wallet data error:", err);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+    // Do not check for `appState` for dependencies
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [publicClient, walletClient?.data]);
 
   // Saving the appState in localstorage
   useEffect(() => {
@@ -212,6 +244,13 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem("step");
     } else {
       localStorage.setItem("step", appState.step.toString());
+    }
+
+    // saltNonce
+    if (appState.saltNonce === undefined) {
+      localStorage.removeItem("saltNonce");
+    } else {
+      localStorage.setItem("saltNonce", appState.saltNonce.toString());
     }
 
     // smartAccountClient
@@ -245,7 +284,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
 
-    async function fetchSmartAccount() {
+    (async () => {
       const smartAccountClient = appState.smartAccountClient;
       if (!publicClient || !smartAccountClient || !smartAccountClient.account) return;
 
@@ -267,9 +306,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
           if (executorInstalled && validatorInstalled) dispatch({ type: "setStep", value: Step.Transactions });
         }
       }
-    }
+    })();
 
-    fetchSmartAccount();
     return () => {
       isMounted = false;
     };
