@@ -48,41 +48,41 @@ export function TransactionsPanel() {
   async function initTx(ev: FormEvent<HTMLElement>) {
     ev.preventDefault();
 
-    const { smartAccountClient, identity, commitments } = appState;
-    if (!smartAccountClient || !publicClient || !identity || !commitments) {
-      console.error("[smartAccountClient, publicClient, identity, commitment] at least one values are not set.");
-      return;
-    }
+    // const { smartAccountClient, identity, commitments } = appState;
+    // if (!smartAccountClient || !publicClient || !identity || !commitments) {
+    //   console.error("[smartAccountClient, publicClient, identity, commitment] at least one values are not set.");
+    //   return;
+    // }
 
-    setDialogBtnLoading(true);
-    const { account } = smartAccountClient;
+    // setDialogBtnLoading(true);
+    // const { account } = smartAccountClient;
 
-    const formData = new FormData(ev.target as HTMLFormElement);
-    const recipient = formData.get("recipient") as Address;
-    const amount = (formData.get("amount") || "") as string;
+    // const formData = new FormData(ev.target as HTMLFormElement);
+    // const recipient = formData.get("recipient") as Address;
+    // const amount = (formData.get("amount") || "") as string;
 
-    try {
-      // Composse the initTxAction
-      const seqNum = await getAcctSeqNum({ account, client: publicClient });
-      const value = parseEther(amount);
-      const txHash = getTxHash(seqNum, recipient, value, "0x");
-      const smGroup = new Group(commitments);
-      const smProof = (await generateProof(identity, smGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
+    // try {
+    //   // Composse the initTxAction
+    //   const seqNum = await getAcctSeqNum({ account, client: publicClient });
+    //   const value = parseEther(amount);
+    //   const txHash = getTxHash(seqNum, recipient, value, "0x");
+    //   const smGroup = new Group(commitments);
+    //   const smProof = (await generateProof(identity, smGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
 
-      const action = getInitTxAction(recipient, value, "0x", smProof, false);
-      const receipt = await sendSemaphoreTransaction({
-        signer: identity,
-        account,
-        action,
-        publicClient,
-        bundlerClient: smartAccountClient,
-      });
-      console.log("initTx receipt:", receipt);
-    } catch (err) {
-      console.error("initTx error:", err);
-    }
-    setDialogBtnLoading(false);
-    setIsOpen(false);
+    //   const action = getInitTxAction(recipient, value, "0x", smProof, false);
+    //   const receipt = await sendSemaphoreTransaction({
+    //     signer: identity,
+    //     account,
+    //     action,
+    //     publicClient,
+    //     bundlerClient: smartAccountClient,
+    //   });
+    //   console.log("initTx receipt:", receipt);
+    // } catch (err) {
+    //   console.error("initTx error:", err);
+    // }
+    // setDialogBtnLoading(false);
+    // setIsOpen(false);
   }
 
   function cancelInitTx(ev: MouseEvent<HTMLElement>) {
@@ -96,57 +96,53 @@ export function TransactionsPanel() {
   }
 
   async function signTx(tx: Transaction) {
-    const { smartAccountClient, identity, commitments } = appState;
-    if (!smartAccountClient || !publicClient || !identity || !commitments) {
-      console.error("[smartAccountClient, publicClient, identity, commitment] at least one values are not set.");
-      return;
-    }
-
-    try {
-      const { txHash } = tx;
-      setSigningTx(txHash);
-      const smGroup = new Group(commitments);
-      const smProof = (await generateProof(identity, smGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
-
-      const action = getSignTxAction(txHash, smProof, false);
-      const receipt = await sendSemaphoreTransaction({
-        signer: identity,
-        account: smartAccountClient.account,
-        action,
-        publicClient,
-        bundlerClient: smartAccountClient,
-      });
-      console.log("signTx receipt:", receipt);
-    } catch (err) {
-      console.error("signTx error:", err);
-    }
-    setSigningTx(undefined);
+    // const { smartAccountClient, identity, commitments } = appState;
+    // if (!smartAccountClient || !publicClient || !identity || !commitments) {
+    //   console.error("[smartAccountClient, publicClient, identity, commitment] at least one values are not set.");
+    //   return;
+    // }
+    // try {
+    //   const { txHash } = tx;
+    //   setSigningTx(txHash);
+    //   const smGroup = new Group(commitments);
+    //   const smProof = (await generateProof(identity, smGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
+    //   const action = getSignTxAction(txHash, smProof, false);
+    //   const receipt = await sendSemaphoreTransaction({
+    //     signer: identity,
+    //     account: smartAccountClient.account,
+    //     action,
+    //     publicClient,
+    //     bundlerClient: smartAccountClient,
+    //   });
+    //   console.log("signTx receipt:", receipt);
+    // } catch (err) {
+    //   console.error("signTx error:", err);
+    // }
+    // setSigningTx(undefined);
   }
 
   async function executeTx(tx: Transaction) {
-    const { smartAccountClient, identity, commitments } = appState;
-    if (!smartAccountClient || !publicClient || !identity || !commitments) {
-      console.error("[smartAccountClient, publicClient, identity, commitment] at least one values are not set.");
-      return;
-    }
-
-    try {
-      const { txHash } = tx;
-      setExecutingTx(txHash);
-
-      const action = getExecuteTxAction(txHash);
-      const receipt = await sendSemaphoreTransaction({
-        signer: identity,
-        account: smartAccountClient.account,
-        action,
-        publicClient,
-        bundlerClient: smartAccountClient,
-      });
-      console.log("executeTx receipt:", receipt);
-    } catch (err) {
-      console.error("executeTx error:", err);
-    }
-    setExecutingTx(undefined);
+    // const { smartAccountClient, identity, commitments } = appState;
+    // if (!smartAccountClient || !publicClient || !identity || !commitments) {
+    //   console.error("[smartAccountClient, publicClient, identity, commitment] at least one values are not set.");
+    //   return;
+    // }
+    // try {
+    //   const { txHash } = tx;
+    //   setExecutingTx(txHash);
+    //   const action = getExecuteTxAction(txHash);
+    //   const receipt = await sendSemaphoreTransaction({
+    //     signer: identity,
+    //     account: smartAccountClient.account,
+    //     action,
+    //     publicClient,
+    //     bundlerClient: smartAccountClient,
+    //   });
+    //   console.log("executeTx receipt:", receipt);
+    // } catch (err) {
+    //   console.error("executeTx error:", err);
+    // }
+    // setExecutingTx(undefined);
   }
 
   return (

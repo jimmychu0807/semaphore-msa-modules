@@ -19,6 +19,11 @@ export const ethRpcUrl = process.env.NEXT_PUBLIC_ETH_RPC_URL;
 export const bundlerUrl = process.env.NEXT_PUBLIC_BUNDLER_URL;
 export const paymasterUrl = process.env.NEXT_PUBLIC_PAYMASTER_URL;
 
+export const blogpostUrl = "https://jimmychu0807.hk/semaphore-msa-modules";
+export const demoUrl =
+  "https://www.loom.com/share/9775b4fcf71b46418483f34761c03d0e?sid=cb9a32bb-b4ce-4f5a-b1a7-4f9182f59cff";
+export const srcUrl = "https://github.com/jimmychu0807/semaphore-msa-modules";
+
 export function getConfig() {
   return createConfig({
     chains: [baseSepolia],

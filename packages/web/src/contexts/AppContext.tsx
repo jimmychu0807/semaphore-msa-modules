@@ -1,8 +1,8 @@
 "use client";
 
 import { type ReactNode, createContext, useContext, useReducer, useEffect, useState } from "react";
-import { type Address, type PublicClient, type WalletClient } from "viem";
-import { usePublicClient, useWalletClient, useWatchContractEvent } from "wagmi";
+import { type Address, type PublicClient } from "viem";
+import { usePublicClient, useWatchContractEvent } from "wagmi";
 
 import { getSmartAccountClient } from "@/utils";
 import { type TAppContext, type TAppState, type TAppAction, Step } from "@/types";
@@ -17,11 +17,15 @@ import {
 import { semaphoreExecutorABI } from "@semaphore-msa-modules/lib/abi";
 
 const unInitAppState: TAppState = {
+  identities: [],
+  nextId: 1,
   step: Step.SetIdentity,
+  status: "pending",
+
   executorInstalled: false,
   validatorInstalled: false,
+
   txs: [],
-  status: "pending",
 };
 
 export const AppContext = createContext<TAppContext>({
@@ -30,27 +34,25 @@ export const AppContext = createContext<TAppContext>({
 });
 
 // Restoring the appstate from localstorage
-async function initAppState(publicClient: PublicClient, walletClient: WalletClient): Promise<TAppState> {
+async function initAppState(publicClient: PublicClient | undefined): Promise<TAppState> {
   const appState: TAppState = { ...unInitAppState, status: "ready" };
 
-  const identitySk = window.localStorage.getItem("identitySk");
-  if (identitySk) {
-    appState.identity = Identity.import(identitySk);
-  }
+  const identities = JSON.parse(window.localStorage.getItem("identities") ?? "[]");
+  appState.identities = identities.map(({ key, sk }: { key: string; sk: string }) => ({
+    key,
+    identity: Identity.import(sk),
+  }));
 
-  const step = window.localStorage.getItem("step");
-  if (step !== undefined) {
-    // step can be 0
-    appState.step = Number(step) as Step;
-  }
+  appState.nextId = Number(window.localStorage.getItem("nextId") ?? "1");
+
+  appState.step = Number(window.localStorage.getItem("step") ?? "0") as Step;
 
   const address = window.localStorage.getItem("smartAccountAddr") as Address;
-  if (address) {
+  if (address && publicClient) {
     // Restore the smart account client
     try {
       const smartAccountClient = await getSmartAccountClient({
         publicClient,
-        owners: [walletClient],
         address,
       });
       appState.smartAccountClient = smartAccountClient;
@@ -74,13 +76,15 @@ function appStateReducer(appState: TAppState, action: TAppAction): TAppState {
     case "init": {
       return action.value;
     }
-    case "setIdentity": {
-      return { ...appState, identity: action.value };
+    case "insertIdentity": {
+      return { ...appState, identities: [...appState.identities, action.value] };
     }
     case "clearIdentity": {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { identity, ...newState } = appState;
-      return newState;
+      const delKey = action.value;
+      return { ...appState, identities: appState.identities.filter(({ key }) => key !== delKey) };
+    }
+    case "clearAllIdentities": {
+      return { ...appState, identities: [] };
     }
     case "setStep": {
       return { ...appState, step: action.value };
@@ -148,7 +152,6 @@ function appStateReducer(appState: TAppState, action: TAppAction): TAppState {
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [appState, dispatch] = useReducer(appStateReducer, unInitAppState);
   const [isInit, setInit] = useState(false);
-  const walletClient = useWalletClient();
   const publicClient = usePublicClient();
 
   useWatchContractEvent({
@@ -187,32 +190,22 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   // For initial state handling
   useEffect(() => {
     let isMounted = true;
-    const _initAppState = async () => {
-      if (!window || !setInit || !publicClient || !walletClient.data) return;
-      if (isInit) return;
+    (async () => {
+      if (!window || isInit) return;
 
-      dispatch({ type: "init", value: await initAppState(publicClient, walletClient.data) });
-      if (isMounted) {
-        setInit(true);
-      }
-    };
+      dispatch({ type: "init", value: await initAppState(publicClient) });
 
-    _initAppState();
+      if (isMounted) setInit(true);
+    })();
+
     return () => {
       isMounted = false;
     };
-  }, [isInit, setInit, publicClient, walletClient.data]);
+  }, [isInit, setInit, publicClient]);
 
   // Saving the appState in localstorage
   useEffect(() => {
     if (appState.status !== "ready") return;
-
-    // identity. We only save the private key
-    if (appState.identity === undefined) {
-      localStorage.removeItem("identitySk");
-    } else {
-      localStorage.setItem("identitySk", appState.identity.export());
-    }
 
     // step
     if (appState.step === undefined) {
@@ -235,6 +228,52 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("commitments", JSON.stringify(appState.commitments.map((c) => c.toString())));
     }
   }, [appState]);
+
+  // saving appState.identities in localstorage
+  useEffect(() => {
+    if (appState.status !== "ready") return;
+
+    localStorage.setItem(
+      "identities",
+      JSON.stringify(appState.identities.map(({ key, identity }) => ({ key, sk: identity.export() })))
+    );
+
+    localStorage.setItem("nextId", appState.nextId.toString());
+  }, [appState.status, appState.identities, appState.nextId]);
+
+  // Fetching smartAccount related status
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchSmartAccount() {
+      const smartAccountClient = appState.smartAccountClient;
+      if (!publicClient || !smartAccountClient || !smartAccountClient.account) return;
+
+      const { address } = smartAccountClient.account;
+
+      // Check if the two modules are installed
+      const isAcctInited = await publicClient.getCode({ address });
+      if (isAcctInited) {
+        const executorInstalled = await smartAccountClient.isModuleInstalled(getSemaphoreExecutor());
+        const validatorInstalled = await smartAccountClient.isModuleInstalled(getSemaphoreValidator());
+        const acctThreshold = executorInstalled
+          ? await getAcctThreshold({ account: smartAccountClient.account, client: publicClient })
+          : undefined;
+
+        if (isMounted) {
+          if (executorInstalled) dispatch({ type: "installExecutor" });
+          if (validatorInstalled) dispatch({ type: "installValidator" });
+          if (acctThreshold) dispatch({ type: "update", value: { acctThreshold: Number(acctThreshold) } });
+          if (executorInstalled && validatorInstalled) dispatch({ type: "setStep", value: Step.Transactions });
+        }
+      }
+    }
+
+    fetchSmartAccount();
+    return () => {
+      isMounted = false;
+    };
+  }, [appState.smartAccountClient, publicClient]);
 
   // Fetching transactions
   useEffect(() => {
@@ -276,40 +315,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       isMounted = false;
     };
   }, [appState.smartAccountClient, appState.txs, publicClient]);
-
-  // Fetching smartAccount related status
-  useEffect(() => {
-    let isMounted = true;
-
-    async function fetchSmartAccount() {
-      const smartAccountClient = appState.smartAccountClient;
-      if (!publicClient || !smartAccountClient || !smartAccountClient.account) return;
-
-      const { address } = smartAccountClient.account;
-
-      // Check if the two modules are installed
-      const isAcctInited = await publicClient.getCode({ address });
-      if (isAcctInited) {
-        const executorInstalled = await smartAccountClient.isModuleInstalled(getSemaphoreExecutor());
-        const validatorInstalled = await smartAccountClient.isModuleInstalled(getSemaphoreValidator());
-        const acctThreshold = executorInstalled
-          ? await getAcctThreshold({ account: smartAccountClient.account, client: publicClient })
-          : undefined;
-
-        if (isMounted) {
-          if (executorInstalled) dispatch({ type: "installExecutor" });
-          if (validatorInstalled) dispatch({ type: "installValidator" });
-          if (acctThreshold) dispatch({ type: "update", value: { acctThreshold: Number(acctThreshold) } });
-          if (executorInstalled && validatorInstalled) dispatch({ type: "setStep", value: Step.Transactions });
-        }
-      }
-    }
-
-    fetchSmartAccount();
-    return () => {
-      isMounted = false;
-    };
-  }, [appState.smartAccountClient, publicClient]);
 
   return <AppContext.Provider value={{ appState, dispatch }}>{children}</AppContext.Provider>;
 }
