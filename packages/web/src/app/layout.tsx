@@ -4,7 +4,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { cookieToInitialState } from "wagmi";
 
 import { getConfig } from "@/utils";
-import { Footer } from "@/components/Footer";
 import { Providers } from "@/components/Providers";
 import "./globals.css";
 
@@ -19,8 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Semaphore Module Demo",
-  description: "Created with ❤️ by Jimmy Chu",
+  title: "Anonymous multi-sig wallet with Semaphore Modules",
 };
 
 export const viewport: Viewport = {
@@ -39,9 +37,8 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers initialState={initialState}>
-          <div className="grid grid-rows items-center justify-items-center min-h-screen gap-12 px-8 font-[family-name:var(--font-geist-sans)]">
+          <div className="grid grid-rows items-center justify-items-center min-h-screen gap-12 px-8 font-[family-name:var(--font-geist-sans)] mb-16">
             <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">{children}</main>
-            <Footer />
           </div>
         </Providers>
       </body>

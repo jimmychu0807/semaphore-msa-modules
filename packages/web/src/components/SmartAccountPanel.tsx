@@ -61,7 +61,7 @@ export function SmartAccountPanel() {
     <div className="flex flex-col justify-center items-center">
       {!!smartAccountClient ? (
         <>
-          <div className="py-3 w-3/4">
+          <div className="py-3 w-7/8">
             <div className="text-center my-2 font-semibold">Your Smart Account</div>
             <div className="text-center text-sm py-1.5 my-2">
               {smartAccountClient.account.address}
@@ -72,7 +72,7 @@ export function SmartAccountPanel() {
         </>
       ) : (
         <>
-          <form className="w-3/4 flex flex-col items-center" onSubmit={createAccount}>
+          <form className="w-7/8 flex flex-col items-center" onSubmit={createAccount}>
             <Fieldset className="space-y-6 rounded-xl p-3 w-full">
               <Legend className="text-base/4 font-semibold text-black">Create Smart Account</Legend>
               <Field>

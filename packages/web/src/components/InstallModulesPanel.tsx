@@ -1,7 +1,7 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
-import { Field, Fieldset, Input, Label, Legend } from "@headlessui/react";
+import { Description, Field, Fieldset, Input, Label, Legend, Select } from "@headlessui/react";
 import clsx from "clsx";
 
 import { Button } from "./Button";
@@ -100,8 +100,21 @@ export function InstallModulesPanel() {
           <Fieldset className="space-y-6 rounded-xl p-6">
             <Legend className="text-base/7 font-semibold text-black">Install Executor Module</Legend>
             <Field>
-              <Label className="text-sm/6 font-medium text-black">Member Commitments (space separated)</Label>
-              <Input type="text" name="commitments" className={inputClassNames} />
+              <Label className="text-sm/6 font-medium text-black">Account Members</Label>
+              <Description className="text-xs text-black/50">
+                Hold ctrl/cmd key to select multiple commitments
+              </Description>
+              <Select
+                className="w-full rounded-md border-none bg-black/5 py-1.5 px-2 my-2 text-sm/6 text-black"
+                name="commitments"
+                aria-label="Member commitments"
+                multiple
+              >
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+                <option value="delayed">Delayed</option>
+                <option value="canceled">Canceled</option>
+              </Select>
             </Field>
             <Field>
               <Label className="text-sm/6 font-medium text-black">Proof Threshold</Label>
