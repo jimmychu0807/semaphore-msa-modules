@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAccount } from "wagmi";
+import { baseSepolia } from "viem/chains";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { IdentityPanel } from "./IdentityPanel";
 import { SmartAccountPanel } from "./SmartAccountPanel";
@@ -11,10 +11,7 @@ import { TransactionsPanel } from "./TransactionsPanel";
 import { useAppContext } from "@/contexts/AppContext";
 import { Step } from "@/types";
 
-export function Steps() {
-  const account = useAccount();
-  const isConnected = !!account.address;
-
+export function ActionTabs() {
   const { appState } = useAppContext();
   const { step = Step.SetIdentity } = appState;
   const [selectedTab, setSelectedTab] = useState(Step.SetIdentity);
@@ -23,7 +20,7 @@ export function Steps() {
   useEffect(() => {
     if (initTab || appState.status !== "ready") return;
 
-    // This action only perform once
+    // This action perform only once on page load
     setSelectedTab(Number(step));
     setInitTab(true);
   }, [step, appState.status, initTab]);
@@ -31,11 +28,8 @@ export function Steps() {
   const tabClassNames =
     "rounded-full py-1 px-3 font-semibold text-sm/6 focus:outline-none data-[selected]:bg-black/10 data-[hover]:bg-black/5 data-[selected]:data-[hover]:bg-black/10 data-[focus]:outline-1 data-[focus]:outline-black";
 
-  if (!isConnected) {
-    return <div className="self-center">Please connect with your wallet</div>;
-  }
   if (appState.status !== "ready") {
-    return <div className="self-center">Loading...</div>;
+    return <div className="self-center text-sm">Loading...</div>;
   }
 
   return (
@@ -66,7 +60,7 @@ export function Steps() {
             <IdentityPanel />
           </TabPanel>
           <TabPanel className="rounded-xl bg-black/5 p-3">
-            <SmartAccountPanel />
+            <SmartAccountPanel requiredChainId={baseSepolia.id} />
           </TabPanel>
           <TabPanel className="rounded-xl bg-black/5 p-3">
             <InstallModulesPanel />

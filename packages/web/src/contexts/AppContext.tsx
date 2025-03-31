@@ -1,8 +1,8 @@
 "use client";
 
 import { type ReactNode, createContext, useContext, useReducer, useEffect, useState } from "react";
-import { type Address, type PublicClient, type WalletClient } from "viem";
-import { usePublicClient, useWalletClient, useWatchContractEvent } from "wagmi";
+import { type Address, type PublicClient } from "viem";
+import { usePublicClient, useWatchContractEvent } from "wagmi";
 
 import { getSmartAccountClient } from "@/utils";
 import { type TAppContext, type TAppState, type TAppAction, Step } from "@/types";
@@ -34,7 +34,7 @@ export const AppContext = createContext<TAppContext>({
 });
 
 // Restoring the appstate from localstorage
-async function initAppState(publicClient: PublicClient, walletClient: WalletClient): Promise<TAppState> {
+async function initAppState(publicClient: PublicClient | undefined): Promise<TAppState> {
   const appState: TAppState = { ...unInitAppState, status: "ready" };
 
   const identities = JSON.parse(window.localStorage.getItem("identities") ?? "[]");
@@ -48,12 +48,11 @@ async function initAppState(publicClient: PublicClient, walletClient: WalletClie
   appState.step = Number(window.localStorage.getItem("step") ?? "0") as Step;
 
   const address = window.localStorage.getItem("smartAccountAddr") as Address;
-  if (address) {
+  if (address && publicClient) {
     // Restore the smart account client
     try {
       const smartAccountClient = await getSmartAccountClient({
         publicClient,
-        owners: [walletClient],
         address,
       });
       appState.smartAccountClient = smartAccountClient;
@@ -153,7 +152,6 @@ function appStateReducer(appState: TAppState, action: TAppAction): TAppState {
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [appState, dispatch] = useReducer(appStateReducer, unInitAppState);
   const [isInit, setInit] = useState(false);
-  const walletClient = useWalletClient();
   const publicClient = usePublicClient();
 
   useWatchContractEvent({
@@ -192,21 +190,18 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   // For initial state handling
   useEffect(() => {
     let isMounted = true;
-    const _initAppState = async () => {
-      if (!window || !setInit || !publicClient || !walletClient.data) return;
-      if (isInit) return;
+    (async () => {
+      if (!window || isInit) return;
 
-      dispatch({ type: "init", value: await initAppState(publicClient, walletClient.data) });
-      if (isMounted) {
-        setInit(true);
-      }
-    };
+      dispatch({ type: "init", value: await initAppState(publicClient) });
 
-    _initAppState();
+      if (isMounted) setInit(true);
+    })();
+
     return () => {
       isMounted = false;
     };
-  }, [isInit, setInit, publicClient, walletClient.data]);
+  }, [isInit, setInit, publicClient]);
 
   // Saving the appState in localstorage
   useEffect(() => {
