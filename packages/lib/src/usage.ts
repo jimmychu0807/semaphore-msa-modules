@@ -50,6 +50,26 @@ export async function getAcctThreshold({
   return await queryFunc({ client, funcName: "thresholds", funcArgs: [account.address] });
 }
 
+export async function getAcctMembers({
+  account,
+  client,
+}: {
+  account: Account;
+  client: PublicClient;
+}): Promise<bigint[]> {
+  try {
+    const val = await client.readContract({
+      address: SEMAPHORE_EXECUTOR_ADDRESS,
+      abi: semaphoreExecutorABI,
+      functionName: "getAcctMembers",
+      args: [account.address],
+    });
+    return val as unknown as bigint[];
+  } catch (err) {
+    throw new Error(`Failed to query getAcctMembers: ${err}`, { cause: err as Error });
+  }
+}
+
 export async function getGroupId({
   account,
   client,

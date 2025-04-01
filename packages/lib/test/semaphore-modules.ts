@@ -28,6 +28,7 @@ import { Group } from "@semaphore-protocol/group";
 import { generateProof } from "@semaphore-protocol/proof";
 
 import {
+  getAcctMembers,
   getAcctSeqNum,
   getAcctThreshold,
   getSemaphoreExecutor,
@@ -261,6 +262,9 @@ async function installSemaphoreModules({
 
   const _cnt = await getMemberCount({ account, client: publicClient });
   expect(_cnt).to.equal(semaphoreCommitments.length);
+
+  const _members = await getAcctMembers({ account, client: publicClient });
+  expect(_members).to.deep.equal(semaphoreCommitments);
 }
 
 async function initTx({
