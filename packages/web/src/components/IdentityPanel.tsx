@@ -56,7 +56,7 @@ export function IdentityPanel() {
   return (
     <div className="flex flex-col justify-center items-center">
       <div className="py-3 w-full">
-        <div className="text-center my-2 font-semibold">Identity Commitments</div>
+        <div className="text-center my-2 font-semibold">Semaphore Identities</div>
         {identities.length > 0 ? (
           <div className="py-3">
             {identities.map(({ key, identity }) => (

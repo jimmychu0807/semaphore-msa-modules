@@ -38,7 +38,7 @@
     "lint:write": "pnpm -r --filter './packages/*' lint:write",
     "deploy:vercel": "vercel build --prod && vercel deploy --prebuilt --prod",
     "test": "pnpm -r --filter './packages/contracts' test",
-    "ci-check": "pnpm run lint && pnpm run build && pnpm run test"
+    "ci-check": "pnpm run build && pnpm run test && pnpm run lint"
   },
   "publishConfig": {
     "access": "public"

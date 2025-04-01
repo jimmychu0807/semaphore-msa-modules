@@ -43,4 +43,4 @@ jobs:
       - name: "Summary"
         run: |
           echo "## Result" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
+          echo "✅ ci-check Passed" >> $GITHUB_STEP_SUMMARY
