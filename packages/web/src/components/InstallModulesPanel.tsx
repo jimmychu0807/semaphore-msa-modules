@@ -1,13 +1,15 @@
 "use client";
 
 import { type FormEvent, type ChangeEvent, useState } from "react";
+import { useBalance } from "wagmi";
+
 import { Description, Field, Fieldset, Input, Label, Legend, Select } from "@headlessui/react";
 import clsx from "clsx";
 
 import { Button } from "./Button";
 import { useAppContext } from "@/contexts/AppContext";
 import { Step } from "@/types";
-import { getCommitmentsSorted } from "@/utils";
+import { formatEther, getCommitmentsSorted } from "@/utils";
 import { getSemaphoreExecutor, getSemaphoreValidator } from "@semaphore-msa-modules/lib";
 
 export function InstallModulesPanel() {
@@ -17,6 +19,11 @@ export function InstallModulesPanel() {
   const [installingExecutor, setInstallingExecutor] = useState<boolean>(false);
   const [installingValidator, setInstallingValidator] = useState<boolean>(false);
   const [selectedCmts, setSelectedCmts] = useState<string[]>([]);
+
+  const { data: smartAcctBalance } = useBalance({
+    address: smartAccountClient?.account?.address,
+    query: { refetchInterval: 4000 },
+  });
 
   async function installExecutorModule(ev: FormEvent<HTMLElement>) {
     ev.preventDefault();
@@ -107,7 +114,10 @@ export function InstallModulesPanel() {
 
   return (
     <div className="flex flex-col justify-center items-center">
-      <div className="text-sm py-3">Smart Account: {smartAccountClient?.account?.address}</div>
+      <div className="text-sm py-3">
+        {smartAccountClient?.account?.address}
+        {smartAcctBalance && ` (${formatEther(smartAcctBalance.value)} ${smartAcctBalance.symbol})`}
+      </div>
       {!executorInstalled ? (
         <form className="block w-full max-w-lg px-4" onSubmit={installExecutorModule}>
           <Fieldset className="space-y-6 rounded-xl p-6">
