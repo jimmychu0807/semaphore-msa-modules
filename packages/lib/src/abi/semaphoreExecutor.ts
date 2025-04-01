@@ -171,6 +171,25 @@ export const abi = [
   },
   {
     type: "function",
+    name: "getAcctMembers",
+    inputs: [
+      {
+        name: "account",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    outputs: [
+      {
+        name: "members",
+        type: "uint256[]",
+        internalType: "uint256[]",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "getAcctSeqNum",
     inputs: [
       {

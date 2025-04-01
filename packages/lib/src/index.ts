@@ -1,6 +1,7 @@
 import { SEMAPHORE_EXECUTOR_ADDRESS, SEMAPHORE_VALIDATOR_ADDRESS } from "./constants";
 import { getSemaphoreExecutor, getSemaphoreValidator } from "./installation";
 import {
+  getAcctMembers,
   getAcctSeqNum,
   getAcctThreshold,
   getGroupId,
@@ -21,6 +22,7 @@ export {
   SEMAPHORE_VALIDATOR_ADDRESS,
   getSemaphoreExecutor,
   getSemaphoreValidator,
+  getAcctMembers,
   getAcctSeqNum,
   getAcctThreshold,
   getGroupId,

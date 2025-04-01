@@ -172,8 +172,17 @@ contract SemaphoreExecutor is ISemaphoreExecutor, ERC7579ExecutorBase {
 
     function getGroupId(address account) external view returns (bool, uint256) {
         if (thresholds[account] > 0) return (true, groupMapping[account]);
-
         return (false, 0);
+    }
+
+    function getAcctMembers(address account) external view returns (uint256[] memory members) {
+        (bytes32[] memory entries,) =
+            acctMembers.getEntriesPaginated(account, SENTINEL, MAX_MEMBERS);
+        members = new uint256[](entries.length);
+        // Revert  back the order because sentinelList is a reversed linked-list
+        for (uint256 i = 0; i < entries.length; i++) {
+            members[i] = uint256(entries[entries.length - i - 1]);
+        }
     }
 
     function getAcctTx(
