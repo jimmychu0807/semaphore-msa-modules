@@ -50,7 +50,10 @@ export function IdentityPanel() {
   }
 
   const btnClassNames = clsx(
-    "inline-flex items-center text-center text-sm rounded-full w-6 h-6 bg-red-200 text-red-600 font-semibold m-0 p-0"
+    "inline-flex items-center gap-2 rounded-full w-7 h-6 text-sm/6 font-semibold",
+    "justify-center text-red-600 shadow-inner focus:outline-none hover:bg-red-200",
+    "border border-red-500",
+    "focus:outline-1 focus:outline-white text-sm cursor-pointer"
   );
 
   return (

@@ -63,7 +63,7 @@ export function TransactionsPanel() {
     "justify-center text-green-800 shadow-inner focus:outline-none hover:bg-green-200",
     "border border-green-500",
     "disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-400",
-    "focus:outline-1 focus:outline-white text-sm"
+    "focus:outline-1 focus:outline-white text-sm cursor-pointer"
   );
 
   const { identities, acctThreshold, txs } = appState;
