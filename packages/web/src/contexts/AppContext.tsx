@@ -289,27 +289,28 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       const smartAccountClient = appState.smartAccountClient;
       if (!publicClient || !smartAccountClient || !smartAccountClient.account) return;
 
-      const { address } = smartAccountClient.account;
-
       // Check if the two modules are installed
-      const isAcctInited = await publicClient.getCode({ address });
-      if (isAcctInited) {
-        const executorInstalled = await smartAccountClient.isModuleInstalled(getSemaphoreExecutor());
-        const validatorInstalled = await smartAccountClient.isModuleInstalled(getSemaphoreValidator());
-        const acctThreshold = executorInstalled
-          ? await getAcctThreshold({ account: smartAccountClient.account, client: publicClient })
-          : undefined;
-        const commitments = executorInstalled
-          ? await getAcctMembers({ account: smartAccountClient.account, client: publicClient })
-          : undefined;
+      const [executorInstalled, validatorInstalled] = await Promise.all([
+        smartAccountClient.isModuleInstalled(getSemaphoreExecutor()),
+        smartAccountClient.isModuleInstalled(getSemaphoreValidator()),
+      ]);
 
-        if (isMounted) {
-          if (executorInstalled) dispatch({ type: "installExecutor" });
-          if (validatorInstalled) dispatch({ type: "installValidator" });
-          if (acctThreshold) dispatch({ type: "update", value: { acctThreshold: Number(acctThreshold) } });
-          if (commitments) dispatch({ type: "update", value: { commitments } });
-          if (executorInstalled && validatorInstalled) dispatch({ type: "setStep", value: Step.Transactions });
-        }
+      let acctThreshold = undefined;
+      let commitments = undefined;
+
+      if (executorInstalled) {
+        [acctThreshold, commitments] = await Promise.all([
+          getAcctThreshold({ account: smartAccountClient.account, client: publicClient }),
+          getAcctMembers({ account: smartAccountClient.account, client: publicClient }),
+        ]);
+      }
+
+      if (isMounted) {
+        if (executorInstalled) dispatch({ type: "installExecutor" });
+        if (validatorInstalled) dispatch({ type: "installValidator" });
+        if (acctThreshold) dispatch({ type: "update", value: { acctThreshold: Number(acctThreshold) } });
+        if (commitments) dispatch({ type: "update", value: { commitments } });
+        if (executorInstalled && validatorInstalled) dispatch({ type: "setStep", value: Step.Transactions });
       }
     })();
 
