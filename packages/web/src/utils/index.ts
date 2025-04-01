@@ -12,12 +12,14 @@ import {
   RHINESTONE_ATTESTER_ADDRESS, // Rhinestone Attester
   MOCK_ATTESTER_ADDRESS, // Mock Attester - do not use in production
 } from "@rhinestone/module-sdk";
+import { toast } from "sonner";
 
 import { AppSmartAccountClient } from "@/types";
 
 export const ethRpcUrl = process.env.NEXT_PUBLIC_ETH_RPC_URL;
 export const bundlerUrl = process.env.NEXT_PUBLIC_BUNDLER_URL;
 export const paymasterUrl = process.env.NEXT_PUBLIC_PAYMASTER_URL;
+export const explorerPrefix = "https://base-sepolia.blockscout.com";
 
 export const blogpostUrl = "https://jimmychu0807.hk/semaphore-msa-modules";
 export const demoUrl =
@@ -102,4 +104,19 @@ export async function getSmartAccountClient({
 
 export function getCommitmentsSorted(cmts: bigint[]): Array<bigint> {
   return cmts.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+}
+
+export function showToastMessage(type: string, opts: { tx?: string; message?: string }) {
+  if (type === "success") {
+    const { tx } = opts;
+    toast.success("UserOp succeeded", {
+      description: `tx: ${tx}`,
+      action: {
+        label: "Check",
+        onClick: () => window.open(`${explorerPrefix}/tx/${tx}`, "_blank", "noopener,noreferrer"),
+      },
+    });
+  } else {
+    toast.error("UserOp failed", { description: opts.message });
+  }
 }

@@ -289,6 +289,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       const smartAccountClient = appState.smartAccountClient;
       if (!publicClient || !smartAccountClient || !smartAccountClient.account) return;
 
+      const { address } = smartAccountClient.account;
+      const isAcctInited = await publicClient.getCode({ address });
+      if (!isAcctInited) return;
+
       // Check if the two modules are installed
       const [executorInstalled, validatorInstalled] = await Promise.all([
         smartAccountClient.isModuleInstalled(getSemaphoreExecutor()),

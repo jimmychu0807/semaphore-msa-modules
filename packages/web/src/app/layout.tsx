@@ -5,6 +5,7 @@ import { cookieToInitialState } from "wagmi";
 
 import { getConfig } from "@/utils";
 import { Providers } from "@/components/Providers";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -40,6 +41,7 @@ export default async function RootLayout({
           <div className="grid grid-rows items-center justify-items-center min-h-screen gap-12 px-8 font-[family-name:var(--font-geist-sans)] mb-16">
             <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">{children}</main>
           </div>
+          <Toaster richColors closeButton={true} />
         </Providers>
       </body>
     </html>
