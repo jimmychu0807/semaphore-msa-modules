@@ -148,7 +148,7 @@ export function TransactionsPanel() {
   return (
     <>
       <div className="flex flex-col items-center gap-y-3 my-3">
-        <h2>Pending Transactions</h2>
+        <h2 className="text-center my-2 font-semibold">Pending Transactions</h2>
         {txs.map((tx: Transaction) => (
           <div key={tx.txHash} className="flex flex-row items-center w-full">
             <div className="w-3/4 text-xs overflow-y-scroll">

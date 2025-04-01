@@ -60,6 +60,7 @@ export function SmartAccountPanel({ requiredChainId }: { requiredChainId: number
       });
 
       dispatch({ type: "setSmartAccountClient", value: _smartAccountClient });
+      dispatch({ type: "update", value: { saltNonce } });
       dispatch({ type: "setStep", value: Step.InstallModules });
     } catch (err) {
       console.error("createAccount error:", err);
