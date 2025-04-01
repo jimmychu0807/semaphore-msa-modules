@@ -1,11 +1,22 @@
-import { useState, type MouseEvent, type FormEvent } from "react";
-import { Dialog, DialogPanel, DialogTitle, Fieldset, Field, Label, Input } from "@headlessui/react";
+import { useCallback, useState, useRef, type MouseEvent, type FormEvent } from "react";
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  Description,
+  Fieldset,
+  Field,
+  Label,
+  Input,
+  Select,
+} from "@headlessui/react";
 
 import { type Address, type Hex, parseEther, formatEther } from "viem";
 import { usePublicClient } from "wagmi";
 import clsx from "clsx";
 
 import { Group } from "@semaphore-protocol/group";
+import { Identity } from "@semaphore-protocol/identity";
 import { generateProof } from "@semaphore-protocol/proof";
 
 import {
@@ -23,12 +34,22 @@ import { useAppContext } from "@/contexts/AppContext";
 import { type Transaction } from "@/types";
 
 export function TransactionsPanel() {
+  const signerSelectRef = useRef<HTMLSelectElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isDialogBtnLoading, setDialogBtnLoading] = useState<boolean>(false);
   const [signingTx, setSigningTx] = useState<Hex>();
   const [executingTx, setExecutingTx] = useState<Hex>();
   const { appState, dispatch } = useAppContext();
   const publicClient = usePublicClient();
+
+  const getSelectedIdentity = useCallback(
+    (selectRef: React.RefObject<HTMLSelectElement | null>): Identity | undefined => {
+      const signerKey = selectRef.current?.value ?? "";
+      const _entry = appState.identities.find(({ key }) => key === signerKey);
+      return _entry?.identity;
+    },
+    [appState.identities]
+  );
 
   const inputClassNames = clsx(
     "mt-3 block w-full rounded-lg border-none bg-black/5 py-1.5 px-3 text-sm/6 text-black",
@@ -43,46 +64,47 @@ export function TransactionsPanel() {
     "focus:outline-1 focus:outline-white text-sm"
   );
 
-  const { acctThreshold, txs } = appState;
+  const { identities, acctThreshold, txs } = appState;
 
   async function initTx(ev: FormEvent<HTMLElement>) {
     ev.preventDefault();
 
-    // const { smartAccountClient, identity, commitments } = appState;
-    // if (!smartAccountClient || !publicClient || !identity || !commitments) {
-    //   console.error("[smartAccountClient, publicClient, identity, commitment] at least one values are not set.");
-    //   return;
-    // }
+    const identity = getSelectedIdentity(signerSelectRef);
+    const { smartAccountClient, commitments } = appState;
+    if (!smartAccountClient || !publicClient || !identity || !commitments) {
+      console.error("[smartAccountClient, publicClient, identity, commitment] at least one values are not set.");
+      return;
+    }
 
-    // setDialogBtnLoading(true);
-    // const { account } = smartAccountClient;
+    setDialogBtnLoading(true);
+    const { account } = smartAccountClient;
 
-    // const formData = new FormData(ev.target as HTMLFormElement);
-    // const recipient = formData.get("recipient") as Address;
-    // const amount = (formData.get("amount") || "") as string;
+    const formData = new FormData(ev.target as HTMLFormElement);
+    const recipient = formData.get("recipient") as Address;
+    const amount = (formData.get("amount") || "") as string;
 
-    // try {
-    //   // Composse the initTxAction
-    //   const seqNum = await getAcctSeqNum({ account, client: publicClient });
-    //   const value = parseEther(amount);
-    //   const txHash = getTxHash(seqNum, recipient, value, "0x");
-    //   const smGroup = new Group(commitments);
-    //   const smProof = (await generateProof(identity, smGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
+    try {
+      // Composse the initTxAction
+      const seqNum = await getAcctSeqNum({ account, client: publicClient });
+      const value = parseEther(amount);
+      const txHash = getTxHash(seqNum, recipient, value, "0x");
+      const smGroup = new Group(commitments);
+      const smProof = (await generateProof(identity, smGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
 
-    //   const action = getInitTxAction(recipient, value, "0x", smProof, false);
-    //   const receipt = await sendSemaphoreTransaction({
-    //     signer: identity,
-    //     account,
-    //     action,
-    //     publicClient,
-    //     bundlerClient: smartAccountClient,
-    //   });
-    //   console.log("initTx receipt:", receipt);
-    // } catch (err) {
-    //   console.error("initTx error:", err);
-    // }
-    // setDialogBtnLoading(false);
-    // setIsOpen(false);
+      const action = getInitTxAction(recipient, value, "0x", smProof, false);
+      const receipt = await sendSemaphoreTransaction({
+        signer: identity,
+        account,
+        action,
+        publicClient,
+        bundlerClient: smartAccountClient,
+      });
+      console.log("initTx receipt:", receipt);
+    } catch (err) {
+      console.error("initTx error:", err);
+    }
+    setDialogBtnLoading(false);
+    setIsOpen(false);
   }
 
   function cancelInitTx(ev: MouseEvent<HTMLElement>) {
@@ -96,58 +118,72 @@ export function TransactionsPanel() {
   }
 
   async function signTx(tx: Transaction) {
-    // const { smartAccountClient, identity, commitments } = appState;
-    // if (!smartAccountClient || !publicClient || !identity || !commitments) {
-    //   console.error("[smartAccountClient, publicClient, identity, commitment] at least one values are not set.");
-    //   return;
-    // }
-    // try {
-    //   const { txHash } = tx;
-    //   setSigningTx(txHash);
-    //   const smGroup = new Group(commitments);
-    //   const smProof = (await generateProof(identity, smGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
-    //   const action = getSignTxAction(txHash, smProof, false);
-    //   const receipt = await sendSemaphoreTransaction({
-    //     signer: identity,
-    //     account: smartAccountClient.account,
-    //     action,
-    //     publicClient,
-    //     bundlerClient: smartAccountClient,
-    //   });
-    //   console.log("signTx receipt:", receipt);
-    // } catch (err) {
-    //   console.error("signTx error:", err);
-    // }
-    // setSigningTx(undefined);
+    const identity = getSelectedIdentity(signerSelectRef);
+    const { smartAccountClient, commitments } = appState;
+    if (!smartAccountClient || !publicClient || !identity || !commitments) {
+      console.error("[smartAccountClient, publicClient, identity, commitment] at least one values are not set.");
+      return;
+    }
+    try {
+      const { txHash } = tx;
+      setSigningTx(txHash);
+      const smGroup = new Group(commitments);
+      const smProof = (await generateProof(identity, smGroup, "approve", txHash)) as unknown as SemaphoreProofFix;
+      const action = getSignTxAction(txHash, smProof, false);
+      const receipt = await sendSemaphoreTransaction({
+        signer: identity,
+        account: smartAccountClient.account,
+        action,
+        publicClient,
+        bundlerClient: smartAccountClient,
+      });
+      console.log("signTx receipt:", receipt);
+    } catch (err) {
+      console.error("signTx error:", err);
+    }
+    setSigningTx(undefined);
   }
 
   async function executeTx(tx: Transaction) {
-    // const { smartAccountClient, identity, commitments } = appState;
-    // if (!smartAccountClient || !publicClient || !identity || !commitments) {
-    //   console.error("[smartAccountClient, publicClient, identity, commitment] at least one values are not set.");
-    //   return;
-    // }
-    // try {
-    //   const { txHash } = tx;
-    //   setExecutingTx(txHash);
-    //   const action = getExecuteTxAction(txHash);
-    //   const receipt = await sendSemaphoreTransaction({
-    //     signer: identity,
-    //     account: smartAccountClient.account,
-    //     action,
-    //     publicClient,
-    //     bundlerClient: smartAccountClient,
-    //   });
-    //   console.log("executeTx receipt:", receipt);
-    // } catch (err) {
-    //   console.error("executeTx error:", err);
-    // }
-    // setExecutingTx(undefined);
+    const identity = getSelectedIdentity(signerSelectRef);
+    const { smartAccountClient, commitments } = appState;
+    if (!smartAccountClient || !publicClient || !identity || !commitments) {
+      console.error("[smartAccountClient, publicClient, identity, commitment] at least one values are not set.");
+      return;
+    }
+    try {
+      const { txHash } = tx;
+      setExecutingTx(txHash);
+      const action = getExecuteTxAction(txHash);
+      const receipt = await sendSemaphoreTransaction({
+        signer: identity,
+        account: smartAccountClient.account,
+        action,
+        publicClient,
+        bundlerClient: smartAccountClient,
+      });
+      console.log("executeTx receipt:", receipt);
+    } catch (err) {
+      console.error("executeTx error:", err);
+    }
+    setExecutingTx(undefined);
   }
 
   return (
     <>
       <div className="flex flex-col items-center gap-y-3 my-3">
+        <h2 className="text-center my-2 font-semibold">Signing Member</h2>
+        <Select
+          className="w-full rounded-md border-none bg-black/5 py-1.5 px-2 mt-2 mb-1 text-sm text-black overflow-x-scroll"
+          ref={signerSelectRef}
+        >
+          {identities.map(({ key, identity }) => (
+            <option key={key} value={key} className="py-1">
+              {key} ({identity.commitment})
+            </option>
+          ))}
+        </Select>
+
         <h2 className="text-center my-2 font-semibold">Pending Transactions</h2>
         {txs.map((tx: Transaction) => (
           <div key={tx.txHash} className="flex flex-row items-center w-full">
@@ -203,6 +239,10 @@ export function TransactionsPanel() {
                   <Label className="text-sm/6 font-medium text-black">Amount (in ETH)</Label>
                   <Input className={inputClassNames} name="amount" type="number" step="0.001" />
                 </Field>
+                <Description className="text-sm text-black/70">
+                  Signing with&nbsp;
+                  <span className="font-semibold">{signerSelectRef.current?.value}</span>
+                </Description>
               </Fieldset>
               <div className="flex gap-4">
                 <Button isSubmit={true} buttonText="Transfer" isLoading={isDialogBtnLoading} onClick={() => {}} />

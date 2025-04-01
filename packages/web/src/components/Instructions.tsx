@@ -40,14 +40,16 @@ export function Instructions() {
               </a>
               &nbsp;can be seen as a &quot;signature&quot; from the account members.
             </li>
-            <li className="my-1">
-              You could now disconnect the wallet account (in Smart Account tab) to convince yourself that you are not
-              signing with the wallet.
-            </li>
           </ul>
         </li>
         <li className="my-2">
-          Initiate, sign, and execute balance transfer transactions between accounts with the Semaphore Identities 🎉
+          Initiate, sign, and execute native transfer transactions between accounts with member identities 🎉
+          <ul className="list-disc pl-6">
+            <li className="my-1">
+              You could also disconnect the wallet account (in Smart Account tab) to convince yourself that you are not
+              signing with the wallet.
+            </li>
+          </ul>
         </li>
       </ol>
 
