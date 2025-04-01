@@ -12,6 +12,7 @@ import {
   getSemaphoreExecutor,
   getSemaphoreValidator,
   getAcctThreshold,
+  getAcctMembers,
   getExtCallCount,
 } from "@semaphore-msa-modules/lib";
 import { semaphoreExecutorABI } from "@semaphore-msa-modules/lib/abi";
@@ -298,11 +299,15 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         const acctThreshold = executorInstalled
           ? await getAcctThreshold({ account: smartAccountClient.account, client: publicClient })
           : undefined;
+        const commitments = executorInstalled
+          ? await getAcctMembers({ account: smartAccountClient.account, client: publicClient })
+          : undefined;
 
         if (isMounted) {
           if (executorInstalled) dispatch({ type: "installExecutor" });
           if (validatorInstalled) dispatch({ type: "installValidator" });
           if (acctThreshold) dispatch({ type: "update", value: { acctThreshold: Number(acctThreshold) } });
+          if (commitments) dispatch({ type: "update", value: { commitments } });
           if (executorInstalled && validatorInstalled) dispatch({ type: "setStep", value: Step.Transactions });
         }
       }

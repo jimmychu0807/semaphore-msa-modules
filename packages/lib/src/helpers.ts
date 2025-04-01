@@ -58,6 +58,11 @@ export async function sendSemaphoreTransaction({
   userOp.signature = signMessage(signer, userOpHash);
 
   const userOpTxHash = await bundlerClient.sendUserOperation(userOp);
+  const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: userOpTxHash });
 
-  return await bundlerClient.waitForUserOperationReceipt({ hash: userOpTxHash });
+  if (!receipt.success) {
+    throw Error(`userOp transaction failed with reason: ${receipt.reason}`, { cause: receipt });
+  }
+
+  return receipt;
 }

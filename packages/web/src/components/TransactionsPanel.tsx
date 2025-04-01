@@ -101,7 +101,8 @@ export function TransactionsPanel() {
       });
       console.log("initTx receipt:", receipt);
     } catch (err) {
-      console.error("initTx error:", err);
+      const error = err as unknown as Error;
+      console.error("initTx error:", error, error?.cause);
     }
     setDialogBtnLoading(false);
     setIsOpen(false);
@@ -139,7 +140,8 @@ export function TransactionsPanel() {
       });
       console.log("signTx receipt:", receipt);
     } catch (err) {
-      console.error("signTx error:", err);
+      const error = err as unknown as Error;
+      console.error("signTx error:", error, error?.cause);
     }
     setSigningTx(undefined);
   }
@@ -164,7 +166,8 @@ export function TransactionsPanel() {
       });
       console.log("executeTx receipt:", receipt);
     } catch (err) {
-      console.error("executeTx error:", err);
+      const error = err as unknown as Error;
+      console.error("executeTx error:", error, error?.cause);
     }
     setExecutingTx(undefined);
   }
