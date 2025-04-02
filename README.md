@@ -10,9 +10,9 @@
 
 This project mainly consists of [a validator and an executor modules](https://eips.ethereum.org/EIPS/eip-7579#validators) adheres to [**ERC-7579**](https://eips.ethereum.org/EIPS/eip-7579) standard that uses [Semaphore](https://semaphore.pse.dev/) for proof validation. Smart accounts incorporate these modules gain the following benefits:
 
-- The smart account behaves like a **M-of-N multi-sig wallet** controlled by members of the [Semaphore group](https://docs.semaphore.pse.dev/guides/groups) of the smart account. Proofs sent by the members are used as signatures.
+- The smart account behaves like an  **anonymous multi-sig wallet** controlled by [Semaphore group members](https://docs.semaphore.pse.dev/guides/groups) of the smart account. Proofs sent by the members are regarded as signatures.
 
-- The smart accout gains Semaphore property members preserve their privacy that no one know who send the proof (signature) except they must belong to the group while guaranteeing they have not signed before.
+- The smart account gains Semaphore property guaranteeing a valid proof (seen as signature) must be from a member within the group and have not signed before, while preserving the member privacy and no one could trace who send the proof from the on-chain log.
 
 Development of this project is supported by [PSE Acceleration Program](https://github.com/privacy-scaling-explorations/acceleration-program) (see [thread discussion](https://github.com/privacy-scaling-explorations/acceleration-program/issues/72)).
 
@@ -40,4 +40,4 @@ Thanks to the following folks on discussing about this project and helps along:
 - [Saleel P](https://github.com/saleel) on initiating this idea with [Semaphore Wallet](https://github.com/saleel/semaphore-wallet), showing me that the idea is feasible.
 - [Cedoor](https://github.com/cedoor) and [Vivian Plasencia](https://github.com/vplasencia) on Semaphore development and their opinions.
 - [John Guilding](https://github.com/JohnGuilding) on the discussion, support, and review of the project.
-- [Rhinestone team](https://rhinestone.wtf/) and [Konrad Kopp](https://github.com/kopy-kat) support on using [ModuleKit](https://docs.rhinestone.wtf/build-modules), [ModuleSDK](https://docs.rhinestone.wtf/build-modules) and a lot more of their work on ERC-7579 that make this project possible, and from which I have learned a lot from.
+- [Rhinestone team](https://rhinestone.wtf/) and [Konrad Kopp](https://github.com/kopy-kat) support on using [ModuleKit](https://docs.rhinestone.wtf/build-modules), [ModuleSDK](https://docs.rhinestone.wtf/build-modules) and their work on ERC-7579 that make this project possible, from which I have learned a lot.

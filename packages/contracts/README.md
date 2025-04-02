@@ -20,22 +20,19 @@ pnpm run test
 
 **Base Sepolia**
 
-
-| Contract    |Address | Etherscan  | Sourcify | Blockscout |
-| -------- | ------- | ------------ | --------- | --------- |
-| PoseidonT3 | [`0xE132Ed561A4F8500e86c4725221c23BF82219b6B`](https://sepolia.basescan.org/address/0xE132Ed561A4F8500e86c4725221c23BF82219b6B) | [✅](https://sepolia.basescan.org/address/0xE132Ed561A4F8500e86c4725221c23BF82219b6B#code) | [✅](https://repo.sourcify.dev/84532/0xE132Ed561A4F8500e86c4725221c23BF82219b6B) | [✅](https://base-sepolia.blockscout.com/address/0xE132Ed561A4F8500e86c4725221c23BF82219b6B?tab=contract) |
-| SemaphoreVerifier | [`0x7d843DdF0d2Ad656C5FD5E825C69C8C04241114D`](https://sepolia.basescan.org/address/0x7d843DdF0d2Ad656C5FD5E825C69C8C04241114D) | [✅](https://sepolia.basescan.org/address/0x7d843DdF0d2Ad656C5FD5E825C69C8C04241114D#code) | [✅](https://repo.sourcify.dev/84532/0x7d843DdF0d2Ad656C5FD5E825C69C8C04241114D) | [✅](https://base-sepolia.blockscout.com/address/0x7d843DdF0d2Ad656C5FD5E825C69C8C04241114D?tab=contract) |
-| Semaphore  | [`0x18E38db79b148d25e8b2E859985731AED274173a`](https://sepolia.basescan.org/address/0x18E38db79b148d25e8b2E859985731AED274173a)     | [✅](https://sepolia.basescan.org/address/0x18E38db79b148d25e8b2E859985731AED274173a#code)    | [✅](https://repo.sourcify.dev/84532/0x18E38db79b148d25e8b2E859985731AED274173a) | [✅](https://base-sepolia.blockscout.com/address/0x18E38db79b148d25e8b2E859985731AED274173a?tab=contract)   |
-| SemaphoreExecutor | [`0x53ECBF276d57f693A645453965d13125f2d2c94c`](https://sepolia.basescan.org/address/0x53ECBF276d57f693A645453965d13125f2d2c94c) |   |   |  [✅](https://base-sepolia.blockscout.com/address/0x53ECBF276d57f693A645453965d13125f2d2c94c?tab=contract)  |
-| SemaphoreValidator  | [`0xA0993C496eb8D5DaAcD7F6bbEd9D978A14AEcd59`](https://sepolia.basescan.org/address/0xA0993C496eb8D5DaAcD7F6bbEd9D978A14AEcd59)  |   |   |    |
+- PoseidonT3: [`0xE132Ed561A4F8500e86c4725221c23BF82219b6B`](https://base-sepolia.blockscout.com/address/0xE132Ed561A4F8500e86c4725221c23BF82219b6B?tab=contract)
+- SemaphoreVerifier: [`0x7d843DdF0d2Ad656C5FD5E825C69C8C04241114D`](https://base-sepolia.blockscout.com/address/0x7d843DdF0d2Ad656C5FD5E825C69C8C04241114D?tab=contract)
+- Semaphore: [`0x18E38db79b148d25e8b2E859985731AED274173a`](https://base-sepolia.blockscout.com/address/0x18E38db79b148d25e8b2E859985731AED274173a?tab=contract)
+- SemaphoreExecutor: 
+- SemaphoreValidator: 
 
 ## Developer Documentation
 
-There are two ERC-7579 modules in this repo, namely [**SemaphoreValidator**](./src/SemaphoreValidator.sol) and [**SemaphoreExecutor**](./src/SemaphoreExecutor.sol). 
+There are two ERC-7579 modules in this repo, namely [**SemaphoreExecutor**](./src/SemaphoreExecutor.sol) and [**SemaphoreValidator**](./src/SemaphoreValidator.sol). 
 
-**SemaphoreValidator** is responsible for validating the signature of the UserOp is indeed a valid EdDSA signature of the UserOp hash from the public key included in the signature. The validator module checks the commitment of the public key is indeed a member of the Sempahore group of the smart account. Note this module also restricts the smart account to be able to call **SempahoreExecutor** contract and its three APIs only.
+**SempahoreExecutor** has all the account states stored and provides three key APIs: **initiateTx()**, **signTx()**, and **executeTx()**. **initiateTx()** is responsible for Semaphore members of the smart account to initiate an external transaction. **signTx()** is for collecting enough proofs. The proofs could be seen as a "signature" from the members who approve the tx. Lastly, **executeTx()** is to trigger the execution of the transaction.
 
-**SempahoreExecutor** has all the account states stored and provides three key APIs: **initiateTx()**, **signTx()**, and **executeTx()**. **initiateTx()** is responsible for Semaphore members of the smart account to initiate an external transaction. **signTx()** is for collecting enough proofs. The proofs could be seen as a "signature" from the members who approve the tx. Lastly, **executeTx()** is to actually trigger the execution of the transaction.
+**SemaphoreValidator** is responsible for checking the UserOp signature is indeed a valid EdDSA signature of the UserOp hash. The validator module also checks the commitment of the public key included in the UserOp signature is a member of the smart account Sempahore group. This module further limits the smart account to be able to only call **SempahoreExecutor** contract and its three APIs (`initiateTx()`, `signTx()`, and `executeTx)`.
 
 Because **SemaphoreExecutor** is an [executor module](https://eips.ethereum.org/EIPS/eip-7579#executors), the called contract will see the smart account as the `msg.sender`, not the executor contract.
 
@@ -47,15 +44,15 @@ There is a one-time set function **setSemaphoreValidator()** in the executor to 
 
 - `groupMapping`: This object maps from the smart account address to a Semaphore group.
 - `thresholds`: The threshold number of proofs a particular smart account needs to collect for a transaction to be executed.
-- `memberCount`: The member count of a Semaphore group. The actual member commitments are stored in the `smaphore` contract [**Lean Incremental Merkle Tree**](https://github.com/privacy-scaling-explorations/zk-kit.solidity/tree/main/packages/lean-imt) structure.
-- `acctTxCount`: This object stores the transaction call data and value that are waiting to be proved (signed), and the proofs it has collected so far. This information is stored in the **`ExtCallCount`** data structure.
+- `acctMembers`: This list stores the member commitments of a smart account to be checked against when validating a userOp signature. The actual member commitments are stored in the `smaphore` contract [**Lean Incremental Merkle Tree**](https://github.com/privacy-scaling-explorations/zk-kit.solidity/tree/main/packages/lean-imt) structure.
+- `acctTxCount`: This object stores the transaction calldata, to, and value that are waiting to be proved (signed) and the proofs it has collected so far. This information is stored in the **`ExtCallCount`** data structure.
 - `acctSeqNum`: The sequence number corresponding to a smart account. This value is used when generating a transaction signature to uniquely identify a particular transaction.
 
 ### API
 
-After installing the two modules, the smart account can only call three functions in the executor module, **initiateTx()**, **signTx()**, and **executeTx()**. Calling other functions would be rejected in the **validateUserOp()** check.
+After installing the two modules, the smart account can only call three functions in the executor module, **initiateTx()**, **signTx()**, and **executeTx()**. Calling other functions would be rejected in the Semaphore validator **validateUserOp()** check.
 
-1. **initiateTx()**: for the Semaphore member to initate a new transaction of the Smart account. This function checks the validity of the semaphore proof and corresponding parameters. It takes five paramters.
+1. **initiateTx()**: for the Semaphore member to initate a new transaction of the smart account. This function checks the validity of the semaphore proof and corresponding parameters. It takes five paramters.
 
    - `target`: The target address of the transaction.
    - `value`: any balance to be used. It will be used as the `msg.value` in the actual external transaction.
@@ -67,7 +64,7 @@ After installing the two modules, the smart account can only call three function
 
    A 32-byte hash **txHash** is returned, generated from `keccak256(abi.encodePacked(seq, targetAddr, value, txCallData))`.
 
-2. **signTx()**: for other Semaphore member to sign a previously initiated transaction. Again, it checks the Semaphore proof, if the hash and the proof are valid, the proof count is incremented.
+2. **signTx()**: for other Semaphore member to sign a previously initiated transaction. Again, it checks the Semaphore proof, and if valid, increment the proof count of the transaction.
 
    - `txHash`: The hash value returned from `initiatedTx()` previously, to specify the proving transaction.
    - `proof`: The zero-knowledge Semaphore proof that the transaction `txHash` corresponding to.
@@ -79,15 +76,15 @@ After installing the two modules, the smart account can only call three function
 
 ### Signature and Calldata
 
-Transactions from ERC-4337 will go through **validateUserOp()** for validation, based on **userOp**, and **userOpHash**. In validation, the key logic is to check three objects: the userOp hash (`userOpHash`), the signature (`signature`), and the target call data (`targetCallData`).
+Transactions from ERC-4337 will go through **validateUserOp()** for validation, based on **userOp**, and **userOpHash**. In SemaphoreValidator, the key logic is to check two objects: the userOp signature (`signature`) and the target call data (`targetCallData`).
 
 A proper userOp signature is a 160 bytes value signed by EdDSA signature scheme. The signature itself is 32 * 3 = 96 bytes, but we also prepend the identity public key uses for validation.
 
 <img src="../../docs/contracts-assets/userop-signature.svg" alt="UserOp Signature" width="50%"/>
 
-The `userOpHash` is 32-byte long, it is a **keccak256()** of sequence number, target address, value, and the target parameters.
+A `userOpHash` is 32-byte long, it is a **keccak256()** of sequence number, target address, value, and the target parameters.
 
-For the UserOp calldata passing to `getExecOps()` in testing, it is:
+For the UserOp calldata passing to `getExecOps()` in testing, it is:
 
 <img src="../../docs/contracts-assets/userop-calldata.svg" alt="UserOp Calldata" width="70%"/>
 
@@ -97,9 +94,9 @@ Now, when decoding the calldata from **PackedUserOperation** object in **validat
 
 ### Verifying EdDSA Signature
 
-A Semaphore identity consists of an [EdDSA](https://en.wikipedia.org/wiki/EdDSA) public/private key pair and a [commitment](https://docs.semaphore.pse.dev/glossary#identity-commitment). Semaphore uses an [EdDSA](https://github.com/privacy-scaling-explorations/zk-kit/tree/main/packages/eddsa-poseidon) implementation based on [Baby Jubjub](https://eips.ethereum.org/EIPS/eip-2494) and [Poseidon](https://www.poseidon-hash.info/). The actual implementation is in [**zk-kit**](https://github.com/privacy-scaling-explorations/zk-kit) repository. 
+Semaphore uses an [EdDSA signature scheme](https://github.com/privacy-scaling-explorations/zk-kit/tree/main/packages/eddsa-poseidon) on [Baby Jubjub elliptic curve](https://eips.ethereum.org/EIPS/eip-2494) and [Poseidon hashing](https://www.poseidon-hash.info/). The actual implementation is in [**zk-kit**](https://github.com/privacy-scaling-explorations/zk-kit) repository. 
 
-We implement the identity verification logic [**Identity.verifySignature()**](https://github.com/jimmychu0807/semaphore-msa-modules/blob/4842f2a175d72e8bdd59baf8cdeb46fdefc3a8d5/src/utils/Identity.sol#L39) on-chain. We also have a **[Identity.verifySignatureFFI()](https://github.com/jimmychu0807/semaphore-msa-modules/blob/4842f2a175d72e8bdd59baf8cdeb46fdefc3a8d5/src/utils/Identity.sol#L20)** function for testing to compare the result with calling Semaphore typescript-based implementation. It relies on the Baby JubJub curve Solidity implementataion by [yondonfu](https://github.com/yondonfu/sol-baby-jubjub) with [a minor fix](https://github.com/jimmychu0807/semaphore-msa-modules/blob/4842f2a175d72e8bdd59baf8cdeb46fdefc3a8d5/src/utils/CurveBabyJubJub.sol#L4-L5).
+We implement the identity verification logic [**Identity.verifySignature()**](./src/utils/Identity.sol) on-chain. It is based on the Baby JubJub curve Solidity implementataion by [yondonfu](https://github.com/yondonfu/sol-baby-jubjub).
 
 ### ERC-1271 and ERC-7780
 
