@@ -3,7 +3,7 @@
 ## Project Artifacts
 
 - 🌐 [Project demo website](https://semaphore-msa-modules.jimmychu0807.hk/) (please connect to Base Sepolia)
-- 🎥 [Project demo UI video](https://www.loom.com/share/0b800171a4f1491f9eedd4f555569e37?sid=0c2d3024-5652-499e-b374-218023da581b)
+- 🎥 [Project demo video](https://www.loom.com/share/0b800171a4f1491f9eedd4f555569e37?sid=0c2d3024-5652-499e-b374-218023da581b)
 - 📜 [Project writeup](https://jimmychu0807.hk/semaphore-msa-modules)
 
 ## Overview
