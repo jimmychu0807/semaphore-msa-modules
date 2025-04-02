@@ -23,8 +23,8 @@ pnpm run test
 - PoseidonT3: [`0xE132Ed561A4F8500e86c4725221c23BF82219b6B`](https://base-sepolia.blockscout.com/address/0xE132Ed561A4F8500e86c4725221c23BF82219b6B?tab=contract)
 - SemaphoreVerifier: [`0x7d843DdF0d2Ad656C5FD5E825C69C8C04241114D`](https://base-sepolia.blockscout.com/address/0x7d843DdF0d2Ad656C5FD5E825C69C8C04241114D?tab=contract)
 - Semaphore: [`0x18E38db79b148d25e8b2E859985731AED274173a`](https://base-sepolia.blockscout.com/address/0x18E38db79b148d25e8b2E859985731AED274173a?tab=contract)
-- SemaphoreExecutor: 
-- SemaphoreValidator: 
+- SemaphoreExecutor: [`0x58265b1deb6290a092a3b01da1d96475c012d8f4`](https://base-sepolia.blockscout.com/address/0x58265b1deb6290a092a3b01da1d96475c012d8f4?tab=contract)
+- SemaphoreValidator: [`0xBC564d498Efa954eeB1169066D6AD1f82cC2a37b`](https://base-sepolia.blockscout.com/address/0xBC564d498Efa954eeB1169066D6AD1f82cC2a37b?tab=contract)
 
 ## Developer Documentation
 
