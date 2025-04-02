@@ -5,11 +5,10 @@ import { useBalance } from "wagmi";
 
 import { Description, Field, Fieldset, Input, Label, Legend, Select } from "@headlessui/react";
 import clsx from "clsx";
-
 import { Button } from "./Button";
 import { useAppContext } from "@/contexts/AppContext";
 import { Step } from "@/types";
-import { formatEther, getCommitmentsSorted } from "@/utils";
+import { formatEther, getCommitmentsSorted, showToastMessage } from "@/utils";
 import { getSemaphoreExecutor, getSemaphoreValidator } from "@semaphore-msa-modules/lib";
 
 export function InstallModulesPanel() {
@@ -53,7 +52,8 @@ export function InstallModulesPanel() {
       });
       const opHash = await smartAccountClient.installModule(semaphoreExecutor);
       const receipt = await smartAccountClient.waitForUserOperationReceipt({ hash: opHash });
-      console.log("receipt:", receipt);
+
+      showToastMessage("success", { tx: receipt.receipt.transactionHash });
 
       dispatch({ type: "installExecutor" });
       dispatch({
@@ -64,7 +64,8 @@ export function InstallModulesPanel() {
         },
       });
     } catch (err) {
-      console.error("installExecutorModule error:", err);
+      const error = err as unknown as Error;
+      showToastMessage("error", { message: error.toString() });
     } finally {
       setInstallingExecutor(false);
     }
@@ -84,12 +85,14 @@ export function InstallModulesPanel() {
       const semaphoreValidator = await getSemaphoreValidator();
       const opHash = await smartAccountClient.installModule(semaphoreValidator);
       const receipt = await smartAccountClient.waitForUserOperationReceipt({ hash: opHash });
-      console.log("receipt:", receipt);
+
+      showToastMessage("success", { tx: receipt.receipt.transactionHash });
 
       dispatch({ type: "installValidator" });
       dispatch({ type: "setStep", value: Step.Transactions });
     } catch (err) {
-      console.error("installValidatorModule error:", err);
+      const error = err as unknown as Error;
+      showToastMessage("error", { message: error.toString() });
     } finally {
       setInstallingValidator(false);
     }

@@ -4,7 +4,7 @@ export function Instructions() {
   const linkStyle = "underline underline-offset-4 decoration-dotted decoration-1";
 
   return (
-    <div className="self-center flex flex-col w-full md:w-5/6 lg:w-2/3 text-sm gap-2 gap-y-3">
+    <div className="self-center flex flex-col w-full md:w-5/6 text-sm gap-2 gap-y-3">
       <div>To try out the anonymous multi-sig wallet:</div>
       <ol className="list-decimal pl-6">
         <li className="my-2">

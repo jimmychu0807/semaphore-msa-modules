@@ -33,7 +33,7 @@ export function ActionTabs() {
   }
 
   return (
-    <section className="self-center flex flex-col items-center w-full md:w-5/6 lg:w-2/3">
+    <section className="self-center flex flex-col items-center w-full md:w-5/6">
       <TabGroup className="w-full" selectedIndex={selectedTab} onChange={setSelectedTab}>
         <TabList className="flex justify-center gap-2">
           <Tab key="identityTab" className={tabClassNames}>

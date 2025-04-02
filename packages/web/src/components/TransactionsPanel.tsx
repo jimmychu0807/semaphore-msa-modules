@@ -30,6 +30,7 @@ import {
 } from "@semaphore-msa-modules/lib";
 
 import { Button } from "./Button";
+import { showToastMessage } from "@/utils";
 import { useAppContext } from "@/contexts/AppContext";
 import { type Transaction } from "@/types";
 
@@ -58,10 +59,11 @@ export function TransactionsPanel() {
   );
 
   const btnClassNames = clsx(
-    "inline-flex items-center gap-2 rounded-md w-18 h-9 bg-green-200 py-1.5 px-2 text-sm/6 font-semibold",
-    "justify-center text-green-800 shadow-inner focus:outline-none hover:bg-green-300",
-    "disabled:bg-gray-300 disabled:text-black",
-    "focus:outline-1 focus:outline-white text-sm"
+    "inline-flex items-center gap-2 rounded-md w-16 h-9 py-1.5 px-2 text-sm/6 font-semibold",
+    "justify-center text-green-800 shadow-inner focus:outline-none hover:bg-green-200",
+    "border border-green-500",
+    "disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-400",
+    "focus:outline-1 focus:outline-white text-sm cursor-pointer"
   );
 
   const { identities, acctThreshold, txs } = appState;
@@ -99,10 +101,11 @@ export function TransactionsPanel() {
         publicClient,
         bundlerClient: smartAccountClient,
       });
-      console.log("initTx receipt:", receipt);
+
+      showToastMessage("success", { tx: receipt.receipt.transactionHash });
     } catch (err) {
       const error = err as unknown as Error;
-      console.error("initTx error:", error, error?.cause);
+      showToastMessage("error", { message: error.toString() });
     }
     setDialogBtnLoading(false);
     setIsOpen(false);
@@ -138,10 +141,11 @@ export function TransactionsPanel() {
         publicClient,
         bundlerClient: smartAccountClient,
       });
-      console.log("signTx receipt:", receipt);
+
+      showToastMessage("success", { tx: receipt.receipt.transactionHash });
     } catch (err) {
       const error = err as unknown as Error;
-      console.error("signTx error:", error, error?.cause);
+      showToastMessage("error", { message: error.toString() });
     }
     setSigningTx(undefined);
   }
@@ -164,10 +168,11 @@ export function TransactionsPanel() {
         publicClient,
         bundlerClient: smartAccountClient,
       });
-      console.log("executeTx receipt:", receipt);
+
+      showToastMessage("success", { tx: receipt.receipt.transactionHash });
     } catch (err) {
       const error = err as unknown as Error;
-      console.error("executeTx error:", error, error?.cause);
+      showToastMessage("error", { message: error.toString() });
     }
     setExecutingTx(undefined);
   }
@@ -214,9 +219,9 @@ export function TransactionsPanel() {
               />
               <Button
                 buttonText="Execute"
+                className={btnClassNames}
                 isLoading={executingTx === tx.txHash}
                 disabled={!!signingTx || (executingTx && executingTx !== tx.txHash)}
-                className={btnClassNames}
                 onClick={() => executeTx(tx)}
               />
             </div>

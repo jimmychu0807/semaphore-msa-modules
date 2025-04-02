@@ -12,16 +12,18 @@ import {
   RHINESTONE_ATTESTER_ADDRESS, // Rhinestone Attester
   MOCK_ATTESTER_ADDRESS, // Mock Attester - do not use in production
 } from "@rhinestone/module-sdk";
+import { toast } from "sonner";
 
 import { AppSmartAccountClient } from "@/types";
 
 export const ethRpcUrl = process.env.NEXT_PUBLIC_ETH_RPC_URL;
 export const bundlerUrl = process.env.NEXT_PUBLIC_BUNDLER_URL;
 export const paymasterUrl = process.env.NEXT_PUBLIC_PAYMASTER_URL;
+export const explorerPrefix = "https://base-sepolia.blockscout.com";
 
 export const blogpostUrl = "https://jimmychu0807.hk/semaphore-msa-modules";
 export const demoUrl =
-  "https://www.loom.com/share/9775b4fcf71b46418483f34761c03d0e?sid=cb9a32bb-b4ce-4f5a-b1a7-4f9182f59cff";
+  "https://www.loom.com/share/0b800171a4f1491f9eedd4f555569e37?sid=0c2d3024-5652-499e-b374-218023da581b";
 export const srcUrl = "https://github.com/jimmychu0807/semaphore-msa-modules";
 
 export function getConfig() {
@@ -102,4 +104,19 @@ export async function getSmartAccountClient({
 
 export function getCommitmentsSorted(cmts: bigint[]): Array<bigint> {
   return cmts.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+}
+
+export function showToastMessage(type: string, opts: { tx?: string; message?: string }) {
+  if (type === "success") {
+    const { tx } = opts;
+    toast.success("UserOp succeeded", {
+      description: `tx: ${tx}`,
+      action: {
+        label: "Check",
+        onClick: () => window.open(`${explorerPrefix}/tx/${tx}`, "_blank", "noopener,noreferrer"),
+      },
+    });
+  } else {
+    toast.error("UserOp failed", { description: opts.message });
+  }
 }
