@@ -88,7 +88,7 @@ export function SmartAccountPanel({ requiredChainId }: { requiredChainId: number
             </div>
             <div className="flex flex-row gap-x-4 justify-center">
               {walletAccount.chainId !== requiredChainId && (
-                <Button buttonText="Swtich Network" onClick={() => switchChain({ chainId: requiredChainId })} />
+                <Button buttonText="Switch Network" onClick={() => switchChain({ chainId: requiredChainId })} />
               )}
               <Button buttonText="Disconnect" onClick={() => disconnect()} />
             </div>
