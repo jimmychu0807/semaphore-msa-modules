@@ -24,7 +24,7 @@
     "remappings.txt"
   ],
   "scripts": {
-    "deploy:dev": "forge script script/DeploySemaphoreModules.s.sol --rpc-url http://localhost:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --broadcast",
+    "deploy:dev": "forge script script/DeploySemaphoreModules.s.sol --rpc-url http://localhost:8550 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --broadcast",
     "build": "forge build",
     "build:optimized": "FOUNDRY_PROFILE=optimized forge build",
     "build:smt": "FOUNDRY_PROFILE=smt forge build",

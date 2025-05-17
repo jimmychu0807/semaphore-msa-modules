@@ -46,7 +46,9 @@ export async function sendSemaphoreTransaction({
     //   check for the signature
     callGasLimit: BigInt(2e6),
     preVerificationGas: BigInt(3e5),
-    verificationGasLimit: BigInt(3e6),
+    // note: we will run signature verfication and require lots of gas. Set the following to
+    // ensure we have enough gas.
+    verificationGasLimit: BigInt(1e7),
   })) as UserOperation;
 
   const userOpHash = getUserOperationHash({

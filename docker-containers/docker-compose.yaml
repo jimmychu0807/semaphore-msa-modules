@@ -2,6 +2,8 @@ services:
   anvil:
     image: ghcr.io/foundry-rs/foundry:stable
     ports: ["8550:8545"]
+    environment:
+      - RUST_LOG=node::console
     entrypoint:
       [
         "anvil",
