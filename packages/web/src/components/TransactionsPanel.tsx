@@ -106,6 +106,7 @@ export function TransactionsPanel() {
     } catch (err) {
       const error = err as unknown as Error;
       showToastMessage("error", { message: error.toString() });
+      console.error(error.toString());
     }
     setDialogBtnLoading(false);
     setIsOpen(false);
@@ -146,6 +147,7 @@ export function TransactionsPanel() {
     } catch (err) {
       const error = err as unknown as Error;
       showToastMessage("error", { message: error.toString() });
+      console.error(error.toString());
     }
     setSigningTx(undefined);
   }
@@ -173,6 +175,7 @@ export function TransactionsPanel() {
     } catch (err) {
       const error = err as unknown as Error;
       showToastMessage("error", { message: error.toString() });
+      console.error(error.toString());
     }
     setExecutingTx(undefined);
   }

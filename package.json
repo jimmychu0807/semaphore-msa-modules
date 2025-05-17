@@ -25,8 +25,8 @@
   },
   "scripts": {
     "dev": "pnpm run containers:up && pnpm -r --stream --filter './packages/*' run dev",
-    "containers:up": "docker compose -f docker/docker-compose.yaml --env-file .env up -d",
-    "containers:down": "docker compose -f docker/docker-compose.yaml down",
+    "containers:up": "docker compose -f docker-containers/docker-compose.yaml --env-file .env up -d",
+    "containers:down": "docker compose -f docker-containers/docker-compose.yaml down",
     "containers:restart": "pnpm containers:down && pnpm containers:up",
     "contracts:build": "pnpm --filter semaphore-msa-modules-contracts build",
     "contracts:lint": "pnpm --filter semaphore-msa-modules-contracts lint",
