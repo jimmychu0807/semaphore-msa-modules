@@ -1,7 +1,7 @@
 services:
   anvil:
-    image: ghcr.io/foundry-rs/foundry:nightly-25598999a2b33ac6ccfa35c347f3c98aba8e0061
-    ports: ["8545:8545"]
+    image: ghcr.io/foundry-rs/foundry:stable
+    ports: ["8550:8545"]
     entrypoint:
       [
         "anvil",
@@ -13,24 +13,45 @@ services:
         "--hardfork",
         "prague"
       ]
-    platform: linux/x86_64
+    platform: linux/arm64
+    healthcheck:
+      test: ["CMD-SHELL", "cast rpc web3_clientVersion | grep -c anvil > /dev/null "]
+      start_interval: 250ms
+      start_period: 10s
+      interval: 30s
+      timeout: 5s
+      retries: 10
+
+  contract-deployer:
+    image: ghcr.io/pimlicolabs/mock-contract-deployer:main
+    environment:
+      - ANVIL_RPC=http://anvil:8545
+      - SKIP_DEPLOYMENTS=true
+    depends_on:
+      anvil:
+        condition: service_healthy
 
   mock-paymaster:
     restart: always
-    depends_on:
-      - anvil
     image: ghcr.io/pimlicolabs/mock-verifying-paymaster:main
     ports: ["3000:3000"]
     environment:
       - ALTO_RPC=http://alto:4337
       - ANVIL_RPC=http://anvil:8545
+    depends_on:
+      contract-deployer:
+        condition: service_completed_successfully
+    platform: linux/arm64
 
   alto:
-    depends_on:
-      - anvil
-    image: ghcr.io/pimlicolabs/mock-alto-bundler:main
+    image: ghcr.io/pimlicolabs/alto:latest
     ports: ["4337:4337"]
     environment:
       - ANVIL_RPC=http://anvil:8545
-      - SKIP_DEPLOYMENTS=true
-    entrypoint: ["pnpm", "run", "start"]
+    entrypoint: ["node", "src/lib/cli/alto.js", "run", "--config", "/app/alto-config.json"]
+    volumes:
+      - ./alto-config.json:/app/alto-config.json
+    platform: linux/arm64
+    depends_on:
+      contract-deployer:
+        condition: service_completed_successfully

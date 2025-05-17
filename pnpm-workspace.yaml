@@ -1,17 +1,23 @@
 packages:
-  - 'packages/*'
-
+  - packages/*
 catalog:
-  "@rhinestone/module-sdk": ^0.2.4
-  "@semaphore-protocol/contracts": github:jimmychu0807/semaphore#lib-cli&path:/packages/contracts/contracts
-  "@semaphore-protocol/group": github:jimmychu0807/semaphore#lib-cli&path:/packages/group
-  "@semaphore-protocol/identity": github:jimmychu0807/semaphore#lib-cli&path:/packages/identity
-  "@semaphore-protocol/proof": github:jimmychu0807/semaphore#lib-cli&path:/packages/proof
+  '@rhinestone/module-sdk': ^0.2.8
+  '@semaphore-protocol/contracts': github:jimmychu0807/semaphore#lib-cli&path:/packages/contracts/contracts
+  '@semaphore-protocol/group': github:jimmychu0807/semaphore#lib-cli&path:/packages/group
+  '@semaphore-protocol/identity': github:jimmychu0807/semaphore#lib-cli&path:/packages/identity
+  '@semaphore-protocol/proof': github:jimmychu0807/semaphore#lib-cli&path:/packages/proof
   dotenv: ^16.4.5
-  permissionless: ^0.2.34
+  permissionless: ^0.2.46
   rimraf: ^5.0.10
   tsx: 4.19.2
   typescript: ^5
-  viem: ^2.21.51
-  wagmi: ^2.14.12
-  wait-on: ^8.0.2
+  viem: ^2.28.1
+  wagmi: ^2.15.3
+  wait-on: ^8.0.3
+onlyBuiltDependencies:
+  - bufferutil
+  - esbuild
+  - keccak
+  - secp256k1
+  - sharp
+  - utf-8-validate
