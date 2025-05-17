@@ -32,8 +32,9 @@ services:
         condition: service_healthy
 
   mock-paymaster:
-    restart: always
     image: ghcr.io/pimlicolabs/mock-verifying-paymaster:main
+    platform: linux/arm64
+    restart: always
     ports: ["3000:3000"]
     environment:
       - ALTO_RPC=http://alto:4337
@@ -41,17 +42,25 @@ services:
     depends_on:
       contract-deployer:
         condition: service_completed_successfully
-    platform: linux/arm64
 
   alto:
     image: ghcr.io/pimlicolabs/alto:latest
-    ports: ["4337:4337"]
+    platform: linux/arm64
+    expose: ["4337"]
     environment:
       - ANVIL_RPC=http://anvil:8545
     entrypoint: ["node", "src/lib/cli/alto.js", "run", "--config", "/app/alto-config.json"]
     volumes:
       - ./alto-config.json:/app/alto-config.json
-    platform: linux/arm64
     depends_on:
       contract-deployer:
         condition: service_completed_successfully
+
+  alto-proxy:
+    image: nginx:1.27.5-bookworm
+    platform: linux/arm64
+    ports: ["4337:80"]
+    volumes:
+      - ./alto-proxy.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - alto
