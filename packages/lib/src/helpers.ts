@@ -38,6 +38,10 @@ export async function sendSemaphoreTransaction({
   bundlerClient: Erc7579SmartAccountClient;
 }) {
   const nonce = await getValidatorNonce(account, "safe", publicClient);
+
+  // We fill in all the gas to avoid estimateUserOperationGas being called:
+  // https://github.com/wevm/viem/blob/5d9bdabd61a95a22a914c78c242fa9cfbc803ed1/src/account-abstraction/actions/bundler/prepareUserOperation.ts#L614-L620
+
   const userOp = (await bundlerClient.prepareUserOperation({
     account,
     calls: [action],
@@ -46,7 +50,9 @@ export async function sendSemaphoreTransaction({
     //   check for the signature
     callGasLimit: BigInt(2e6),
     preVerificationGas: BigInt(3e5),
-    verificationGasLimit: BigInt(6e6),
+    verificationGasLimit: BigInt(1e7),
+    paymasterPostOpGasLimit: BigInt(4e6),
+    paymasterVerificationGasLimit: BigInt(4e6),
   })) as UserOperation;
 
   const userOpHash = getUserOperationHash({

@@ -66,6 +66,7 @@ export function InstallModulesPanel() {
     } catch (err) {
       const error = err as unknown as Error;
       showToastMessage("error", { message: error.toString() });
+      console.error(error.toString());
     } finally {
       setInstallingExecutor(false);
     }
@@ -93,6 +94,7 @@ export function InstallModulesPanel() {
     } catch (err) {
       const error = err as unknown as Error;
       showToastMessage("error", { message: error.toString() });
+      console.error(error.toString());
     } finally {
       setInstallingValidator(false);
     }
